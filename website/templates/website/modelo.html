@@ -20,75 +20,74 @@
   <body class="bg-dark-custom">
 
     <!-- FIXED PREMIUM NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-custom sticky-top" id="main-nav">
+    <nav class="navbar navbar-expand-lg navbar-dark custom-navbar sticky-top" id="main-nav">
       <div class="container">
-        {% if user.is_authenticated %}
-        <!-- AUTHENTICATED NAVBAR -->
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'dashboard' %}">
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{% url 'pagina_inicial' %}">
           <span class="text-gold"><i class="bi bi-scissors"></i></span>
-          <span class="brand-font fw-bold text-uppercase">Delacruz <span class="text-gold">Barber</span></span>
+          <span class="brand-font text-uppercase">Delacruz <span class="text-gold">Barber</span></span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarText">
-          <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+
+        <div class="collapse navbar-collapse" id="navbarMenu">
+          <ul class="navbar-nav ms-auto align-items-lg-center">
             <li class="nav-item">
-              <a class="nav-link nav-link-custom" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+              <a class="nav-link" href="{% url 'pagina_inicial' %}">Início</a>
             </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link nav-link-custom dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-gear me-1"></i>Gerenciar
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'servicos' %}">Serviços</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'barbeiros' %}">Barbeiros</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'sobre' %}">Sobre</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'contato' %}">Contato</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="btn btn-delacruz ms-lg-3 me-lg-2" href="{% url 'agendamento' %}">
+                Agendar
               </a>
-              <ul class="dropdown-menu dropdown-menu-dark">
-                <li><a class="dropdown-item" href="{% url 'listar_servicos' %}"><i class="bi bi-scissors me-2"></i>Serviços</a></li>
-                <li><a class="dropdown-item" href="{% url 'listar_barbeiros' %}"><i class="bi bi-person-badge me-2"></i>Barbeiros</a></li>
-                <li><a class="dropdown-item" href="{% url 'listar_clientes' %}"><i class="bi bi-people me-2"></i>Clientes</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{% url 'listar_agendamentos' %}"><i class="bi bi-calendar-check me-2"></i>Agendamentos</a></li>
-                <li><a class="dropdown-item" href="{% url 'listar_horarios' %}"><i class="bi bi-clock me-2"></i>Horários</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{% url 'listar_mensagens' %}"><i class="bi bi-envelope me-2"></i>Mensagens</a></li>
-              </ul>
             </li>
+
+            {% if request.user.is_authenticated %}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Gerenciar
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark">
+                  <li><a class="dropdown-item" href="{% url 'listar_servicos' %}"><i class="bi bi-scissors me-2"></i>Serviços</a></li>
+                  <li><a class="dropdown-item" href="{% url 'listar_barbeiros' %}"><i class="bi bi-person-badge me-2"></i>Barbeiros</a></li>
+                  <li><a class="dropdown-item" href="{% url 'listar_clientes' %}"><i class="bi bi-people me-2"></i>Clientes</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="{% url 'listar_agendamentos' %}"><i class="bi bi-calendar-check me-2"></i>Agendamentos</a></li>
+                  <li><a class="dropdown-item" href="{% url 'listar_horarios' %}"><i class="bi bi-clock me-2"></i>Horários</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="{% url 'listar_mensagens' %}"><i class="bi bi-envelope me-2"></i>Mensagens</a></li>
+                </ul>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'logout' %}">Sair</a>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'login' %}">Login</a>
+              </li>
+            {% endif %}
           </ul>
-          <div class="navbar-action d-flex gap-2">
-            <a href="{% url 'password_change' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-key me-1"></i>Alterar Senha</a>
-            <a href="{% url 'logout' %}" class="btn btn-gold-outline btn-sm"><i class="bi bi-box-arrow-right me-1"></i>Sair</a>
-          </div>
         </div>
-        {% else %}
-        <!-- PUBLIC NAVBAR -->
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'inicio' %}">
-          <span class="text-gold"><i class="bi bi-scissors"></i></span>
-          <span class="brand-font fw-bold text-uppercase">Delacruz <span class="text-gold">Barber</span></span>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarText">
-          <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link nav-link-custom active" href="{% url 'inicio' %}">Início</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link nav-link-custom" href="{% url 'inicio' %}#servicos">Serviços</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link nav-link-custom" href="{% url 'agendamento' %}">Agendamento</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link nav-link-custom" href="{% url 'sobre' %}">Sobre</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link nav-link-custom" href="{% url 'contato' %}">Contato</a>
-            </li>
-          </ul>
-          <div class="navbar-action">
-            <a href="{% url 'login' %}" class="btn btn-gold-outline"><i class="bi bi-lock me-1"></i>Área Restrita</a>
-          </div>
-        </div>
-        {% endif %}
       </div>
     </nav>
 
@@ -115,7 +114,7 @@
         <div class="row g-4">
           <!-- Foot Column 1: Logo & Slogan -->
           <div class="col-lg-4">
-            <a class="d-flex align-items-center gap-2 mb-3 text-decoration-none" href="{% url 'inicio' %}">
+            <a class="d-flex align-items-center gap-2 mb-3 text-decoration-none" href="{% url 'pagina_inicial' %}">
               <span class="text-gold"><i class="bi bi-scissors fs-4"></i></span>
               <span class="brand-font fw-bold text-uppercase text-light" style="font-size: 1.4rem;">Delacruz <span class="text-gold">Barber</span></span>
             </a>
@@ -134,8 +133,8 @@
           <div class="col-6 col-lg-2">
             <h5 class="text-beige text-uppercase fw-600 mb-3" style="font-size: 0.9rem; letter-spacing: 0.05em;">Mapa do Site</h5>
             <ul class="footer-link-list">
-              <li><a href="{% url 'inicio' %}" class="footer-link">Início</a></li>
-              <li><a href="{% url 'inicio' %}#servicos" class="footer-link">Serviços</a></li>
+              <li><a href="{% url 'pagina_inicial' %}" class="footer-link">Início</a></li>
+              <li><a href="{% url 'servicos' %}" class="footer-link">Serviços</a></li>
               <li><a href="{% url 'agendamento' %}" class="footer-link">Agendamento</a></li>
               <li><a href="{% url 'sobre' %}" class="footer-link">Sobre</a></li>
             </ul>

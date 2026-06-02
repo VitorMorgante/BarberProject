@@ -20,7 +20,7 @@ from .forms import (
 # PUBLIC VIEWS
 # ==============================================================================
 
-class PaginaInicialView(TemplateView):
+class IndexView(TemplateView):
     template_name = 'website/inicio.html'
 
     def get_context_data(self, **kwargs):
@@ -48,14 +48,14 @@ class ContatoView(CreateView):
     extra_context = {'titulo': 'Fale Conosco', 'botao': 'Enviar Mensagem'}
 
     def form_valid(self, form):
-        messages.success(self.request, 'Mensagem enviada com sucesso! Responderemos em breve.')
+        messages.success(self.request, 'Mensagem enviada com sucesso! A Delacruz Barber entrará em contato em breve.')
         return super().form_valid(form)
 
 
 class AgendamentoPublicoView(FormView):
     template_name = 'website/agendamento.html'
     form_class = AgendamentoPublicoForm
-    success_url = reverse_lazy('agendamento_sucesso')
+    success_url = reverse_lazy('agendamento')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -91,10 +91,29 @@ class AgendamentoPublicoView(FormView):
             data=form.cleaned_data['data'],
             horario=form.cleaned_data['horario'],
             observacoes=form.cleaned_data.get('observacoes', ''),
+            status='pendente',
         )
 
-        messages.success(self.request, 'Agendamento realizado com sucesso!')
+        messages.success(self.request, 'Agendamento realizado com sucesso! A Delacruz Barber aguarda você.')
         return redirect(self.success_url)
+
+
+class ServicosPublicView(ListView):
+    model = Servico
+    template_name = 'website/servicos.html'
+    context_object_name = 'servicos'
+
+    def get_queryset(self):
+        return Servico.objects.filter(ativo=True)
+
+
+class BarbeirosPublicView(ListView):
+    model = Barbeiro
+    template_name = 'website/barbeiros.html'
+    context_object_name = 'barbeiros'
+
+    def get_queryset(self):
+        return Barbeiro.objects.filter(ativo=True)
 
 
 class AgendamentoSucessoView(TemplateView):

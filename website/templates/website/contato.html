@@ -1,93 +1,107 @@
-{% extends 'website/modelo.html' %}
+{% extends "website/modelo.html" %}
 {% load crispy_forms_tags %}
 
 {% block titulo %}Contato{% endblock %}
 
 {% block conteudo %}
+<section class="py-5 bg-dark-custom">
+  <div class="container py-4 text-start">
+    <div class="text-center mb-5">
+      <span class="section-subtitle">Fale Conosco</span>
+      <h2 class="section-title-center text-uppercase fw-bold text-success">Contato</h2>
+      <p class="text-muted-custom max-width-600 mx-auto">
+        Tem dúvidas, sugestões ou críticas? Envie uma mensagem para nós ou nos visite.
+      </p>
+    </div>
 
-<section class="py-5 bg-card-custom">
-  <div class="container py-5 text-start">
-    <div class="row g-5">
-      
-      <!-- Contact Detail / Office Info Column -->
-      <div class="col-lg-5">
-        <span class="section-subtitle">Localização & Contato</span>
-        <h2 class="section-title">Estamos à sua Espera</h2>
-        
-        <div class="d-flex align-items-center gap-3 mb-4 mt-4">
-          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
-            <i class="bi bi-geo-alt-fill"></i>
-          </div>
-          <div>
-            <h6 class="mb-1 text-gold fw-bold">Endereço</h6>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Avenida das Américas, 1200, Centro - SP</p>
-          </div>
-        </div>
-
-        <div class="d-flex align-items-center gap-3 mb-4">
-          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
-            <i class="bi bi-clock-history"></i>
-          </div>
-          <div>
-            <h6 class="mb-1 text-gold fw-bold">Horário de Funcionamento</h6>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Segunda a Sexta: 08:00 às 18:00</p>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Sábado: 08:00 às 13:00 / Domingo: Fechado</p>
-          </div>
-        </div>
-
-        <div class="d-flex align-items-center gap-3 mb-4">
-          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
-            <i class="bi bi-whatsapp"></i>
-          </div>
-          <div>
-            <h6 class="mb-1 text-gold fw-bold">WhatsApp / Telefone</h6>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">(11) 99876-5432 / (11) 3456-7890</p>
-          </div>
-        </div>
-
-        <div class="d-flex align-items-center gap-3 mb-4">
-          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
-            <i class="bi bi-instagram"></i>
-          </div>
-          <div>
-            <h6 class="mb-1 text-gold fw-bold">Instagram</h6>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">@delacruzbarber_oficial</p>
-          </div>
-        </div>
-
-        <!-- Map Placeholder -->
-        <div class="mt-4 rounded overflow-hidden border border-secondary border-opacity-10 shadow" 
-             style="height: 200px; background-color: #0d0d0d; background-image: radial-gradient(circle, rgba(212,175,55,0.06) 1px, transparent 1px); background-size: 20px 20px;">
-          <div class="d-flex flex-column align-items-center justify-content-center h-100 p-3 text-center">
-            <i class="bi bi-map-fill text-gold fs-1 mb-2"></i>
-            <span class="text-beige fw-bold">Mapa Delacruz Barber</span>
-            <span class="text-muted-custom mt-1" style="font-size: 0.75rem;">Navegue até a Av. das Américas, 1200</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Contact Form Column -->
-      <div class="col-lg-7">
-        <div class="bg-dark-custom p-4 p-md-5 rounded border border-secondary border-opacity-10 shadow">
-          <h4 class="brand-font text-uppercase fw-bold text-beige mb-2">Envie uma Mensagem</h4>
-          <p class="text-muted-custom mb-4" style="font-size: 0.88rem;">
-            Tem alguma crítica, dúvida corporativa, elogio ou dúvida? Responderemos rapidamente em seu e-mail de contato.
-          </p>
-
-          <form method="post">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <div class="pt-2">
-              <button type="submit" class="btn btn-gold-solid w-100 py-3">
-                <i class="bi bi-send me-2"></i>Enviar Mensagem
-              </button>
+    <div class="row g-4">
+      <!-- Left Column: Information Cards -->
+      <div class="col-lg-5 d-flex flex-column gap-4">
+        <!-- Contact Information Card -->
+        <div class="card p-4">
+          <div class="card-body">
+            <h4 class="brand-font text-success mb-3"><i class="bi bi-chat-dots-fill me-2"></i>Informações de Contato</h4>
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <i class="bi bi-geo-alt-fill text-success fs-4"></i>
+              <div>
+                <h6 class="mb-0 text-white fw-bold">Endereço</h6>
+                <p class="mb-0 text-muted" style="font-size: 0.9rem;">Av. das Américas, 1200 - Centro - SP</p>
+              </div>
             </div>
-          </form>
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <i class="bi bi-whatsapp text-success fs-4"></i>
+              <div>
+                <h6 class="mb-0 text-white fw-bold">WhatsApp</h6>
+                <p class="mb-0 text-muted" style="font-size: 0.9rem;">(11) 99876-5432</p>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+              <i class="bi bi-envelope-fill text-success fs-4"></i>
+              <div>
+                <h6 class="mb-0 text-white fw-bold">E-mail</h6>
+                <p class="mb-0 text-muted" style="font-size: 0.9rem;">contato@delacruzbarber.com</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opening Hours Card -->
+        <div class="card p-4">
+          <div class="card-body">
+            <h4 class="brand-font text-success mb-3"><i class="bi bi-clock-fill me-2"></i>Horários de Funcionamento</h4>
+            <ul class="list-unstyled mb-0">
+              <li class="d-flex justify-content-between mb-2">
+                <span class="text-white">Segunda a Sexta</span>
+                <span class="text-muted">08:00 às 18:00</span>
+              </li>
+              <li class="d-flex justify-content-between mb-2">
+                <span class="text-white">Sábado</span>
+                <span class="text-muted">08:00 às 13:00</span>
+              </li>
+              <li class="d-flex justify-content-between">
+                <span class="text-white">Domingo</span>
+                <span class="text-danger">Fechado</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Optional Map Placeholder Card -->
+        <div class="card p-4">
+          <div class="card-body text-center">
+            <h5 class="brand-font text-white mb-3"><i class="bi bi-map-fill text-success me-2"></i>Localização no Mapa</h5>
+            <div class="rounded overflow-hidden border border-secondary border-opacity-10 d-flex flex-column align-items-center justify-content-center" 
+                 style="height: 180px; background-color: #0f172a; background-image: radial-gradient(circle, rgba(34,197,94,0.06) 1px, transparent 1px); background-size: 20px 20px;">
+              <i class="bi bi-geo-alt-fill text-success fs-2 mb-2"></i>
+              <span class="text-white fw-bold">Delacruz Barber</span>
+              <span class="text-muted mt-1" style="font-size: 0.78rem;">Av. das Américas, 1200</span>
+            </div>
+          </div>
         </div>
       </div>
 
+      <!-- Right Column: Contact Form Card -->
+      <div class="col-lg-7">
+        <div class="card p-4 p-md-5 h-100">
+          <div class="card-body">
+            <h4 class="brand-font text-success mb-2">Envie uma Mensagem</h4>
+            <p class="text-muted mb-4" style="font-size: 0.88rem;">
+              Deseja tirar alguma dúvida, enviar críticas ou sugestões? Preencha o formulário abaixo e entraremos em contato o mais rápido possível.
+            </p>
+
+            <form method="post" class="needs-validation">
+              {% csrf_token %}
+              {{ form|crispy }}
+              <div class="pt-3">
+                <button type="submit" class="btn btn-delacruz w-100 py-3">
+                  <i class="bi bi-send-fill me-2"></i>Enviar Mensagem
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
-
 {% endblock %}

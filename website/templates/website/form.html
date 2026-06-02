@@ -1,4 +1,4 @@
-{% extends 'website/modelo.html' %}
+{% extends "website/modelo.html" %}
 {% load crispy_forms_tags %}
 
 {% block titulo %}{{ titulo }}{% endblock %}
@@ -7,34 +7,26 @@
 <section class="py-5">
   <div class="container py-4">
     <div class="row justify-content-center">
-      <div class="col-lg-6 col-md-8">
-        <div class="bg-card-custom p-4 p-md-5 rounded border border-secondary border-opacity-10 shadow">
-          <h2 class="text-gold brand-font text-uppercase fw-bold mb-4">{{ titulo }}</h2>
-
+      <div class="col-lg-7">
+        <div class="card delacruz-card p-4">
+          <h2 class="section-title">{{ titulo }}</h2>
           <form method="post">
             {% csrf_token %}
-
-            {% if botao == 'Excluir' %}
-              <div class="alert alert-danger border-0 shadow-sm" style="background-color: rgba(220,53,69,0.15); color: #f5f5f5;">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <strong>Atenção!</strong> Tem certeza que deseja excluir <strong>{{ object }}</strong>?
-                <p class="mt-2 mb-0 text-muted-custom" style="font-size: 0.85rem;">Essa ação é irreversível e todos os dados relacionados serão permanentemente removidos.</p>
-              </div>
+            {% if botao == "Excluir" %}
+              <p class="text-center text-warning">
+                Tem certeza que deseja excluir este registro?
+              </p>
             {% else %}
               {{ form|crispy }}
             {% endif %}
-
-            <button type="submit" class="btn btn-gold-solid w-100 py-3 mt-3 text-uppercase fw-bold">
-              {% if botao == 'Excluir' %}
-                <i class="bi bi-trash me-2"></i>
-              {% elif botao == 'Salvar' %}
-                <i class="bi bi-check-lg me-2"></i>
-              {% endif %}
-              {{ botao }}
-            </button>
-            <a href="javascript:history.back()" class="btn btn-outline-secondary w-100 mt-2 py-2">
-              <i class="bi bi-arrow-left me-2"></i>Voltar
-            </a>
+            <div class="d-flex gap-2 mt-4">
+              <button type="submit" class="btn btn-delacruz">
+                {{ botao }}
+              </button>
+              <a href="javascript:history.back()" class="btn btn-outline-light">
+                Voltar
+              </a>
+            </div>
           </form>
         </div>
       </div>

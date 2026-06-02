@@ -27,7 +27,7 @@ class PublicViewsTests(TestCase):
         )
 
     def test_pagina_inicial_view(self):
-        response = self.client.get(reverse('inicio'))
+        response = self.client.get(reverse('pagina_inicial'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'website/inicio.html')
         self.assertContains(response, 'Corte Degradê')

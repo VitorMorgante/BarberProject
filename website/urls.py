@@ -17,11 +17,13 @@ urlpatterns = [
     ), name='password_change'),
 
     # Public
-    path('', views.PaginaInicialView.as_view(), name='inicio'),
+    path('', views.IndexView.as_view(), name='pagina_inicial'),
     path('sobre/', views.SobreView.as_view(), name='sobre'),
     path('contato/', views.ContatoView.as_view(), name='contato'),
     path('agendamento/', views.AgendamentoPublicoView.as_view(), name='agendamento'),
     path('agendamento/sucesso/', views.AgendamentoSucessoView.as_view(), name='agendamento_sucesso'),
+    path('servicos/', views.ServicosPublicView.as_view(), name='servicos'),
+    path('barbeiros/', views.BarbeirosPublicView.as_view(), name='barbeiros'),
 
     # API
     path('api/horarios-disponiveis/', views.horarios_disponiveis_api, name='api_horarios_disponiveis'),
