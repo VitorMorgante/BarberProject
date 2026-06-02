@@ -1,0 +1,191 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block titulo %}Delacruz Barber{% endblock %} | Barbearia Premium</title>
+    <!-- Google Fonts for Luxury Aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons via CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom CSS Stylesheet -->
+    <link rel="stylesheet" href="{% static 'website/css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body class="bg-dark-custom">
+
+    <!-- FIXED PREMIUM NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top" id="main-nav">
+      <div class="container">
+        {% if user.is_authenticated %}
+        <!-- AUTHENTICATED NAVBAR -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'dashboard' %}">
+          <span class="text-gold"><i class="bi bi-scissors"></i></span>
+          <span class="brand-font fw-bold text-uppercase">Delacruz <span class="text-gold">Barber</span></span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarText">
+          <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link nav-link-custom" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link nav-link-custom dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-gear me-1"></i>Gerenciar
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark">
+                <li><a class="dropdown-item" href="{% url 'listar_servicos' %}"><i class="bi bi-scissors me-2"></i>Serviços</a></li>
+                <li><a class="dropdown-item" href="{% url 'listar_barbeiros' %}"><i class="bi bi-person-badge me-2"></i>Barbeiros</a></li>
+                <li><a class="dropdown-item" href="{% url 'listar_clientes' %}"><i class="bi bi-people me-2"></i>Clientes</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'listar_agendamentos' %}"><i class="bi bi-calendar-check me-2"></i>Agendamentos</a></li>
+                <li><a class="dropdown-item" href="{% url 'listar_horarios' %}"><i class="bi bi-clock me-2"></i>Horários</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'listar_mensagens' %}"><i class="bi bi-envelope me-2"></i>Mensagens</a></li>
+              </ul>
+            </li>
+          </ul>
+          <div class="navbar-action d-flex gap-2">
+            <a href="{% url 'password_change' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-key me-1"></i>Alterar Senha</a>
+            <a href="{% url 'logout' %}" class="btn btn-gold-outline btn-sm"><i class="bi bi-box-arrow-right me-1"></i>Sair</a>
+          </div>
+        </div>
+        {% else %}
+        <!-- PUBLIC NAVBAR -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'inicio' %}">
+          <span class="text-gold"><i class="bi bi-scissors"></i></span>
+          <span class="brand-font fw-bold text-uppercase">Delacruz <span class="text-gold">Barber</span></span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarText">
+          <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link nav-link-custom active" href="{% url 'inicio' %}">Início</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link nav-link-custom" href="{% url 'inicio' %}#servicos">Serviços</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link nav-link-custom" href="{% url 'agendamento' %}">Agendamento</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link nav-link-custom" href="{% url 'sobre' %}">Sobre</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link nav-link-custom" href="{% url 'contato' %}">Contato</a>
+            </li>
+          </ul>
+          <div class="navbar-action">
+            <a href="{% url 'login' %}" class="btn btn-gold-outline"><i class="bi bi-lock me-1"></i>Área Restrita</a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </nav>
+
+    <!-- DJANGO MESSAGES -->
+    {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+      <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %} alert-dismissible fade show border-0 shadow" role="alert"
+           style="background-color: {% if message.tags == 'error' %}rgba(220,53,69,0.15){% elif message.tags == 'success' %}rgba(25,135,84,0.15){% elif message.tags == 'warning' %}rgba(255,193,7,0.15){% else %}rgba(13,202,240,0.15){% endif %}; color: #f5f5f5; border-left: 4px solid {% if message.tags == 'error' %}#dc3545{% elif message.tags == 'success' %}#198754{% elif message.tags == 'warning' %}#ffc107{% else %}#0dcaf0{% endif %} !important;">
+        <i class="bi {% if message.tags == 'error' %}bi-x-circle-fill text-danger{% elif message.tags == 'success' %}bi-check-circle-fill text-success{% elif message.tags == 'warning' %}bi-exclamation-triangle-fill text-warning{% else %}bi-info-circle-fill text-info{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Fechar"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- MAIN CONTENT -->
+    {% block conteudo %}{% endblock %}
+
+    <!-- FOOTER SECTION -->
+    <footer class="footer-bar footer-text text-start">
+      <div class="container pb-4 border-bottom border-secondary border-opacity-10">
+        <div class="row g-4">
+          <!-- Foot Column 1: Logo & Slogan -->
+          <div class="col-lg-4">
+            <a class="d-flex align-items-center gap-2 mb-3 text-decoration-none" href="{% url 'inicio' %}">
+              <span class="text-gold"><i class="bi bi-scissors fs-4"></i></span>
+              <span class="brand-font fw-bold text-uppercase text-light" style="font-size: 1.4rem;">Delacruz <span class="text-gold">Barber</span></span>
+            </a>
+            <p class="text-muted-custom mb-3" style="font-size: 0.88rem; max-width: 320px;">
+              Corte preciso. Barba alinhada. Presença renovada. Mais do que uma barbearia: um espaço dedicado ao cuidado da sua imagem pessoal.
+            </p>
+            <div class="d-flex gap-2">
+              <a href="#" class="footer-social-pill" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+              <a href="https://instagram.com/delacruzbarber_oficial" target="_blank" class="footer-social-pill" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+              <a href="#" class="footer-social-pill" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+              <a href="https://wa.me/5511998765432" target="_blank" class="footer-social-pill" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+            </div>
+          </div>
+
+          <!-- Foot Column 2: Quick Links Map -->
+          <div class="col-6 col-lg-2">
+            <h5 class="text-beige text-uppercase fw-600 mb-3" style="font-size: 0.9rem; letter-spacing: 0.05em;">Mapa do Site</h5>
+            <ul class="footer-link-list">
+              <li><a href="{% url 'inicio' %}" class="footer-link">Início</a></li>
+              <li><a href="{% url 'inicio' %}#servicos" class="footer-link">Serviços</a></li>
+              <li><a href="{% url 'agendamento' %}" class="footer-link">Agendamento</a></li>
+              <li><a href="{% url 'sobre' %}" class="footer-link">Sobre</a></li>
+            </ul>
+          </div>
+
+          <!-- Foot Column 3: Secondary Map links -->
+          <div class="col-6 col-lg-2">
+            <h5 class="text-beige text-uppercase fw-600 mb-3" style="font-size: 0.9rem; letter-spacing: 0.05em;">Institucional</h5>
+            <ul class="footer-link-list">
+              <li><a href="{% url 'contato' %}" class="footer-link">Fale Conosco</a></li>
+              <li><a href="{% url 'sobre' %}" class="footer-link">Sobre Nós</a></li>
+              {% if user.is_authenticated %}
+              <li><a href="{% url 'dashboard' %}" class="footer-link">Dashboard</a></li>
+              {% else %}
+              <li><a href="{% url 'login' %}" class="footer-link">Área Restrita</a></li>
+              {% endif %}
+            </ul>
+          </div>
+
+          <!-- Foot Column 4: Contact details recap -->
+          <div class="col-lg-4">
+            <h5 class="text-beige text-uppercase fw-600 mb-3" style="font-size: 0.9rem; letter-spacing: 0.05em;">Atendimento Rápido</h5>
+            <p class="text-muted-custom mb-1" style="font-size: 0.88rem;"><i class="bi bi-geo-alt-fill text-gold me-2"></i> Av. das Américas, 1200 - Centro - SP</p>
+            <p class="text-muted-custom mb-1" style="font-size: 0.88rem;"><i class="bi bi-whatsapp text-gold me-2"></i> (11) 99876-5432</p>
+            <p class="text-muted-custom mb-0" style="font-size: 0.88rem;"><i class="bi bi-telephone text-gold me-2"></i> (11) 3456-7890</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Bottom bar -->
+      <div class="container pt-4">
+        <div class="row align-items-center">
+          <div class="col-md-6 text-center text-md-start">
+            <p class="copyright-text">
+              &copy; 2026 Delacruz Barber. Todos os direitos reservados.
+            </p>
+          </div>
+          <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+            <p class="copyright-text" style="font-size: 0.72rem;">
+              Mais do que uma barbearia: um espaço para cuidar da sua imagem.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Bootstrap 5 Bundle JS from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Custom Interactive JS -->
+    <script src="{% static 'website/js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

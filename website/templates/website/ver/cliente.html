@@ -1,0 +1,113 @@
+{% extends 'website/modelo.html' %}
+
+{% block titulo %}Detalhes do Cliente{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container text-start">
+    <div class="row g-4 justify-content-center">
+      <!-- Client info card -->
+      <div class="col-lg-5">
+        <div class="detail-card shadow h-100">
+          <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary border-opacity-10">
+            <div>
+              <span class="text-gold text-uppercase fw-600 tracking-wider" style="font-size: 0.8rem;">Ficha Cadastral</span>
+              <h2 class="brand-font text-uppercase fw-bold text-light mb-0">{{ cliente.nome }}</h2>
+            </div>
+            <div class="fs-1 text-gold"><i class="bi bi-person-lines-fill"></i></div>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Nome Completo:</span>
+            <span class="detail-value fw-bold">{{ cliente.nome }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">WhatsApp / Telefone:</span>
+            <span class="detail-value text-gold fw-bold"><i class="bi bi-whatsapp me-2 text-success"></i>{{ cliente.telefone }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Endereço de E-mail:</span>
+            <span class="detail-value">{{ cliente.email }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Observações de Preferência:</span>
+            <span class="detail-value text-start" style="max-width: 60%;">{{ cliente.observacoes|default:"Nenhuma observação registrada." }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Cadastrado em:</span>
+            <span class="detail-value">{{ cliente.cadastrado_em|date:"d/m/Y H:i" }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Última atualização:</span>
+            <span class="detail-value">{{ cliente.atualizado_em|date:"d/m/Y H:i" }}</span>
+          </div>
+
+          <div class="d-flex gap-2 mt-5">
+            <a href="{% url 'editar_cliente' cliente.pk %}" class="btn btn-gold-solid px-3 py-2 text-uppercase fw-bold btn-sm">
+              <i class="bi bi-pencil me-1"></i>Editar
+            </a>
+            <a href="{% url 'excluir_cliente' cliente.pk %}" class="btn btn-outline-danger px-3 py-2 text-uppercase fw-bold btn-sm">
+              <i class="bi bi-trash me-1"></i>Excluir
+            </a>
+            <a href="{% url 'listar_clientes' %}" class="btn btn-outline-secondary ms-auto px-3 py-2 btn-sm">
+              <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Client appointments list card -->
+      <div class="col-lg-7">
+        <div class="bg-card-custom p-4 rounded border border-secondary border-opacity-10 shadow h-100">
+          <h4 class="brand-font text-uppercase fw-bold text-gold mb-4 pb-2 border-bottom border-secondary border-opacity-10">
+            Histórico de Agendamentos
+          </h4>
+
+          <div class="table-responsive">
+            <table class="table table-dark-custom align-middle">
+              <thead>
+                <tr>
+                  <th>Serviço</th>
+                  <th>Barbeiro</th>
+                  <th>Data/Hora</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for agendamento in cliente.agendamentos.all %}
+                <tr>
+                  <td>
+                    <span class="fw-bold d-block">{{ agendamento.servico.nome }}</span>
+                    <small class="text-gold">R$ {{ agendamento.servico.preco|floatformat:2 }}</small>
+                  </td>
+                  <td>{{ agendamento.barbeiro.nome|truncatewords:1 }}</td>
+                  <td>
+                    <span class="d-block">{{ agendamento.data|date:"d/m/Y" }}</span>
+                    <small class="text-gold">{{ agendamento.horario|time:"H:i" }}</small>
+                  </td>
+                  <td>
+                    <span class="badge-status-{{ agendamento.status }}">{{ agendamento.get_status_display }}</span>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4" class="text-center py-5 text-muted-custom">
+                    <i class="bi bi-calendar-x fs-1 mb-2 d-block text-muted" style="opacity: 0.3;"></i>
+                    Nenhum agendamento encontrado para este cliente.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'website/modelo.html' %}
+
+{% block titulo %}Agendamentos{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container text-start">
+    <div class="page-header">
+      <div>
+        <h2 class="brand-font text-uppercase fw-bold text-light mb-1">
+          Agendamentos <span class="badge-count">{{ agendamentos.count }}</span>
+        </h2>
+        <p class="text-muted-custom mb-0">Gerencie a agenda e os horários reservados pelos clientes.</p>
+      </div>
+      <a href="{% url 'cadastrar_agendamento' %}" class="btn btn-gold-solid text-uppercase fw-bold">
+        <i class="bi bi-plus-lg me-1"></i>Novo Agendamento
+      </a>
+    </div>
+
+    <div class="bg-card-custom p-4 rounded border border-secondary border-opacity-10 shadow">
+      <div class="table-responsive">
+        <table class="table table-dark-custom align-middle">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Serviço</th>
+              <th>Barbeiro</th>
+              <th>Data/Hora</th>
+              <th>Status</th>
+              <th class="text-center" style="width: 150px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for agendamento in agendamentos %}
+            <tr>
+              <td>
+                <span class="fw-bold d-block">{{ agendamento.cliente.nome }}</span>
+                <small class="text-muted"><i class="bi bi-whatsapp me-1"></i>{{ agendamento.cliente.telefone }}</small>
+              </td>
+              <td>
+                <span class="d-block">{{ agendamento.servico.nome }}</span>
+                <small class="text-gold">R$ {{ agendamento.servico.preco|floatformat:2 }}</small>
+              </td>
+              <td>{{ agendamento.barbeiro.nome|truncatewords:1 }}</td>
+              <td>
+                <span class="fw-bold d-block">{{ agendamento.data|date:"d/m/Y" }}</span>
+                <small class="text-gold"><i class="bi bi-clock me-1"></i>{{ agendamento.horario|time:"H:i" }}</small>
+              </td>
+              <td>
+                <span class="badge-status-{{ agendamento.status }}">{{ agendamento.get_status_display }}</span>
+              </td>
+              <td class="text-center">
+                <div class="d-flex justify-content-center gap-1">
+                  <a href="{% url 'ver_agendamento' agendamento.pk %}" class="btn btn-action btn-outline-secondary" title="Visualizar"><i class="bi bi-eye"></i></a>
+                  <a href="{% url 'editar_agendamento' agendamento.pk %}" class="btn btn-action btn-gold-outline" title="Editar"><i class="bi bi-pencil"></i></a>
+                  <a href="{% url 'excluir_agendamento' agendamento.pk %}" class="btn btn-action btn-outline-danger" title="Excluir"><i class="bi bi-trash"></i></a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-5 text-muted-custom">
+                <i class="bi bi-calendar-x fs-1 mb-2 d-block text-muted" style="opacity: 0.3;"></i>
+                Nenhum agendamento cadastrado no momento.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

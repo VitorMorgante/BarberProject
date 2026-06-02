@@ -1,0 +1,136 @@
+{% extends 'website/modelo.html' %}
+{% load static %}
+
+{% block titulo %}Sobre{% endblock %}
+
+{% block conteudo %}
+
+<!-- ABOUT HERO -->
+<section class="py-5 bg-card-custom">
+  <div class="container py-5 text-start">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="section-subtitle">Nossa Filosofia</span>
+        <h2 class="section-title">Sobre a Delacruz Barber</h2>
+        <p class="text-primary mb-4" style="font-size: 1.15rem; font-weight: 500; font-family: var(--font-serif); line-height: 1.7;">
+          "Na Delacruz Barber, cada corte é pensado para valorizar sua identidade. Nosso atendimento une técnica, cuidado e estilo em um ambiente moderno, confortável e profissional."
+        </p>
+        <p class="text-muted-custom mb-3">
+          Fundada sob a premissa de que a barbearia clássica é mais do que apenas corte de cabelo — é um ritual de requinte, autoconfiança e aprimoramento da autoimagem — a Delacruz é focada no público exigente da atualidade. 
+        </p>
+        <p class="text-muted-custom mb-4">
+          Cada cliente é atendido individualmente de forma exclusiva, garantindo escuta atenta, observação de simetria do rosto e uso exclusivo de produtos testados de altíssima reputação. É um espaço de descanso mental, respeito e exaltação do estilo.
+        </p>
+        <div class="d-flex align-items-center gap-3">
+          <div class="border-start border-3 border-warning ps-3">
+            <h5 class="mb-1 text-gold">Daniel Delacruz</h5>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.85rem;">Fundador & Barbeiro Chefe</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="row g-3">
+          <div class="col-6">
+            <img src="https://images.unsplash.com/photo-1599351431247-f509408793ca?auto=format&fit=crop&q=80&w=600" alt="Corte na tesoura" class="img-fluid rounded shadow border border-secondary border-opacity-10 mb-3">
+            <div class="bg-dark-custom p-4 rounded text-center border border-secondary border-opacity-10">
+              <h3 class="text-gold fw-bold mb-1">100%</h3>
+              <p class="mb-0 text-muted-custom" style="font-size: 0.8rem;">Estéril e Seguro</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="bg-dark-custom p-4 rounded text-center border border-secondary border-opacity-10 mb-3">
+              <h3 class="text-gold fw-bold mb-1">4.9</h3>
+              <p class="mb-0 text-muted-custom" style="font-size: 0.8rem;">Avaliação Geral</p>
+            </div>
+            <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600" alt="Modelando Barba" class="img-fluid rounded shadow border border-secondary border-opacity-10">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section class="py-5 bg-dark-custom">
+  <div class="container py-4">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800" alt="Ambiente Delacruz Barber" class="img-fluid rounded shadow-lg border border-secondary border-opacity-10">
+      </div>
+      <div class="col-lg-6 text-start">
+        <span class="section-subtitle">A Diferença</span>
+        <h2 class="section-title">Tradição & Modernidade</h2>
+        <p class="text-muted-custom mb-4">
+          Diferente de outras barbearias convencionais, na <strong>Delacruz Barber</strong> nós tratamos o seu visual como uma expressão integral da sua autoconfiança. Cuidar de si é um compromisso, e estamos aqui para torná-lo um momento memorável.
+        </p>
+        <div class="feature-row">
+          <div class="feature-number">01</div>
+          <div class="feature-text">
+            <h5>Compromisso com Higiene</h5>
+            <p>Nossas ferramentas são sterilizadas de forma clínica a cada uso. Lâminas descartáveis de padrão cirúrgico de uso estrito por cliente.</p>
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-number">02</div>
+          <div class="feature-text">
+            <h5>Produtos de Alta Gama</h5>
+            <p>Nós utilizamos cremes, pomadas, tônicos e óleos nacionais e importados de altíssimo padrão com selos dermatológicos.</p>
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-number">03</div>
+          <div class="feature-text">
+            <h5>Espaço de Conexão</h5>
+            <p>Nossa bancada e cadeiras de couro vintage oferecem o máximo de conforto para você trocar ideias, relaxar e renovar sua imagem.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUR BARBERS -->
+<section class="py-5 bg-card-custom">
+  <div class="container py-5">
+    <div class="text-center mb-5">
+      <span class="section-subtitle">Profissionais Altamente Qualificados</span>
+      <h2 class="section-title-center">Nossos Barbeiros</h2>
+      <p class="text-muted-custom max-width-600 mx-auto">
+        A Delacruz Barber conta com profissionais referências do estilo masculino.
+      </p>
+    </div>
+
+    <div class="row justify-content-center g-4">
+      {% for barbeiro in barbeiros %}
+      <div class="col-md-6 col-lg-4">
+        <div class="barber-card text-start">
+          <div class="barber-img-container">
+            {% if barbeiro.imagem_url %}
+            <img src="{{ barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="barber-img">
+            {% else %}
+            <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=600" alt="{{ barbeiro.nome }}" class="barber-img">
+            {% endif %}
+            <div class="barber-overlay"></div>
+            <div class="barber-badge-{% if barbeiro.cargo == 'Barbeiro Chefe' %}chef{% else %}standard{% endif %}">{{ barbeiro.cargo }}</div>
+          </div>
+          <div class="barber-info">
+            <h3 class="barber-name">{{ barbeiro.nome }}</h3>
+            <div class="barber-role">{{ barbeiro.cargo }}</div>
+            <div>
+              <span class="barber-specialty-badge">{{ barbeiro.especialidade }}</span>
+            </div>
+            <p class="barber-description">{{ barbeiro.descricao_curta }}</p>
+            <a href="{% url 'agendamento' %}?barbeiro={{ barbeiro.pk }}" class="btn btn-gold-solid w-100">Agendar com {{ barbeiro.nome|truncatewords:1 }}</a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center">
+        <p class="text-muted-custom">Nenhum barbeiro cadastrado no momento.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

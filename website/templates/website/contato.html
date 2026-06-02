@@ -1,0 +1,93 @@
+{% extends 'website/modelo.html' %}
+{% load crispy_forms_tags %}
+
+{% block titulo %}Contato{% endblock %}
+
+{% block conteudo %}
+
+<section class="py-5 bg-card-custom">
+  <div class="container py-5 text-start">
+    <div class="row g-5">
+      
+      <!-- Contact Detail / Office Info Column -->
+      <div class="col-lg-5">
+        <span class="section-subtitle">Localização & Contato</span>
+        <h2 class="section-title">Estamos à sua Espera</h2>
+        
+        <div class="d-flex align-items-center gap-3 mb-4 mt-4">
+          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
+            <i class="bi bi-geo-alt-fill"></i>
+          </div>
+          <div>
+            <h6 class="mb-1 text-gold fw-bold">Endereço</h6>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Avenida das Américas, 1200, Centro - SP</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <div>
+            <h6 class="mb-1 text-gold fw-bold">Horário de Funcionamento</h6>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Segunda a Sexta: 08:00 às 18:00</p>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Sábado: 08:00 às 13:00 / Domingo: Fechado</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
+            <i class="bi bi-whatsapp"></i>
+          </div>
+          <div>
+            <h6 class="mb-1 text-gold fw-bold">WhatsApp / Telefone</h6>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">(11) 99876-5432 / (11) 3456-7890</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
+            <i class="bi bi-instagram"></i>
+          </div>
+          <div>
+            <h6 class="mb-1 text-gold fw-bold">Instagram</h6>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">@delacruzbarber_oficial</p>
+          </div>
+        </div>
+
+        <!-- Map Placeholder -->
+        <div class="mt-4 rounded overflow-hidden border border-secondary border-opacity-10 shadow" 
+             style="height: 200px; background-color: #0d0d0d; background-image: radial-gradient(circle, rgba(212,175,55,0.06) 1px, transparent 1px); background-size: 20px 20px;">
+          <div class="d-flex flex-column align-items-center justify-content-center h-100 p-3 text-center">
+            <i class="bi bi-map-fill text-gold fs-1 mb-2"></i>
+            <span class="text-beige fw-bold">Mapa Delacruz Barber</span>
+            <span class="text-muted-custom mt-1" style="font-size: 0.75rem;">Navegue até a Av. das Américas, 1200</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Form Column -->
+      <div class="col-lg-7">
+        <div class="bg-dark-custom p-4 p-md-5 rounded border border-secondary border-opacity-10 shadow">
+          <h4 class="brand-font text-uppercase fw-bold text-beige mb-2">Envie uma Mensagem</h4>
+          <p class="text-muted-custom mb-4" style="font-size: 0.88rem;">
+            Tem alguma crítica, dúvida corporativa, elogio ou dúvida? Responderemos rapidamente em seu e-mail de contato.
+          </p>
+
+          <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="pt-2">
+              <button type="submit" class="btn btn-gold-solid w-100 py-3">
+                <i class="bi bi-send me-2"></i>Enviar Mensagem
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}

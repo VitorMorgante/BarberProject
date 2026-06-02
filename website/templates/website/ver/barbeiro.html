@@ -1,0 +1,84 @@
+{% extends 'website/modelo.html' %}
+
+{% block titulo %}Detalhes do Barbeiro{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container text-start">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="detail-card shadow">
+          <div class="d-flex align-items-center gap-4 mb-4 pb-3 border-bottom border-secondary border-opacity-10 flex-wrap">
+            {% if barbeiro.imagem_url %}
+            <img src="{{ barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="rounded-circle border border-warning" style="width: 90px; height: 90px; object-fit: cover;">
+            {% else %}
+            <div class="rounded-circle bg-secondary bg-opacity-20 d-flex align-items-center justify-content-center border border-secondary border-opacity-30" style="width: 90px; height: 90px; color: var(--text-muted);">
+              <i class="bi bi-person-fill fs-1"></i>
+            </div>
+            {% endif %}
+            <div>
+              <span class="text-gold text-uppercase fw-600 tracking-wider" style="font-size: 0.8rem;">Detalhes do Barbeiro</span>
+              <h2 class="brand-font text-uppercase fw-bold text-light mb-1">{{ barbeiro.nome }}</h2>
+              <span class="badge bg-gold-opacity-10 text-gold border border-gold-opacity-20">{{ barbeiro.cargo }}</span>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Cargo:</span>
+            <span class="detail-value fw-bold text-gold">{{ barbeiro.cargo }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Especialidade:</span>
+            <span class="detail-value">{{ barbeiro.especialidade }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Apresentação Curta:</span>
+            <span class="detail-value text-start" style="max-width: 70%;">{{ barbeiro.descricao_curta|default:"-" }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">URL da Imagem:</span>
+            <span class="detail-value text-truncate" style="max-width: 60%;">{% if barbeiro.imagem_url %}<a href="{{ barbeiro.imagem_url }}" target="_blank" class="text-gold-hover">{{ barbeiro.imagem_url }}</a>{% else %}-{% endif %}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span class="detail-value">
+              {% if barbeiro.ativo %}
+              <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Ativo</span>
+              {% else %}
+              <span class="text-danger fw-bold"><i class="bi bi-x-circle-fill me-1"></i>Inativo</span>
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Cadastrado em:</span>
+            <span class="detail-value">{{ barbeiro.cadastrado_em|date:"d/m/Y H:i" }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Última atualização:</span>
+            <span class="detail-value">{{ barbeiro.atualizado_em|date:"d/m/Y H:i" }}</span>
+          </div>
+
+          <div class="d-flex gap-2 mt-5">
+            <a href="{% url 'editar_barbeiro' barbeiro.pk %}" class="btn btn-gold-solid px-4 py-2 text-uppercase fw-bold">
+              <i class="bi bi-pencil me-1"></i>Editar
+            </a>
+            <a href="{% url 'excluir_barbeiro' barbeiro.pk %}" class="btn btn-outline-danger px-4 py-2 text-uppercase fw-bold">
+              <i class="bi bi-trash me-1"></i>Excluir
+            </a>
+            <a href="{% url 'listar_barbeiros' %}" class="btn btn-outline-secondary ms-auto px-4 py-2">
+              <i class="bi bi-arrow-left me-1"></i>Voltar para a Lista
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
