@@ -1,0 +1,6 @@
+{
+  "name": "Delacruz Barber",
+  "description": "Premium frontend website for Delacruz Barber, a modern and elegant barbershop in Brazil.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
