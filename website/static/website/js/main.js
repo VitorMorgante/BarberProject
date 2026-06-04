@@ -416,4 +416,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Launch prepopulate check
     initPreselections();
   }
+
+  // 3. Phone Input Mask (XX) XXXXX-XXXX
+  const applyPhoneMask = (input) => {
+    if (!input) return;
+    
+    const formatPhone = (val) => {
+      let value = val.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      if (value.length > 10) {
+        return `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+      } else if (value.length > 6) {
+        return `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
+      } else if (value.length > 2) {
+        return `(${value.slice(0, 2)}) ${value.slice(2)}`;
+      } else if (value.length > 0) {
+        return `(${value}`;
+      }
+      return '';
+    };
+
+    // Format initial value if any
+    if (input.value) {
+      input.value = formatPhone(input.value);
+    }
+
+    input.addEventListener('input', (e) => {
+      e.target.value = formatPhone(e.target.value);
+    });
+  };
+
+  document.querySelectorAll('input[type="tel"], input[name="telefone"], #id_telefone').forEach(applyPhoneMask);
 });

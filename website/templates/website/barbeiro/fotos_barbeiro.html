@@ -1,0 +1,53 @@
+{% extends "website/modelo.html" %}
+
+{% block titulo %}Minhas Fotos de Trabalho{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container py-4 text-start">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="section-title text-gold mb-0"><i class="bi bi-images me-2"></i> Minhas Fotos Cadastradas</h2>
+        <p class="text-muted-custom mb-0">Gerencie as fotos dos seus trabalhos publicadas na galeria.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'cadastrar_foto_barbeiro' %}" class="btn btn-gold-solid"><i class="bi bi-upload me-1"></i> Nova Foto</a>
+        <a href="{% url 'area_barbeiro' %}" class="btn btn-outline-light"><i class="bi bi-arrow-left me-1"></i> Voltar</a>
+      </div>
+    </div>
+    
+    <div class="row g-4">
+      {% for f in fotos %}
+        <div class="col-md-4 col-lg-3">
+          <div class="card bg-dark border-secondary border-opacity-10 h-100 overflow-hidden text-start">
+            <img src="{{ f.imagem.url }}" alt="{{ f.titulo }}" class="card-img-top" style="height: 180px; object-fit: cover;">
+            <div class="p-3">
+              <h5 class="fw-bold text-white text-truncate mb-1">{{ f.titulo }}</h5>
+              <span class="badge bg-gold-badge text-dark mb-2">{{ f.categoria }}</span>
+              <p class="text-muted-custom text-truncate mb-3" style="font-size: 0.82rem;">{{ f.descricao|default:"Sem descrição." }}</p>
+              <div class="d-flex justify-content-between align-items-center border-top border-secondary border-opacity-10 pt-2">
+                <span class="text-muted" style="font-size: 0.72rem;">
+                  {% if f.publicado %}
+                    <i class="bi bi-eye-fill text-success me-1"></i> Visível
+                  {% else %}
+                    <i class="bi bi-eye-slash-fill text-muted me-1"></i> Privado
+                  {% endif %}
+                </span>
+                <div class="d-flex gap-1">
+                  <a href="{% url 'editar_foto_barbeiro' f.pk %}" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.75rem;">Editar</a>
+                  <a href="{% url 'excluir_foto_barbeiro' f.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.75rem;">Excluir</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12 text-center text-muted py-5">
+          <i class="bi bi-image-fill fs-1 text-muted opacity-25 mb-3 d-block"></i>
+          Nenhuma foto cadastrada por você ainda.
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

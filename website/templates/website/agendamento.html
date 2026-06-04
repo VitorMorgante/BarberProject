@@ -15,6 +15,17 @@
       </p>
     </div>
 
+    {% if not request.user.is_authenticated %}
+    <div class="row justify-content-center mb-4 text-start">
+      <div class="col-lg-12">
+        <div class="alert alert-info border-0 shadow animate-fade-in" style="background-color: rgba(13,202,240,0.15); color: #f5f5f5; border-left: 4px solid #0dcaf0 !important;">
+          <i class="bi bi-info-circle-fill text-info me-2"></i>
+          <strong>Dica:</strong> <a href="{% url 'login' %}" class="text-gold fw-bold text-decoration-none">Faça login</a> ou <a href="{% url 'cadastro' %}" class="text-gold fw-bold text-decoration-none">cadastre-se</a> para salvar seus dados, acompanhar seus agendamentos e ver seu histórico completo!
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
     {% if form.errors %}
     <div class="row justify-content-center mb-4">
       <div class="col-lg-12">

@@ -1,8 +1,31 @@
+# Python / Django
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+.env
+
+# Local media uploads
+media/
+
+# Node / React / Vite leftovers
 node_modules/
-build/
-dist/
-coverage/
+src/
+assets/
+index.html
+package.json
+package-lock.json
+tsconfig.json
+vite.config.ts
+metadata.json
+skills-lock.json
+
+# Antigravity / local agent files
+.agents/
+
+# System files
 .DS_Store
-*.log
-.env*
-!.env.example
+Thumbs.db

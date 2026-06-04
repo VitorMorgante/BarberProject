@@ -19,6 +19,17 @@
             {% else %}
               {{ form|crispy }}
             {% endif %}
+            {% if titulo == "Login" %}
+            <div class="auth-actions">
+                <button type="submit" class="btn btn-delacruz">
+                    Entrar
+                </button>
+
+                <a href="{% url 'pagina_inicial' %}" class="btn btn-delacruz-outline">
+                    Voltar
+                </a>
+            </div>
+            {% else %}
             <div class="d-flex gap-2 mt-4">
               <button type="submit" class="btn btn-delacruz">
                 {{ botao }}
@@ -27,6 +38,7 @@
                 Voltar
               </a>
             </div>
+            {% endif %}
           </form>
         </div>
       </div>

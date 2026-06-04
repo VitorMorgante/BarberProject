@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import Servico, Barbeiro, Cliente, HorarioDisponivel, Agendamento, MensagemContato
+from .models import (
+    Servico, Barbeiro, Cliente, HorarioDisponivel, Agendamento,
+    MensagemContato, PerfilUsuario, Feedback, FotoTrabalho
+)
 
 
 @admin.register(Servico)
@@ -38,3 +41,22 @@ class AgendamentoAdmin(admin.ModelAdmin):
 class MensagemContatoAdmin(admin.ModelAdmin):
     list_display = ['nome', 'email', 'telefone', 'lida', 'enviada_em']
     list_filter = ['lida']
+
+
+@admin.register(PerfilUsuario)
+class PerfilUsuarioAdmin(admin.ModelAdmin):
+    list_display = ['usuario', 'tipo_usuario', 'telefone', 'criado_em']
+    list_filter = ['tipo_usuario']
+
+
+@admin.register(Feedback)
+class FeedbackAdmin(admin.ModelAdmin):
+    list_display = ['cliente', 'barbeiro', 'nota', 'criado_em', 'aprovado']
+    list_filter = ['nota', 'aprovado', 'barbeiro']
+
+
+@admin.register(FotoTrabalho)
+class FotoTrabalhoAdmin(admin.ModelAdmin):
+    list_display = ['titulo', 'barbeiro', 'categoria', 'publicado', 'criado_em']
+    list_filter = ['categoria', 'publicado', 'barbeiro']
+

@@ -1,0 +1,68 @@
+{% extends "website/modelo.html" %}
+
+{% block titulo %}Galeria{% endblock %}
+
+{% block conteudo %}
+<section class="py-5 bg-card-custom">
+  <div class="container py-5 text-start">
+    <div class="text-center mb-5">
+      <span class="section-subtitle">Portfólio de Estilo</span>
+      <h2 class="section-title-center text-uppercase fw-bold text-gold">Nossos cortes e barbados</h2>
+      <p class="text-muted-custom max-width-600 mx-auto">
+        Inspire-se com os trabalhos reais realizados pela equipe da Delacruz Barber.
+      </p>
+    </div>
+
+    <!-- Category Filter Controls -->
+    <div class="d-flex justify-content-center flex-wrap gap-2 mb-5">
+      <button class="gallery-filter-btn active btn btn-outline-gold px-4 py-2" data-filter="all">Todos</button>
+      <button class="gallery-filter-btn btn btn-outline-gold px-4 py-2" data-filter="Corte">Cortes</button>
+      <button class="gallery-filter-btn btn btn-outline-gold px-4 py-2" data-filter="Barba">Barba</button>
+      <button class="gallery-filter-btn btn btn-outline-gold px-4 py-2" data-filter="Corte + Barba">Combos</button>
+      <button class="gallery-filter-btn btn btn-outline-gold px-4 py-2" data-filter="Infantil">Infantil</button>
+    </div>
+
+    <!-- Responsive Grid of Cards -->
+    <div class="row g-4 justify-content-center" id="gallery-grid">
+      {% for f in fotos %}
+        <div class="col-md-6 col-lg-4 gallery-col" data-category="{{ f.categoria }}">
+          <div class="card bg-dark border-secondary border-opacity-10 h-100 overflow-hidden shadow-lg portfolio-card text-start">
+            <div class="portfolio-img-wrapper" style="position: relative; overflow: hidden; height: 300px;">
+              <img src="{{ f.imagem.url }}" alt="{{ f.titulo }}" class="img-fluid w-100 h-100" style="object-fit: cover; transition: transform 0.5s ease;">
+              <div class="portfolio-overlay d-flex flex-column justify-content-end p-4" style="position: absolute; bottom: 0; left: 0; right: 0; top: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(2,6,23,0.95) 100%);">
+                <span class="badge bg-gold text-dark align-self-start mb-2 px-3 py-1 fw-bold">{{ f.categoria }}</span>
+                <h4 class="fw-bold text-white mb-1">{{ f.titulo }}</h4>
+                <p class="text-muted-custom mb-0" style="font-size: 0.88rem;">{{ f.descricao }}</p>
+                <div class="border-top border-secondary border-opacity-25 pt-2 mt-2 d-flex justify-content-between align-items-center">
+                  <span class="text-muted-custom" style="font-size: 0.8rem;">
+                    <i class="bi bi-person text-gold me-1"></i> Por: {{ f.barbeiro.nome }}
+                  </span>
+                  <span class="text-muted-custom" style="font-size: 0.75rem;">
+                    {{ f.criado_em|date:"d/m/Y" }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12 text-center text-muted py-5">
+          <i class="bi bi-images fs-1 text-muted opacity-25 mb-3 d-block"></i>
+          Nenhum corte ou barba cadastrado na galeria ainda.
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Custom Styling and JS for Hover effect -->
+<style>
+  .portfolio-card:hover img {
+    transform: scale(1.05);
+  }
+  .bg-gold-badge {
+    background-color: var(--gold-color, #c5a880);
+    color: #000;
+  }
+</style>
+{% endblock %}

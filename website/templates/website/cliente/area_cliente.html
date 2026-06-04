@@ -1,0 +1,159 @@
+{% extends "website/modelo.html" %}
+{% load crispy_forms_tags %}
+
+{% block titulo %}Área do Cliente{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container py-4">
+    <div class="row g-4">
+      
+      <!-- Profile Sidebar -->
+      <div class="col-lg-4">
+        <div class="card delacruz-card p-4 h-100">
+          <div class="text-center mb-4">
+            {% if request.user.perfil.foto_perfil %}
+              <img src="{{ request.user.perfil.foto_perfil.url }}" alt="Foto de Perfil" class="rounded-circle border border-gold img-thumbnail mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+            {% else %}
+              <div class="rounded-circle border border-gold d-flex align-items-center justify-content-center mx-auto mb-3 bg-secondary-subtle" style="width: 120px; height: 120px;">
+                <i class="bi bi-person fs-1 text-gold"></i>
+              </div>
+            {% endif %}
+            <h4 class="fw-bold mb-1 text-gold">{{ request.user.first_name }} {{ request.user.last_name }}</h4>
+            <span class="badge bg-gold-badge text-dark">{{ request.user.perfil.tipo_usuario }}</span>
+          </div>
+          
+          <hr class="border-secondary opacity-25">
+          
+          <h5 class="fw-bold mb-3 text-gold">Editar Dados Pessoais</h5>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ profile_form|crispy }}
+            <button type="submit" class="btn btn-gold-solid w-100 mt-3">
+              Atualizar Perfil
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Main Appointments Panel -->
+      <div class="col-lg-8">
+        <div class="d-flex flex-column gap-4">
+          
+          <!-- Upcoming Appointments -->
+          <div class="card delacruz-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="fw-bold mb-0 text-gold"><i class="bi bi-calendar-event me-2"></i> Próximos Agendamentos</h3>
+              <a href="{% url 'agendamento' %}" class="btn btn-delacruz btn-sm">Novo Agendamento</a>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle">
+                <thead>
+                  <tr>
+                    <th>Serviço</th>
+                    <th>Barbeiro</th>
+                    <th>Data/Hora</th>
+                    <th>Preço</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for a in proximos %}
+                    <tr>
+                      <td class="fw-bold text-white">{{ a.servico.nome }}</td>
+                      <td>{{ a.barbeiro.nome }}</td>
+                      <td>{{ a.data|date:"d/m/Y" }} às {{ a.horario|time:"H:i" }}</td>
+                      <td>R$ {{ a.servico.preco }}</td>
+                      <td>
+                        <span class="badge {% if a.status == 'Confirmado' %}bg-success{% else %}bg-warning{% endif %}">
+                          {{ a.status }}
+                        </span>
+                      </td>
+                      <td>
+                        {% if a.status == 'Pendente' or a.status == 'Confirmado' %}
+                          <form method="post" action="{% url 'cancelar_agendamento_cliente' a.pk %}" onsubmit="return confirm('Deseja realmente cancelar este agendamento?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                              Cancelar
+                            </button>
+                          </form>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-4">Nenhum agendamento futuro encontrado.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- History & Completed Services -->
+          <div class="card delacruz-card p-4">
+            <h3 class="fw-bold mb-4 text-gold"><i class="bi bi-clock-history me-2"></i> Últimos Serviços Realizados</h3>
+            
+            <div class="table-responsive">
+              <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle">
+                <thead>
+                  <tr>
+                    <th>Serviço</th>
+                    <th>Barbeiro</th>
+                    <th>Data/Hora</th>
+                    <th>Preço</th>
+                    <th>Avaliação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for a in historico %}
+                    <tr>
+                      <td class="fw-bold text-white">{{ a.servico.nome }}</td>
+                      <td>{{ a.barbeiro.nome }}</td>
+                      <td>{{ a.data|date:"d/m/Y" }} às {{ a.horario|time:"H:i" }}</td>
+                      <td>R$ {{ a.servico.preco }}</td>
+                      <td>
+                        {% if a.feedback %}
+                          <span class="text-gold">
+                            {% for i in "12345" %}
+                              {% if forloop.counter <= a.feedback.nota %}
+                                <i class="bi bi-star-fill"></i>
+                              {% else %}
+                                <i class="bi bi-star"></i>
+                              {% endif %}
+                            {% endfor %}
+                          </span>
+                        {% else %}
+                          <a href="{% url 'criar_feedback' a.pk %}" class="btn btn-outline-gold btn-sm">
+                            Avaliar Serviço
+                          </a>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="5" class="text-center text-muted py-4">Nenhum serviço concluído no seu histórico.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            
+            {% if historico %}
+              <div class="text-end mt-3">
+                <a href="{% url 'historico_cliente' %}" class="text-gold text-decoration-none fw-bold" style="font-size: 0.9rem;">
+                  Ver histórico completo <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+            {% endif %}
+          </div>
+          
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+{% endblock %}

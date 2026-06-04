@@ -10,18 +10,19 @@ urlpatterns = [
         extra_context={'titulo': 'Login', 'botao': 'Entrar'},
     ), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('cadastro/', views.CadastroUsuarioView.as_view(), name='cadastro'),
     path('alterar-senha/', auth_views.PasswordChangeView.as_view(
         template_name='website/form.html',
         success_url=reverse_lazy('dashboard'),
         extra_context={'titulo': 'Alterar Senha', 'botao': 'Alterar'},
-    ), name='password_change'),
+    ), name='alterar_senha'),
+
 
     # Public
     path('', views.IndexView.as_view(), name='pagina_inicial'),
     path('sobre/', views.SobreView.as_view(), name='sobre'),
     path('contato/', views.ContatoView.as_view(), name='contato'),
     path('agendamento/', views.AgendamentoPublicoView.as_view(), name='agendamento'),
-    path('agendamento/sucesso/', views.AgendamentoSucessoView.as_view(), name='agendamento_sucesso'),
     path('servicos/', views.ServicosPublicView.as_view(), name='servicos'),
     path('barbeiros/', views.BarbeirosPublicView.as_view(), name='barbeiros'),
 
@@ -70,4 +71,24 @@ urlpatterns = [
     path('listar/mensagens/', views.MensagemContatoList.as_view(), name='listar_mensagens'),
     path('ver/mensagem/<int:pk>/', views.MensagemContatoDetail.as_view(), name='ver_mensagem'),
     path('excluir/mensagem/<int:pk>/', views.MensagemContatoDelete.as_view(), name='excluir_mensagem'),
+
+    # Client Area
+    path('cliente/area/', views.AreaClienteView.as_view(), name='area_cliente'),
+    path('cliente/historico/', views.HistoricoClienteView.as_view(), name='historico_cliente'),
+    path('cliente/feedback/<int:pk>/', views.FeedbackCreateView.as_view(), name='criar_feedback'),
+    path('cliente/perfil/', views.PerfilClienteView.as_view(), name='perfil_cliente'),
+    path('cliente/cancelar/<int:pk>/', views.CancelarAgendamentoClienteView.as_view(), name='cancelar_agendamento_cliente'),
+
+    # Barber Area
+    path('barbeiro/area/', views.AreaBarbeiroView.as_view(), name='area_barbeiro'),
+    path('barbeiro/agendamentos/', views.AgendamentosBarbeiroView.as_view(), name='agendamentos_barbeiro'),
+    path('barbeiro/historico/', views.HistoricoBarbeiroView.as_view(), name='historico_barbeiro'),
+    path('barbeiro/relatorios/', views.RelatoriosBarbeiroView.as_view(), name='relatorios_barbeiro'),
+    path('barbeiro/fotos/', views.FotoTrabalhoListView.as_view(), name='fotos_barbeiro'),
+    path('barbeiro/fotos/cadastrar/', views.FotoTrabalhoCreateView.as_view(), name='cadastrar_foto_barbeiro'),
+    path('barbeiro/fotos/editar/<int:pk>/', views.FotoTrabalhoUpdateView.as_view(), name='editar_foto_barbeiro'),
+    path('barbeiro/fotos/excluir/<int:pk>/', views.FotoTrabalhoDeleteView.as_view(), name='excluir_foto_barbeiro'),
+
+    # Available Times Helper View (alias)
+    path('horarios-disponiveis/', views.horarios_disponiveis_api, name='horarios_disponiveis'),
 ]

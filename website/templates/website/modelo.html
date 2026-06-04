@@ -15,6 +15,46 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Custom CSS Stylesheet -->
     <link rel="stylesheet" href="{% static 'website/css/style.css' %}">
+    <style>
+      footer.footer-bar {
+        background-color: #020617 !important;
+        color: #94a3b8 !important;
+      }
+      footer.footer-bar a.footer-link, footer.footer-bar .text-muted-custom, footer.footer-bar .copyright-text {
+        color: #94a3b8 !important;
+      }
+      footer.footer-bar a.footer-link:hover {
+        color: #22c55e !important;
+      }
+      footer.footer-bar h5.text-beige, footer.footer-bar .text-light, footer.footer-bar .fw-bold, footer.footer-bar .text-white {
+        color: #ffffff !important;
+      }
+      .bg-gold-badge {
+        background-color: #c5a880 !important;
+        color: #020617 !important;
+      }
+      .btn-gold-solid {
+        background-color: #c5a880 !important;
+        color: #020617 !important;
+        border: 1px solid #c5a880 !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+      .btn-gold-solid:hover {
+        background-color: #b09168 !important;
+        color: #020617 !important;
+      }
+      .btn-outline-gold {
+        color: #c5a880 !important;
+        border-color: #c5a880 !important;
+        background: transparent;
+        transition: all 0.3s ease;
+      }
+      .btn-outline-gold:hover {
+        background-color: #c5a880 !important;
+        color: #020617 !important;
+      }
+    </style>
     {% block extra_css %}{% endblock %}
   </head>
   <body class="bg-dark-custom">
@@ -33,58 +73,55 @@
 
         <div class="collapse navbar-collapse" id="navbarMenu">
           <ul class="navbar-nav ms-auto align-items-lg-center">
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'pagina_inicial' %}">Início</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'servicos' %}">Serviços</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'barbeiros' %}">Barbeiros</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'sobre' %}">Sobre</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'contato' %}">Contato</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="btn btn-delacruz ms-lg-3 me-lg-2" href="{% url 'agendamento' %}">
-                Agendar
-              </a>
-            </li>
-
             {% if request.user.is_authenticated %}
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Gerenciar
-                </a>
-                <ul class="dropdown-menu dropdown-menu-dark">
-                  <li><a class="dropdown-item" href="{% url 'listar_servicos' %}"><i class="bi bi-scissors me-2"></i>Serviços</a></li>
-                  <li><a class="dropdown-item" href="{% url 'listar_barbeiros' %}"><i class="bi bi-person-badge me-2"></i>Barbeiros</a></li>
-                  <li><a class="dropdown-item" href="{% url 'listar_clientes' %}"><i class="bi bi-people me-2"></i>Clientes</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="{% url 'listar_agendamentos' %}"><i class="bi bi-calendar-check me-2"></i>Agendamentos</a></li>
-                  <li><a class="dropdown-item" href="{% url 'listar_horarios' %}"><i class="bi bi-clock me-2"></i>Horários</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="{% url 'listar_mensagens' %}"><i class="bi bi-envelope me-2"></i>Mensagens</a></li>
-                </ul>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'logout' %}">Sair</a>
+              {% if is_cliente %}
+                <!-- Cliente Navbar -->
+                <li class="nav-item"><a class="nav-link" href="{% url 'pagina_inicial' %}">Início</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'servicos' %}">Serviços</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'barbeiros' %}">Barbeiros</a></li>
+                <li class="nav-item ms-lg-2"><a class="btn btn-delacruz" href="{% url 'agendamento' %}">Agendamento</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'area_cliente' %}">Minha área</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'historico_cliente' %}">Meu histórico</a></li>
+              {% elif is_barbeiro %}
+                <!-- Barbeiro Navbar -->
+                <li class="nav-item"><a class="nav-link" href="{% url 'area_barbeiro' %}">Área do barbeiro</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'agendamentos_barbeiro' %}">Meus agendamentos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'historico_barbeiro' %}">Histórico</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'relatorios_barbeiro' %}">Relatórios</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'fotos_barbeiro' %}">Minhas fotos</a></li>
+              {% elif is_admin %}
+                <!-- Admin/staff Navbar -->
+                <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'listar_servicos' %}">Serviços</a></li>
+                {% if request.user.is_staff or request.user.is_superuser %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'listar_barbeiros' %}">Barbeiros</a></li>
+                {% endif %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'listar_clientes' %}">Clientes</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'listar_horarios' %}">Horários</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'listar_agendamentos' %}">Agendamentos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'listar_mensagens' %}">Mensagens</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'alterar_senha' %}">Alterar senha</a></li>
+              {% endif %}
+              
+              <!-- Logout -->
+              <li class="nav-item ms-lg-2">
+                <form method="post" action="{% url 'logout' %}" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="nav-link btn btn-link p-0 text-start text-lg-center d-inline-block border-0 bg-transparent align-baseline" style="color: var(--navbar-link-color, #cbd5f5);">
+                    Sair
+                  </button>
+                </form>
               </li>
             {% else %}
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'login' %}">Login</a>
-              </li>
+              <!-- Guest Navbar -->
+              <li class="nav-item"><a class="nav-link" href="{% url 'pagina_inicial' %}">Início</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'servicos' %}">Serviços</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'barbeiros' %}">Barbeiros</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'sobre' %}">Sobre</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'contato' %}">Contato</a></li>
+              <li class="nav-item ms-lg-2"><a class="btn btn-delacruz" href="{% url 'agendamento' %}">Agendamento</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'cadastro' %}">Cadastro</a></li>
             {% endif %}
           </ul>
         </div>
@@ -113,59 +150,64 @@
       <div class="container pb-4 border-bottom border-secondary border-opacity-10">
         <div class="row g-4">
           <!-- Foot Column 1: Logo & Slogan -->
-          <div class="col-lg-4">
+          <div class="col-lg-4 text-start">
             <a class="d-flex align-items-center gap-2 mb-3 text-decoration-none" href="{% url 'pagina_inicial' %}">
               <span class="text-gold"><i class="bi bi-scissors fs-4"></i></span>
               <span class="brand-font fw-bold text-uppercase text-light" style="font-size: 1.4rem;">Delacruz <span class="text-gold">Barber</span></span>
             </a>
             <p class="text-muted-custom mb-3" style="font-size: 0.88rem; max-width: 320px;">
-              Corte preciso. Barba alinhada. Presença renovada. Mais do que uma barbearia: um espaço dedicado ao cuidado da sua imagem pessoal.
+              Corte preciso, barba alinhada e atendimento profissional em Paranavaí.
             </p>
             <div class="d-flex gap-2">
               <a href="#" class="footer-social-pill" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
               <a href="https://instagram.com/delacruzbarber_oficial" target="_blank" class="footer-social-pill" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
               <a href="#" class="footer-social-pill" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
-              <a href="https://wa.me/5511998765432" target="_blank" class="footer-social-pill" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+              <a href="https://wa.me/554499190997" target="_blank" class="footer-social-pill" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
             </div>
           </div>
 
           <!-- Foot Column 2: Quick Links Map -->
-          <div class="col-6 col-lg-2">
+          <div class="col-6 col-lg-2 text-start">
             <h5 class="text-beige text-uppercase fw-600 mb-3" style="font-size: 0.9rem; letter-spacing: 0.05em;">Mapa do Site</h5>
             <ul class="footer-link-list">
               <li><a href="{% url 'pagina_inicial' %}" class="footer-link">Início</a></li>
               <li><a href="{% url 'servicos' %}" class="footer-link">Serviços</a></li>
-              <li><a href="{% url 'agendamento' %}" class="footer-link">Agendamento</a></li>
-              <li><a href="{% url 'sobre' %}" class="footer-link">Sobre</a></li>
+              <li><a href="{% url 'barbeiros' %}" class="footer-link">Barbeiros</a></li>
+              <li><a href="{% url 'pagina_inicial' %}#galeria" class="footer-link">Nossos Cortes</a></li>
             </ul>
           </div>
 
           <!-- Foot Column 3: Secondary Map links -->
-          <div class="col-6 col-lg-2">
+          <div class="col-6 col-lg-2 text-start">
             <h5 class="text-beige text-uppercase fw-600 mb-3" style="font-size: 0.9rem; letter-spacing: 0.05em;">Institucional</h5>
             <ul class="footer-link-list">
-              <li><a href="{% url 'contato' %}" class="footer-link">Fale Conosco</a></li>
-              <li><a href="{% url 'sobre' %}" class="footer-link">Sobre Nós</a></li>
+              <li><a href="{% url 'sobre' %}" class="footer-link">Sobre</a></li>
+              <li><a href="{% url 'contato' %}" class="footer-link">Contato</a></li>
+              <li><a href="{% url 'agendamento' %}" class="footer-link">Agendamento</a></li>
               {% if user.is_authenticated %}
-              <li><a href="{% url 'dashboard' %}" class="footer-link">Dashboard</a></li>
+                <li><a href="{% url 'dashboard' %}" class="footer-link">Dashboard</a></li>
               {% else %}
-              <li><a href="{% url 'login' %}" class="footer-link">Área Restrita</a></li>
+                <li><a href="{% url 'login' %}" class="footer-link">Área Restrita</a></li>
               {% endif %}
             </ul>
           </div>
 
-          <!-- Foot Column 4: Contact details recap -->
-          <div class="col-lg-4">
-            <h5 class="text-beige text-uppercase fw-600 mb-3" style="font-size: 0.9rem; letter-spacing: 0.05em;">Atendimento Rápido</h5>
-            <p class="text-muted-custom mb-1" style="font-size: 0.88rem;"><i class="bi bi-geo-alt-fill text-gold me-2"></i> Av. das Américas, 1200 - Centro - SP</p>
-            <p class="text-muted-custom mb-1" style="font-size: 0.88rem;"><i class="bi bi-whatsapp text-gold me-2"></i> (11) 99876-5432</p>
-            <p class="text-muted-custom mb-0" style="font-size: 0.88rem;"><i class="bi bi-telephone text-gold me-2"></i> (11) 3456-7890</p>
+          <!-- Foot Column 4: Contact details recap & Opening hours -->
+          <div class="col-lg-4 text-start">
+            <h5 class="text-beige text-uppercase fw-600 mb-3" style="font-size: 0.9rem; letter-spacing: 0.05em;">Atendimento e Contato</h5>
+            <p class="text-muted-custom mb-1" style="font-size: 0.88rem;"><i class="bi bi-geo-alt-fill text-gold me-2"></i> Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</p>
+            <p class="text-muted-custom mb-1" style="font-size: 0.88rem;"><i class="bi bi-whatsapp text-gold me-2"></i> Danilo: (44) 9919-0997</p>
+            <p class="text-muted-custom mb-3" style="font-size: 0.88rem;"><i class="bi bi-whatsapp text-gold me-2"></i> Heitor: (44) 9102-2176</p>
+            
+            <h5 class="text-beige text-uppercase fw-600 mb-2" style="font-size: 0.8rem; letter-spacing: 0.05em;">Funcionamento</h5>
+            <p class="text-muted-custom mb-1" style="font-size: 0.82rem;"><i class="bi bi-clock-fill text-gold me-2"></i> Segunda a sábado: 08:00 às 21:00</p>
+            <p class="text-muted-custom mb-0" style="font-size: 0.82rem;"><i class="bi bi-calendar-x text-gold me-2"></i> Domingo: fechado</p>
           </div>
         </div>
       </div>
       
       <!-- Bottom bar -->
-      <div class="container pt-4">
+      <div class="container pt-4 text-start">
         <div class="row align-items-center">
           <div class="col-md-6 text-center text-md-start">
             <p class="copyright-text">
@@ -174,7 +216,7 @@
           </div>
           <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
             <p class="copyright-text" style="font-size: 0.72rem;">
-              Mais do que uma barbearia: um espaço para cuidar da sua imagem.
+              Corte preciso, barba alinhada e atendimento profissional em Paranavaí.
             </p>
           </div>
         </div>

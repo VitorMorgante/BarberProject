@@ -1,0 +1,68 @@
+{% extends "website/modelo.html" %}
+
+{% block titulo %}Histórico de Atendimentos{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="card delacruz-card p-4">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title text-gold mb-0"><i class="bi bi-clock-history me-2"></i> Histórico de Serviços Concluídos</h2>
+            <a href="{% url 'area_barbeiro' %}" class="btn btn-outline-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Voltar</a>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Serviço</th>
+                  <th>Data</th>
+                  <th>Horário</th>
+                  <th>Preço</th>
+                  <th>Feedback / Avaliação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for a in agendamentos %}
+                  <tr>
+                    <td class="fw-bold text-white">{{ a.cliente.nome }}</td>
+                    <td>{{ a.servico.nome }}</td>
+                    <td>{{ a.data|date:"d/m/Y" }}</td>
+                    <td>{{ a.horario|time:"H:i" }}</td>
+                    <td>R$ {{ a.servico.preco }}</td>
+                    <td>
+                      {% if a.feedback %}
+                        <div class="text-start">
+                          <span class="text-gold">
+                            {% for i in "12345" %}
+                              {% if forloop.counter <= a.feedback.nota %}
+                                <i class="bi bi-star-fill"></i>
+                              {% else %}
+                                <i class="bi bi-star"></i>
+                              {% endif %}
+                            {% endfor %}
+                          </span>
+                          <p class="text-muted mb-0 italic" style="font-size: 0.82rem;">"{{ a.feedback.comentario }}"</p>
+                        </div>
+                      {% else %}
+                        <span class="text-muted-custom italic">Sem feedback enviado</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Nenhum atendimento concluído encontrado.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

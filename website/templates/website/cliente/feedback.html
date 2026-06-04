@@ -1,0 +1,40 @@
+{% extends "website/modelo.html" %}
+{% load crispy_forms_tags %}
+
+{% block titulo %}Avaliar Atendimento{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+        <div class="card delacruz-card p-4">
+          <h2 class="section-title text-gold mb-3"><i class="bi bi-star-fill text-gold me-2"></i> Avaliar Serviço</h2>
+          
+          <div class="alert alert-dark border-secondary border-opacity-10 py-3 mb-4">
+            <h5 class="fw-bold mb-1 text-white">Resumo do Atendimento</h5>
+            <p class="text-muted-custom mb-0" style="font-size: 0.88rem;">
+              <strong>Serviço:</strong> {{ agendamento.servico.nome }}<br>
+              <strong>Profissional:</strong> {{ agendamento.barbeiro.nome }}<br>
+              <strong>Data:</strong> {{ agendamento.data|date:"d/m/Y" }} às {{ agendamento.horario|time:"H:i" }}
+            </p>
+          </div>
+          
+          <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="d-flex gap-2 mt-4">
+              <button type="submit" class="btn btn-gold-solid px-4">
+                Enviar Avaliação
+              </button>
+              <a href="{% url 'area_cliente' %}" class="btn btn-outline-light px-4">
+                Voltar
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

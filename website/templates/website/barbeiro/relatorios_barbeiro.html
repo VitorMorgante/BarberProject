@@ -1,0 +1,93 @@
+{% extends "website/modelo.html" %}
+
+{% block titulo %}Relatórios do Barbeiro{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container py-4 text-start">
+    
+    <div class="d-flex justify-content-between align-items-center mb-5">
+      <div>
+        <span class="section-subtitle">Acompanhe seu desempenho</span>
+        <h2 class="section-title text-gold mb-0"><i class="bi bi-graph-up-arrow me-2"></i> Relatórios Financeiros e de Serviços</h2>
+      </div>
+      <a href="{% url 'area_barbeiro' %}" class="btn btn-outline-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Voltar</a>
+    </div>
+
+    <!-- Overview Cards -->
+    <div class="row g-4 mb-5">
+      <div class="col-md-3">
+        <div class="card delacruz-card p-4 text-center h-100 border-start border-success border-4">
+          <span class="text-muted-custom text-uppercase d-block mb-1" style="font-size: 0.75rem;">Faturamento Hoje</span>
+          <h3 class="fw-bold text-white mb-0">R$ {{ receita_hoje|floatformat:2 }}</h3>
+          <span class="text-muted mt-2 d-block" style="font-size: 0.8rem;">Completados: {{ qtd_hoje }}</span>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="card delacruz-card p-4 text-center h-100 border-start border-info border-4">
+          <span class="text-muted-custom text-uppercase d-block mb-1" style="font-size: 0.75rem;">Faturamento Ontem</span>
+          <h3 class="fw-bold text-white mb-0">R$ {{ receita_ontem|floatformat:2 }}</h3>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="card delacruz-card p-4 text-center h-100 border-start border-warning border-4">
+          <span class="text-muted-custom text-uppercase d-block mb-1" style="font-size: 0.75rem;">Últimos 30 Dias</span>
+          <h3 class="fw-bold text-gold mb-0">R$ {{ receita_30_dias|floatformat:2 }}</h3>
+          <span class="text-muted mt-2 d-block" style="font-size: 0.8rem;">Completados: {{ qtd_30_dias }}</span>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="card delacruz-card p-4 text-center h-100 border-start border-gold border-4">
+          <span class="text-muted-custom text-uppercase d-block mb-1" style="font-size: 0.75rem;">Avaliação Média</span>
+          <h3 class="fw-bold text-gold mb-0"><i class="bi bi-star-fill text-gold me-2"></i>{{ nota_media }} / 5.0</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Most Requested Services -->
+      <div class="col-lg-6">
+        <div class="card delacruz-card p-4 h-100">
+          <h4 class="fw-bold text-white mb-4"><i class="bi bi-pie-chart me-2"></i> Serviços Mais Solicitados</h4>
+          <div class="d-flex flex-column gap-3">
+            {% for item in servicos_mais_pedidos %}
+              <div>
+                <div class="d-flex justify-content-between text-muted-custom mb-1" style="font-size: 0.88rem;">
+                  <span class="text-white fw-bold">{{ item.servico__nome }}</span>
+                  <span>{{ item.quantidade }} atendimento(s)</span>
+                </div>
+                <!-- Visual progress bar representation -->
+                <div class="progress bg-dark border border-secondary border-opacity-10" style="height: 10px;">
+                  <div class="progress-bar bg-gold" role="progressbar" style="width: {% widthratio item.quantidade qtd_30_dias 100 %}%"></div>
+                </div>
+              </div>
+            {% empty %}
+              <p class="text-muted text-center py-4">Nenhum atendimento finalizado no período.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Professional Profile Stat -->
+      <div class="col-lg-6">
+        <div class="card delacruz-card p-4 h-100">
+          <h4 class="fw-bold text-white mb-4"><i class="bi bi-award me-2"></i> Visão Geral</h4>
+          <p class="text-muted-custom">Resumo de desempenho para o profissional logado. Os valores acumulados consideram apenas atendimentos com status <strong>Concluído</strong>.</p>
+          <div class="p-3 bg-dark bg-opacity-20 rounded border border-secondary border-opacity-10 mt-3">
+            <h5 class="fw-bold text-gold mb-3">Dicas de Faturamento</h5>
+            <ul class="text-muted-custom ps-3 mb-0" style="font-size: 0.88rem;">
+              <li class="mb-2">Mantenha a agenda atualizada para evitar horários duplicados.</li>
+              <li class="mb-2">Fotos de qualidade na galeria atraem mais clientes para seu perfil.</li>
+              <li>A avaliação média dos clientes impacta diretamente sua visibilidade no site.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+{% endblock %}

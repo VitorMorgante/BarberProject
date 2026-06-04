@@ -215,65 +215,36 @@
       <button class="btn gallery-filter-btn" data-filter="cortes">Cortes</button>
       <button class="btn gallery-filter-btn" data-filter="barbas">Barbas</button>
       <button class="btn gallery-filter-btn" data-filter="degrades">Degradês</button>
-      <button class="btn gallery-filter-btn" data-filter="acabamento">Acabamentos</button>
+      <button class="btn gallery-filter-btn" data-filter="infantil">Infantil</button>
     </div>
 
     <!-- Gallery Grid -->
     <div class="row g-4 gallery-row">
-      <div class="col-sm-6 col-lg-4 gallery-col" data-category="cortes">
+      {% for foto in fotos_trabalho %}
+      <div class="col-sm-6 col-lg-4 gallery-col" data-category="{% if 'degrad' in foto.titulo.lower or 'degrad' in foto.descricao.lower or 'fade' in foto.titulo.lower or 'fade' in foto.descricao.lower %}degrades {% endif %}{% if foto.categoria == 'Corte' %}cortes{% elif foto.categoria == 'Barba' %}barbas{% elif foto.categoria == 'Corte + Barba' %}cortes barbas{% elif foto.categoria == 'Infantil' %}infantil{% else %}degrades{% endif %}">
         <div class="gallery-item">
-          <img src="https://images.unsplash.com/photo-1599351431247-f509408793ca?auto=format&fit=crop&q=80&w=600" alt="Corte Executivo Clássico" class="gallery-item-img">
+          {% if foto.imagem %}
+            <img src="{{ foto.imagem.url }}" alt="{{ foto.titulo }}" class="gallery-item-img">
+          {% else %}
+            <div class="d-flex align-items-center justify-content-center bg-dark text-muted gallery-item-img" style="height: 300px;">
+              <i class="bi bi-scissors fs-1"></i>
+            </div>
+          {% endif %}
           <div class="gallery-item-overlay text-start">
-            <span class="gallery-item-badge">Cortes</span>
-            <h4 class="gallery-item-title">Visual Clássico Executivo</h4>
+            <span class="gallery-item-badge">{{ foto.categoria }}</span>
+            <h4 class="gallery-item-title mb-1">{{ foto.titulo }}</h4>
+            <span class="text-gold" style="font-size: 0.8rem;"><i class="bi bi-person-fill me-1"></i>{{ foto.barbeiro.nome }}</span>
           </div>
         </div>
       </div>
-      <div class="col-sm-6 col-lg-4 gallery-col" data-category="degrades">
-        <div class="gallery-item">
-          <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600" alt="Corte Skin Fade" class="gallery-item-img">
-          <div class="gallery-item-overlay text-start">
-            <span class="gallery-item-badge">Degradês</span>
-            <h4 class="gallery-item-title">Degradê Skin Fade</h4>
-          </div>
+      {% empty %}
+      <div class="col-12 text-center py-5">
+        <div class="my-4">
+          <i class="bi bi-images text-muted" style="font-size: 3.5rem;"></i>
         </div>
+        <p class="text-muted-custom fs-5">Em breve novos cortes estarão disponíveis por aqui.</p>
       </div>
-      <div class="col-sm-6 col-lg-4 gallery-col" data-category="barbas">
-        <div class="gallery-item">
-          <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=600" alt="Barba Esparta Modelada" class="gallery-item-img">
-          <div class="gallery-item-overlay text-start">
-            <span class="gallery-item-badge">Barbas</span>
-            <h4 class="gallery-item-title">Barba Alinhada Esparta</h4>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6 col-lg-4 gallery-col" data-category="degrades">
-        <div class="gallery-item">
-          <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=600" alt="Degradê Texturizado" class="gallery-item-img">
-          <div class="gallery-item-overlay text-start">
-            <span class="gallery-item-badge">Degradês</span>
-            <h4 class="gallery-item-title">Degradê Pompadour Texturizado</h4>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6 col-lg-4 gallery-col" data-category="cortes">
-        <div class="gallery-item">
-          <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600" alt="Cabelo Estilo Buzzcut" class="gallery-item-img">
-          <div class="gallery-item-overlay text-start">
-            <span class="gallery-item-badge">Cortes</span>
-            <h4 class="gallery-item-title">Buzzcut Texturizado</h4>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6 col-lg-4 gallery-col" data-category="acabamento">
-        <div class="gallery-item">
-          <img src="https://images.unsplash.com/photo-1605497746444-17dd7f2129bc?auto=format&fit=crop&q=80&w=600" alt="Acabamento Navalhado Contorno" class="gallery-item-img">
-          <div class="gallery-item-overlay text-start">
-            <span class="gallery-item-badge">Acabamentos</span>
-            <h4 class="gallery-item-title">Contorno Navalhado Nítido</h4>
-          </div>
-        </div>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -281,41 +252,23 @@
 <!-- ABOUT SECTION -->
 <section class="py-5 bg-card-custom" id="sobre">
   <div class="container py-5 text-start">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6">
-        <span class="section-subtitle">Nossa Filosofia</span>
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <span class="section-subtitle">Nossa filosofia</span>
         <h2 class="section-title">Sobre a Delacruz Barber</h2>
-        <p class="text-primary mb-4" style="font-size: 1.15rem; font-weight: 500; font-family: var(--font-serif); line-height: 1.7;">
+        <p class="text-primary mb-4" style="font-size: 1.25rem; font-weight: 500; font-family: var(--font-serif); line-height: 1.7;">
           "Na Delacruz Barber, cada corte é pensado para valorizar sua identidade. Nosso atendimento une técnica, cuidado e estilo em um ambiente moderno, confortável e profissional."
         </p>
-        <p class="text-muted-custom mb-3">
-          Fundada sob a premissa de que a barbearia clássica é mais do que apenas corte de cabelo — é um ritual de requinte, autoconfiança e aprimoramento da autoimagem — a Delacruz é focada no público exigente da atualidade. 
+        <p class="text-muted-custom mb-3" style="font-size: 1.05rem; line-height: 1.8;">
+          A Delacruz Barber nasceu com a proposta de oferecer mais do que um corte: uma experiência completa de cuidado, confiança e estilo. Cada cliente é atendido com atenção aos detalhes, respeitando seu visual, sua personalidade e o resultado que deseja alcançar.
         </p>
-        <p class="text-muted-custom mb-4">
-          Cada cliente é atendido individualmente de forma exclusiva, garantindo escuta atenta, observação de simetria do rosto e uso exclusivo de produtos testados de altíssima reputação. É um espaço de descanso mental, respeito e exaltação do estilo.
+        <p class="text-muted-custom mb-4" style="font-size: 1.05rem; line-height: 1.8;">
+          Nosso foco é entregar um atendimento profissional, com cortes bem executados, barba alinhada e um ambiente pensado para que cada pessoa saia se sentindo renovada.
         </p>
         <div class="d-flex align-items-center gap-3">
           <div class="border-start border-3 border-warning ps-3">
-            <h5 class="mb-1 text-gold">Daniel Delacruz</h5>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.85rem;">Fundador & Barbeiro Chefe</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="row g-3">
-          <div class="col-6">
-            <img src="https://images.unsplash.com/photo-1599351431247-f509408793ca?auto=format&fit=crop&q=80&w=600" alt="Corte na tesoura" class="img-fluid rounded shadow border border-secondary border-opacity-10 mb-3">
-            <div class="bg-dark-custom p-4 rounded text-center border border-secondary border-opacity-10">
-              <h3 class="text-gold fw-bold mb-1">100%</h3>
-              <p class="mb-0 text-muted-custom" style="font-size: 0.8rem;">Estéril e Seguro</p>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="bg-dark-custom p-4 rounded text-center border border-secondary border-opacity-10 mb-3">
-              <h3 class="text-gold fw-bold mb-1">4.9</h3>
-              <p class="mb-0 text-muted-custom" style="font-size: 0.8rem;">Avaliação Geral</p>
-            </div>
-            <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600" alt="Modelando Barba" class="img-fluid rounded shadow border border-secondary border-opacity-10">
+            <h5 class="mb-1 text-gold">Danilo Delacruz</h5>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.85rem;">Barbeiro Chefe</p>
           </div>
         </div>
       </div>
@@ -372,7 +325,7 @@
             </h2>
             <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
               <div class="accordion-body">
-                Oferecemos corte clássico masculino, corte degradê sombreado, barba terapêutica com toalha quente, pigmentação de barba, hidratação capilar reconstrutiva profunda, design de sobrancelha e nosso pacote Premium de cuidados exclusivos.
+                Oferecemos corte clássico masculino, corte degradê sombreado, barba terapêutica com toalha quente, design de sobrancelha e nosso pacote Premium de cuidados exclusivos.
               </div>
             </div>
           </div>
@@ -437,7 +390,7 @@
             </h2>
             <div id="collapseEight" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
               <div class="accordion-body">
-                Nossa barbearia está localizada no centro comercial nobre da cidade, no endereço Avenida das Américas, 1200 - Centro. Possuímos estacionamento privado para veículos de clientes no local.
+                Nossa barbearia está localizada na Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR.
               </div>
             </div>
           </div>
@@ -464,7 +417,7 @@
           </div>
           <div>
             <h6 class="mb-1 text-gold fw-bold">Endereço</h6>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Avenida das Américas, 1200, Centro - SP</p>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</p>
           </div>
         </div>
 
@@ -474,8 +427,8 @@
           </div>
           <div>
             <h6 class="mb-1 text-gold fw-bold">Horário de Funcionamento</h6>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Segunda a Sexta: 08:00 às 18:00</p>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Sábado: 08:00 às 13:00 / Domingo: Fechado</p>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Segunda a sábado: 08:00 às 21:00</p>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Domingo: Fechado</p>
           </div>
         </div>
 
@@ -485,7 +438,7 @@
           </div>
           <div>
             <h6 class="mb-1 text-gold fw-bold">WhatsApp / Telefone</h6>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">(11) 99876-5432 / (11) 3456-7890</p>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Danilo: (44) 9919-0997 / Heitor: (44) 9102-2176</p>
           </div>
         </div>
 
@@ -505,7 +458,8 @@
           <div class="d-flex flex-column align-items-center justify-content-center h-100 p-3 text-center">
             <i class="bi bi-map-fill text-gold fs-1 mb-2"></i>
             <span class="text-beige fw-bold">Mapa Delacruz Barber</span>
-            <span class="text-muted-custom mt-1" style="font-size: 0.75rem;">Navegue até a Av. das Américas, 1200</span>
+            <span class="text-muted-custom mt-1 text-center" style="font-size: 0.78rem;">Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</span>
+            <span class="text-muted-custom mt-1 text-center" style="font-size: 0.72rem;">Navegue até a Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</span>
           </div>
         </div>
       </div>
@@ -513,9 +467,9 @@
       <!-- Contact Mailer Form Box (Right Side) -->
       <div class="col-lg-7">
         <div class="bg-dark-custom p-4 p-md-5 rounded border border-secondary border-opacity-10 shadow">
-          <h4 class="brand-font text-uppercase fw-bold text-beige mb-2">Envie uma Mensagem</h4>
+          <h4 class="brand-font text-uppercase fw-bold text-beige mb-2">Envie uma mensagem</h4>
           <p class="text-muted-custom mb-4" style="font-size: 0.88rem;">
-            Tem alguma crítica, dúvida corporativa, elogio ou dúvida? Responderemos rapidamente em seu e-mail de contato.
+            Tem alguma dúvida, sugestão, elogio ou reclamação? Envie sua mensagem e a Delacruz Barber entrará em contato em breve.
           </p>
 
           <form method="post" action="{% url 'contato' %}">

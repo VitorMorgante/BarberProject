@@ -1,0 +1,77 @@
+{% extends "website/modelo.html" %}
+
+{% block titulo %}Histórico de Atendimentos{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="card delacruz-card p-4">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title text-gold mb-0"><i class="bi bi-clock-history me-2"></i> Meu Histórico</h2>
+            <a href="{% url 'area_cliente' %}" class="btn btn-outline-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Voltar</a>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle">
+              <thead>
+                <tr>
+                  <th>Serviço</th>
+                  <th>Barbeiro</th>
+                  <th>Data</th>
+                  <th>Horário</th>
+                  <th>Preço</th>
+                  <th>Status</th>
+                  <th>Avaliação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for a in agendamentos %}
+                  <tr>
+                    <td class="fw-bold text-white">{{ a.servico.nome }}</td>
+                    <td>{{ a.barbeiro.nome }}</td>
+                    <td>{{ a.data|date:"d/m/Y" }}</td>
+                    <td>{{ a.horario|time:"H:i" }}</td>
+                    <td>R$ {{ a.servico.preco }}</td>
+                    <td>
+                      <span class="badge {% if a.status == 'Concluído' %}bg-success{% elif a.status == 'Cancelado' %}bg-danger{% elif a.status == 'Confirmado' %}bg-primary{% else %}bg-warning{% endif %}">
+                        {{ a.status }}
+                      </span>
+                    </td>
+                    <td>
+                      {% if a.status == 'Concluído' %}
+                        {% if a.feedback %}
+                          <span class="text-gold">
+                            {% for i in "12345" %}
+                              {% if forloop.counter <= a.feedback.nota %}
+                                <i class="bi bi-star-fill"></i>
+                              {% else %}
+                                <i class="bi bi-star"></i>
+                              {% endif %}
+                            {% endfor %}
+                          </span>
+                        {% else %}
+                          <a href="{% url 'criar_feedback' a.pk %}" class="btn btn-outline-gold btn-sm py-0 px-2" style="font-size: 0.8rem;">
+                            Avaliar
+                          </a>
+                        {% endif %}
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Nenhum atendimento registrado no seu histórico.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
