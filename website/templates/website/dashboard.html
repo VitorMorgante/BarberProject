@@ -1,119 +1,121 @@
 {% extends 'website/modelo.html' %}
 {% load static %}
 
-{% block titulo %}Painel de Controle{% endblock %}
+{% block titulo %}Dashboard Executivo | Delacruz Barber{% endblock %}
 
 {% block conteudo %}
 <section class="py-5">
   <div class="container text-start">
+    
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 pb-3 border-bottom border-secondary border-opacity-25">
       <div>
-        <span class="text-gold text-uppercase fw-600 tracking-wider" style="font-size: 0.8rem;">Área Administrativa</span>
-        <h2 class="brand-font text-uppercase fw-bold text-light mb-0">Dashboard</h2>
+        <span class="text-gold text-uppercase fw-bold" style="font-size: 0.8rem; letter-spacing: 0.05em;">Gestão & Controle</span>
+        <h2 class="brand-font text-uppercase fw-bold text-light mb-0">Dashboard Executivo</h2>
       </div>
-      <div class="d-flex gap-2">
-        <a href="{% url 'cadastrar_agendamento' %}" class="btn btn-gold-solid btn-sm text-uppercase fw-bold"><i class="bi bi-plus-lg me-1"></i>Novo Agendamento</a>
-        <a href="{% url 'listar_agendamentos' %}" class="btn btn-gold-outline btn-sm text-uppercase fw-bold"><i class="bi bi-calendar3 me-1"></i>Ver Todos</a>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'admin_financeiro' %}" class="btn btn-outline-gold btn-sm"><i class="bi bi-cash-coin me-1"></i>Financeiro</a>
+        <a href="{% url 'admin_comissoes' %}" class="btn btn-outline-gold btn-sm"><i class="bi bi-percent me-1"></i>Comissões</a>
+        <a href="{% url 'cadastrar_agendamento' %}" class="btn btn-delacruz btn-sm"><i class="bi bi-plus-lg me-1"></i>Novo Agendamento</a>
       </div>
     </div>
 
-    <!-- Quick Action / Stats Row -->
+    <!-- Top KPIs Row 1 -->
+    <div class="row g-3 mb-4">
+      <!-- Faturamento Hoje -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <span class="text-muted small text-uppercase d-block">Faturamento Hoje:</span>
+          <span class="fs-3 fw-bold text-gold">R$ {{ faturamento_hoje|floatformat:2 }}</span>
+          <span class="small text-muted d-block mt-1">{{ concluidos }} cortes concluídos hoje</span>
+        </div>
+      </div>
+
+      <!-- Faturamento no Mês -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <span class="text-muted small text-uppercase d-block">Faturamento no Mês:</span>
+          <span class="fs-3 fw-bold text-success">R$ {{ faturamento_mes|floatformat:2 }}</span>
+          <span class="small text-muted d-block mt-1">Ticket Médio: <strong class="text-light">R$ {{ ticket_medio }}</strong></span>
+        </div>
+      </div>
+
+      <!-- Assinantes Barber Club -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <span class="text-muted small text-uppercase d-block">Assinantes Ativos:</span>
+          <span class="fs-3 fw-bold text-info">{{ assinantes_ativos }}</span>
+          <span class="small text-muted d-block mt-1">Receita recorrente garantida</span>
+        </div>
+      </div>
+
+      <!-- Taxa de No-Show -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <span class="text-muted small text-uppercase d-block">Taxa de Faltas (No-Show):</span>
+          <span class="fs-3 fw-bold {% if taxa_no_show > 10 %}text-danger{% else %}text-white{% endif %}">{{ taxa_no_show }}%</span>
+          <span class="small text-muted d-block mt-1">Reduzido com lembretes WhatsApp</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertas de Estoque Baixo (Se houver) -->
+    {% if produtos_baixo_estoque %}
+    <div class="alert alert-warning bg-dark border border-warning border-opacity-50 text-warning d-flex align-items-center justify-content-between mb-4 p-3 rounded-3 shadow-sm">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+        <div>
+          <strong class="text-white">Alerta de Estoque Baixo:</strong>
+          <span class="text-light">Existem produtos abaixo do estoque mínimo.</span>
+        </div>
+      </div>
+      <a href="{% url 'admin_estoque' %}" class="btn btn-warning btn-sm fw-bold">Repor Estoque</a>
+    </div>
+    {% endif %}
+
+    <!-- Operational Stats Row 2 -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <span class="text-muted small d-block">Agendamentos Hoje</span>
+          <span class="fs-4 fw-bold text-white">{{ total_hoje }}</span>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <span class="text-muted small d-block">Pendentes</span>
+          <span class="fs-4 fw-bold text-warning">{{ pendentes }}</span>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <span class="text-muted small d-block">Confirmados</span>
+          <span class="fs-4 fw-bold text-info">{{ confirmados }}</span>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <span class="text-muted small d-block">Clientes no Banco</span>
+          <span class="fs-4 fw-bold text-white">{{ total_clientes }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Charts Row -->
     <div class="row g-4 mb-4">
-      <!-- Total Appointments Today -->
-      <div class="col-6 col-lg-3">
-        <div class="stat-card">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <span class="stat-label">Hoje</span>
-              <div class="stat-number mt-1">{{ total_hoje }}</div>
-            </div>
-            <div class="stat-icon"><i class="bi bi-calendar2-event text-gold"></i></div>
+      <div class="col-lg-7">
+        <div class="card card-delacruz p-4 h-100">
+          <h6 class="text-white fw-bold mb-3"><i class="bi bi-graph-up text-gold me-2"></i> Visão Financeira: Faturamento Diário vs Mensal</h6>
+          <div class="position-relative" style="height: 220px;">
+            <canvas id="graficoFaturamentoAdmin"></canvas>
           </div>
         </div>
       </div>
-
-      <!-- Pendentes -->
-      <div class="col-6 col-lg-3">
-        <div class="stat-card">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <span class="stat-label">Pendentes</span>
-              <div class="stat-number mt-1 text-warning">{{ pendentes }}</div>
-            </div>
-            <div class="stat-icon"><i class="bi bi-hourglass-split text-warning"></i></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Confirmados -->
-      <div class="col-6 col-lg-3">
-        <div class="stat-card">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <span class="stat-label">Confirmados</span>
-              <div class="stat-number mt-1 text-info">{{ confirmados }}</div>
-            </div>
-            <div class="stat-icon"><i class="bi bi-check-circle text-info"></i></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Concluídos -->
-      <div class="col-6 col-lg-3">
-        <div class="stat-card">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <span class="stat-label">Concluídos</span>
-              <div class="stat-number mt-1 text-success">{{ concluidos }}</div>
-            </div>
-            <div class="stat-icon"><i class="bi bi-check-all text-success"></i></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Second Stats Row -->
-    <div class="row g-4 mb-5">
-      <!-- Faturamento do Dia -->
-      <div class="col-md-4">
-        <div class="stat-card border-gold-opacity-10">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <span class="stat-label">Faturamento Concluído (Hoje)</span>
-              <h3 class="fw-bold text-gold mt-2 mb-0">R$ {{ receita_hoje|floatformat:2 }}</h3>
-            </div>
-            <div class="fs-1 text-gold"><i class="bi bi-cash-coin"></i></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Total de Clientes -->
-      <div class="col-md-4">
-        <div class="stat-card">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <span class="stat-label">Clientes Cadastrados</span>
-              <h3 class="fw-bold text-light mt-2 mb-0">{{ total_clientes }}</h3>
-            </div>
-            <div class="fs-1 text-muted-custom"><i class="bi bi-people-fill"></i></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Mensagens não lidas -->
-      <div class="col-md-4">
-        <div class="stat-card">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <span class="stat-label">Mensagens de Contato</span>
-              <h3 class="fw-bold {% if mensagens_nao_lidas > 0 %}text-warning{% else %}text-light{% endif %} mt-2 mb-0">
-                {{ mensagens_nao_lidas }} não lidas
-              </h3>
-            </div>
-            <div class="fs-1 {% if mensagens_nao_lidas > 0 %}text-warning{% else %}text-muted-custom{% endif %}">
-              <i class="bi bi-envelope-exclamation-fill"></i>
-            </div>
+      <div class="col-lg-5">
+        <div class="card card-delacruz p-4 h-100">
+          <h6 class="text-white fw-bold mb-3"><i class="bi bi-pie-chart text-gold me-2"></i> Status dos Atendimentos</h6>
+          <div class="position-relative" style="height: 220px;">
+            <canvas id="graficoStatusAdmin"></canvas>
           </div>
         </div>
       </div>
@@ -121,18 +123,18 @@
 
     <!-- Main Content Grid -->
     <div class="row g-4">
-      <!-- Ultimos Agendamentos Column -->
+      <!-- Ultimos Agendamentos -->
       <div class="col-lg-8">
-        <div class="bg-card-custom p-4 rounded border border-secondary border-opacity-10 shadow h-100">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="brand-font text-uppercase fw-bold text-gold mb-0">Últimos Agendamentos</h4>
-            <a href="{% url 'listar_agendamentos' %}" class="btn btn-outline-secondary btn-sm">Ver todos <i class="bi bi-arrow-right"></i></a>
+        <div class="card card-delacruz p-4 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="brand-font text-white fw-bold mb-0"><i class="bi bi-calendar-event text-gold me-2"></i> Últimos Agendamentos</h5>
+            <a href="{% url 'listar_agendamentos' %}" class="btn btn-outline-secondary btn-sm">Ver Todos</a>
           </div>
 
           <div class="table-responsive">
-            <table class="table table-dark-custom align-middle">
+            <table class="table table-dark table-hover align-middle mb-0">
               <thead>
-                <tr>
+                <tr class="small text-muted text-uppercase">
                   <th>Cliente</th>
                   <th>Serviço</th>
                   <th>Barbeiro</th>
@@ -142,32 +144,33 @@
                 </tr>
               </thead>
               <tbody>
-                {% for agendamento in ultimos_agendamentos %}
+                {% for a in ultimos_agendamentos %}
                 <tr>
                   <td>
-                    <span class="fw-bold d-block">{{ agendamento.cliente.nome }}</span>
-                    <small class="text-muted">{{ agendamento.cliente.telefone }}</small>
+                    <span class="fw-bold d-block text-white">{{ a.cliente.nome }}</span>
+                    <small class="text-muted">{{ a.cliente.telefone }}</small>
                   </td>
-                  <td>{{ agendamento.servico.nome }}</td>
-                  <td>{{ agendamento.barbeiro.nome|truncatewords:1 }}</td>
+                  <td>{{ a.servico.nome }}</td>
+                  <td>{{ a.barbeiro.nome }}</td>
                   <td>
-                    <span class="d-block">{{ agendamento.data|date:"d/m/Y" }}</span>
-                    <small class="text-gold">{{ agendamento.horario|time:"H:i" }}</small>
+                    <span class="d-block">{{ a.data|date:"d/m/Y" }}</span>
+                    <small class="text-gold">{{ a.horario|time:"H:i" }}</small>
                   </td>
                   <td>
-                    <span class="badge-status-{{ agendamento.status }}">{{ agendamento.get_status_display }}</span>
+                    <span class="badge {% if a.status == 'Confirmado' %}bg-success{% elif a.status == 'Concluído' %}bg-secondary{% elif a.status == 'Cancelado' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                      {{ a.status }}
+                    </span>
                   </td>
                   <td class="text-center">
                     <div class="d-flex justify-content-center gap-1">
-                      <a href="{% url 'ver_agendamento' agendamento.pk %}" class="btn btn-action btn-outline-secondary" title="Visualizar"><i class="bi bi-eye"></i></a>
-                      <a href="{% url 'editar_agendamento' agendamento.pk %}" class="btn btn-action btn-gold-outline" title="Editar"><i class="bi bi-pencil"></i></a>
+                      <a href="{% url 'ver_agendamento' a.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Visualizar"><i class="bi bi-eye"></i></a>
+                      <a href="{% url 'editar_agendamento' a.pk %}" class="btn btn-sm btn-outline-warning py-0 px-2" title="Editar"><i class="bi bi-pencil"></i></a>
                     </div>
                   </td>
                 </tr>
                 {% empty %}
                 <tr>
-                  <td colspan="6" class="text-center py-5 text-muted-custom">
-                    <i class="bi bi-calendar-x fs-1 mb-2 d-block"></i>
+                  <td colspan="6" class="text-center py-4 text-muted">
                     Nenhum agendamento registrado até o momento.
                   </td>
                 </tr>
@@ -178,45 +181,149 @@
         </div>
       </div>
 
-      <!-- Quick Links Sidebar Column -->
+      <!-- Quick Links & Top Barbeiros -->
       <div class="col-lg-4">
-        <div class="bg-card-custom p-4 rounded border border-secondary border-opacity-10 shadow h-100">
-          <h4 class="brand-font text-uppercase fw-bold text-gold mb-4">Acesso Rápido</h4>
+        <div class="d-flex flex-column gap-4">
           
-          <div class="d-grid gap-2">
-            <a href="{% url 'listar_servicos' %}" class="btn btn-outline-secondary text-start py-3 d-flex align-items-center justify-content-between">
-              <span><i class="bi bi-scissors text-gold me-2"></i> Cadastro de Serviços</span>
-              <span class="badge bg-gold-opacity-10 text-gold border border-gold-opacity-20"><i class="bi bi-chevron-right"></i></span>
-            </a>
-            {% if request.user.is_staff or request.user.is_superuser %}
-            <a href="{% url 'listar_barbeiros' %}" class="btn btn-outline-secondary text-start py-3 d-flex align-items-center justify-content-between">
-              <span><i class="bi bi-person-badge text-gold me-2"></i> Gerenciar Barbeiros</span>
-              <span class="badge bg-gold-opacity-10 text-gold border border-gold-opacity-20"><i class="bi bi-chevron-right"></i></span>
-            </a>
-            {% endif %}
-            <a href="{% url 'listar_clientes' %}" class="btn btn-outline-secondary text-start py-3 d-flex align-items-center justify-content-between">
-              <span><i class="bi bi-people text-gold me-2"></i> Banco de Clientes</span>
-              <span class="badge bg-gold-opacity-10 text-gold border border-gold-opacity-20"><i class="bi bi-chevron-right"></i></span>
-            </a>
-            <a href="{% url 'listar_horarios' %}" class="btn btn-outline-secondary text-start py-3 d-flex align-items-center justify-content-between">
-              <span><i class="bi bi-clock text-gold me-2"></i> Grade de Horários</span>
-              <span class="badge bg-gold-opacity-10 text-gold border border-gold-opacity-20"><i class="bi bi-chevron-right"></i></span>
-            </a>
-            <a href="{% url 'listar_mensagens' %}" class="btn btn-outline-secondary text-start py-3 d-flex align-items-center justify-content-between">
-              <span><i class="bi bi-envelope text-gold me-2"></i> Mensagens de Contato</span>
-              <span class="badge bg-gold-opacity-10 text-gold border border-gold-opacity-20"><i class="bi bi-chevron-right"></i></span>
-            </a>
+          <!-- Top Barbeiros no Mês -->
+          <div class="card card-delacruz p-4">
+            <h5 class="brand-font text-white fw-bold mb-3"><i class="bi bi-trophy text-gold me-2"></i> Ranking de Barbeiros (Mês)</h5>
+            <div class="d-flex flex-column gap-2">
+              {% for b in top_barbeiros %}
+                <div class="p-2 rounded bg-dark border border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-gold text-dark fw-bold">#{{ forloop.counter }}</span>
+                    <strong class="text-white small">{{ b.barbeiro__nome }}</strong>
+                  </div>
+                  <div class="text-end">
+                    <span class="text-gold fw-bold small">{{ b.cortes }} cortes</span>
+                  </div>
+                </div>
+              {% empty %}
+                <span class="text-muted small">Nenhum atendimento concluído este mês ainda.</span>
+              {% endfor %}
+            </div>
           </div>
-          
-          <div class="mt-4 border-top border-secondary border-opacity-10 pt-4 text-center">
-            <p class="text-muted-custom mb-3" style="font-size: 0.82rem;">Sessão administrativa segura e restrita ao staff.</p>
-            <a href="{% url 'pagina_inicial' %}" target="_blank" class="btn btn-link text-gold-hover text-decoration-none btn-sm">
-              <i class="bi bi-box-arrow-up-right me-1"></i>Visualizar Site Público
-            </a>
+
+          <!-- Módulos de Gestão Rápida -->
+          <div class="card card-delacruz p-4">
+            <h5 class="brand-font text-white fw-bold mb-3"><i class="bi bi-grid text-gold me-2"></i> Módulos Delacruz</h5>
+            
+            <div class="d-grid gap-2">
+              <a href="{% url 'listar_produtos' %}" class="btn btn-outline-secondary text-start py-2 d-flex justify-content-between align-items-center small">
+                <span><i class="bi bi-box-seam text-gold me-2"></i> Produtos & Estoque</span>
+                <i class="bi bi-chevron-right"></i>
+              </a>
+              <a href="{% url 'listar_planos' %}" class="btn btn-outline-secondary text-start py-2 d-flex justify-content-between align-items-center small">
+                <span><i class="bi bi-gem text-gold me-2"></i> Planos Barber Club</span>
+                <i class="bi bi-chevron-right"></i>
+              </a>
+              <a href="{% url 'admin_waitlist' %}" class="btn btn-outline-secondary text-start py-2 d-flex justify-content-between align-items-center small">
+                <span><i class="bi bi-hourglass-split text-gold me-2"></i> Fila de Espera (Waitlist)</span>
+                <i class="bi bi-chevron-right"></i>
+              </a>
+              <a href="{% url 'admin_configuracoes' %}" class="btn btn-outline-secondary text-start py-2 d-flex justify-content-between align-items-center small">
+                <span><i class="bi bi-gear text-gold me-2"></i> Regras PIX / Sinal</span>
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
+
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Gráfico de Faturamento Admin
+    const ctxFatAdmin = document.getElementById('graficoFaturamentoAdmin');
+    if (ctxFatAdmin) {
+      const fatHoje = parseFloat("{{ faturamento_hoje|default:'0' }}".replace(',', '.')) || 0;
+      const fatMes = parseFloat("{{ faturamento_mes|default:'0' }}".replace(',', '.')) || 0;
+
+      new Chart(ctxFatAdmin, {
+        type: 'bar',
+        data: {
+          labels: ['Hoje', 'Total Acumulado no Mês'],
+          datasets: [{
+            label: 'Faturamento (R$)',
+            data: [fatHoje, fatMes],
+            backgroundColor: ['#c5a880', '#10b981'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: context => ` R$ ${context.raw.toFixed(2)}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#94a3b8' },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            },
+            y: {
+              ticks: {
+                color: '#94a3b8',
+                callback: value => 'R$ ' + value
+              },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            }
+          }
+        }
+      });
+    }
+
+    // 2. Gráfico de Status dos Atendimentos
+    const ctxStatus = document.getElementById('graficoStatusAdmin');
+    if (ctxStatus) {
+      const pend = parseInt("{{ pendentes|default:'0' }}") || 0;
+      const conf = parseInt("{{ confirmados|default:'0' }}") || 0;
+      const conc = parseInt("{{ concluidos|default:'0' }}") || 0;
+
+      const totalStatus = pend + conf + conc;
+      const labels = ['Concluídos', 'Confirmados', 'Pendentes'];
+      const dataValues = [conc, conf, pend];
+
+      if (totalStatus === 0) {
+        labels.push('Sem agendamentos hoje');
+        dataValues.push(1);
+      }
+
+      new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: dataValues,
+            backgroundColor: ['#64748b', '#10b981', '#f59e0b'],
+            borderColor: '#1e293b',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#94a3b8', font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
 {% endblock %}

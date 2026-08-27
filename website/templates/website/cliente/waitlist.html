@@ -1,0 +1,86 @@
+{% extends "website/modelo.html" %}
+{% load crispy_forms_tags %}
+{% block titulo %}Lista de Espera / Encaixe | Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container py-2">
+    
+    <!-- Header -->
+    <div class="text-center max-w-700 mx-auto mb-5">
+      <span class="badge bg-warning bg-opacity-25 text-warning text-uppercase fw-bold px-3 py-2 mb-2">Fila de Encaixe</span>
+      <h2 class="brand-font text-white fw-bold display-6">Lista de Espera <span class="text-gold">Delacruz</span></h2>
+      <p class="text-muted">Horário cheio? Cadastre seu interesse. Se algum cliente cancelar ou surgir uma vaga na sua faixa de horário, notificamos você imediatamente!</p>
+    </div>
+
+    <div class="row g-4">
+      <!-- Formulário de Entrada -->
+      <div class="col-lg-5">
+        <div class="card card-delacruz p-4 h-100">
+          <h5 class="text-white fw-bold mb-3"><i class="bi bi-calendar-plus text-gold me-2"></i> Solicitar Encaixe</h5>
+          
+          <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-delacruz w-100 py-2 fw-bold mt-3 d-flex align-items-center justify-content-center gap-2">
+              <i class="bi bi-bell-fill"></i> Entrar na Lista de Espera
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Minhas Solicitações Ativas -->
+      <div class="col-lg-7">
+        <div class="card card-delacruz p-4 h-100">
+          <h5 class="text-white fw-bold mb-3"><i class="bi bi-clock-history text-gold me-2"></i> Minhas Solicitações de Encaixe</h5>
+          
+          <div class="table-responsive">
+            <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle mb-0">
+              <thead>
+                <tr class="small text-muted text-uppercase">
+                  <th>Serviço</th>
+                  <th>Barbeiro</th>
+                  <th>Data Desejada</th>
+                  <th>Faixa Horário</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for w in entradas_waitlist %}
+                  <tr>
+                    <td class="fw-bold text-white">{{ w.servico.nome }}</td>
+                    <td>{{ w.barbeiro.nome|default:"Qualquer um" }}</td>
+                    <td>{{ w.data_desejada|date:"d/m/Y" }}</td>
+                    <td>{{ w.horario_inicio|time:"H:i" }} às {{ w.horario_fim|time:"H:i" }}</td>
+                    <td>
+                      <span class="badge {% if w.status == 'Notificado' %}bg-success text-white{% elif w.status == 'Aguardando' %}bg-warning text-dark{% elif w.status == 'Agendado' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+                        {{ w.status }}
+                      </span>
+                    </td>
+                    <td>
+                      {% if w.status == 'Aguardando' or w.status == 'Notificado' %}
+                        <form method="post" action="{% url 'cancelar_waitlist' w.pk %}" class="d-inline">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" title="Cancelar interesse">
+                            Cancelar
+                          </button>
+                        </form>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Você não possui solicitações de lista de espera no momento.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

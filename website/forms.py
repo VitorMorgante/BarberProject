@@ -4,7 +4,11 @@ from django.contrib.auth.models import User
 from datetime import date
 from .models import (
     Servico, Barbeiro, Cliente, HorarioDisponivel, Agendamento,
-    MensagemContato, PerfilUsuario, Feedback, FotoTrabalho
+    MensagemContato, PerfilUsuario, Feedback, FotoTrabalho,
+    PlanoAssinatura, AssinaturaCliente, Produto, MovimentacaoEstoque,
+    Comanda, ItemComanda, RegraComissao, MetaBarbeiro, RepasseComissao,
+    ConfiguracaoEstabelecimento, ListaEspera, EstiloCorte, AnaliseEstilo,
+    HistoricoVisualCliente
 )
 
 
@@ -86,14 +90,14 @@ class AgendamentoForm(forms.ModelForm):
         barbeiro = cleaned_data.get('barbeiro')
         data_agendamento = cleaned_data.get('data')
         horario = cleaned_data.get('horario')
+        status = cleaned_data.get('status')
 
-        if barbeiro and data_agendamento and horario:
-            # Check duplicate appointment (excluding the current one if updating)
+        if barbeiro and data_agendamento and horario and status != Agendamento.Status.CANCELADO:
             query = Agendamento.objects.filter(
                 barbeiro=barbeiro,
                 data=data_agendamento,
                 horario=horario,
-            ).exclude(status='Cancelado')
+            ).exclude(status=Agendamento.Status.CANCELADO)
 
             if self.instance and self.instance.pk:
                 query = query.exclude(pk=self.instance.pk)
@@ -101,7 +105,6 @@ class AgendamentoForm(forms.ModelForm):
             if query.exists():
                 raise ValidationError('Este horário já está reservado para o barbeiro selecionado.')
 
-            # Check if timeslot is valid for barber
             horario_valido = HorarioDisponivel.objects.filter(
                 barbeiro=barbeiro,
                 horario=horario,
@@ -134,16 +137,16 @@ class MensagemContatoForm(forms.ModelForm):
 class AgendamentoPublicoForm(forms.Form):
     servico = forms.ModelChoiceField(
         queryset=Servico.objects.filter(ativo=True),
-        label='Serviço',
+        label='Serviço Principal',
         widget=forms.Select(attrs={'class': 'form-control'}),
     )
     barbeiro = forms.ModelChoiceField(
         queryset=Barbeiro.objects.filter(ativo=True),
-        label='Barbeiro',
+        label='Barbeiro de Preferência',
         widget=forms.Select(attrs={'class': 'form-control'}),
     )
     data = forms.DateField(
-        label='Data',
+        label='Data do Atendimento',
         widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
     )
     horario = forms.TimeField(
@@ -153,21 +156,21 @@ class AgendamentoPublicoForm(forms.Form):
     nome = forms.CharField(
         max_length=200,
         label='Nome Completo',
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Seu nome'}),
     )
     telefone = forms.CharField(
         max_length=20,
         label='Telefone / WhatsApp',
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(44) 99999-9999'}),
     )
     email = forms.EmailField(
         label='E-mail',
-        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'seu@email.com'}),
     )
     observacoes = forms.CharField(
         required=False,
-        label='Observações',
-        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        label='Observações Especiais',
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Preferências, estilo de barba, etc.'}),
     )
 
     def clean_data(self):
@@ -183,16 +186,14 @@ class AgendamentoPublicoForm(forms.Form):
         horario = cleaned_data.get('horario')
 
         if barbeiro and data_agendamento and horario:
-            # Check if slot is already booked
             exists = Agendamento.objects.filter(
                 barbeiro=barbeiro,
                 data=data_agendamento,
                 horario=horario,
-            ).exclude(status='Cancelado').exists()
+            ).exclude(status=Agendamento.Status.CANCELADO).exists()
             if exists:
                 raise ValidationError('Este horário já está reservado para o barbeiro selecionado.')
 
-            # Check if timeslot is valid for barber
             horario_valido = HorarioDisponivel.objects.filter(
                 barbeiro=barbeiro,
                 horario=horario,
@@ -264,3 +265,174 @@ class FotoTrabalhoForm(forms.ModelForm):
             'publicado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
+
+# ==============================================================================
+# NOVOS FORMULÁRIOS DE GESTÃO E SERVIÇOS
+# ==============================================================================
+
+class PlanoAssinaturaForm(forms.ModelForm):
+    class Meta:
+        model = PlanoAssinatura
+        exclude = ['criado_em', 'atualizado_em']
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'preco_mensal': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'quantidade_creditos': forms.NumberInput(attrs={'class': 'form-control'}),
+            'servicos': forms.CheckboxSelectMultiple(),
+            'desconto_produtos': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'validade_dias': forms.NumberInput(attrs={'class': 'form-control'}),
+            'permite_acumular': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'destaque': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class ProdutoForm(forms.ModelForm):
+    class Meta:
+        model = Produto
+        exclude = ['criado_em', 'atualizado_em']
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'sku': forms.TextInput(attrs={'class': 'form-control'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'categoria': forms.TextInput(attrs={'class': 'form-control'}),
+            'custo': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'preco': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'estoque_atual': forms.NumberInput(attrs={'class': 'form-control'}),
+            'estoque_minimo': forms.NumberInput(attrs={'class': 'form-control'}),
+            'unidade': forms.TextInput(attrs={'class': 'form-control'}),
+            'imagem': forms.FileInput(attrs={'class': 'form-control'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class MovimentacaoEstoqueForm(forms.ModelForm):
+    class Meta:
+        model = MovimentacaoEstoque
+        fields = ['produto', 'tipo', 'quantidade', 'motivo']
+        widgets = {
+            'produto': forms.Select(attrs={'class': 'form-control'}),
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control'}),
+            'motivo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Compra NF 1234 / Reposição'}),
+        }
+
+
+class ItemComandaForm(forms.ModelForm):
+    class Meta:
+        model = ItemComanda
+        fields = ['tipo', 'servico', 'produto', 'descricao', 'quantidade', 'preco_unitario']
+        widgets = {
+            'tipo': forms.Select(attrs={'class': 'form-control', 'id': 'id_item_tipo'}),
+            'servico': forms.Select(attrs={'class': 'form-control'}),
+            'produto': forms.Select(attrs={'class': 'form-control'}),
+            'descricao': forms.TextInput(attrs={'class': 'form-control'}),
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'value': 1}),
+            'preco_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
+
+
+class RegraComissaoForm(forms.ModelForm):
+    class Meta:
+        model = RegraComissao
+        fields = ['barbeiro', 'percentual_servico', 'percentual_produto', 'ativo']
+        widgets = {
+            'barbeiro': forms.Select(attrs={'class': 'form-control'}),
+            'percentual_servico': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'percentual_produto': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class MetaBarbeiroForm(forms.ModelForm):
+    class Meta:
+        model = MetaBarbeiro
+        fields = ['barbeiro', 'mes', 'ano', 'meta_faturamento', 'meta_atendimentos', 'meta_produtos']
+        widgets = {
+            'barbeiro': forms.Select(attrs={'class': 'form-control'}),
+            'mes': forms.NumberInput(attrs={'class': 'form-control'}),
+            'ano': forms.NumberInput(attrs={'class': 'form-control'}),
+            'meta_faturamento': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'meta_atendimentos': forms.NumberInput(attrs={'class': 'form-control'}),
+            'meta_produtos': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+
+
+class RepasseComissaoForm(forms.ModelForm):
+    class Meta:
+        model = RepasseComissao
+        fields = ['barbeiro', 'valor', 'periodo_inicio', 'periodo_fim', 'observacao']
+        widgets = {
+            'barbeiro': forms.Select(attrs={'class': 'form-control'}),
+            'valor': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'periodo_inicio': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'periodo_fim': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'observacao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+
+class ConfiguracaoEstabelecimentoForm(forms.ModelForm):
+    class Meta:
+        model = ConfiguracaoEstabelecimento
+        fields = [
+            'tipo_sinal', 'valor_sinal', 'minutos_expiracao_pix',
+            'chave_pix', 'titular_pix', 'cidade_pix',
+            'lembrete_horas_antes', 'cancelamento_antecedencia_horas'
+        ]
+        widgets = {
+            'tipo_sinal': forms.Select(attrs={'class': 'form-control'}),
+            'valor_sinal': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'minutos_expiracao_pix': forms.NumberInput(attrs={'class': 'form-control'}),
+            'chave_pix': forms.TextInput(attrs={'class': 'form-control'}),
+            'titular_pix': forms.TextInput(attrs={'class': 'form-control'}),
+            'cidade_pix': forms.TextInput(attrs={'class': 'form-control'}),
+            'lembrete_horas_antes': forms.NumberInput(attrs={'class': 'form-control'}),
+            'cancelamento_antecedencia_horas': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+
+
+class ListaEsperaForm(forms.ModelForm):
+    class Meta:
+        model = ListaEspera
+        fields = ['servico', 'barbeiro', 'data_desejada', 'horario_inicio', 'horario_fim']
+        widgets = {
+            'servico': forms.Select(attrs={'class': 'form-control'}),
+            'barbeiro': forms.Select(attrs={'class': 'form-control'}),
+            'data_desejada': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'horario_inicio': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'horario_fim': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+        }
+
+    def clean_data_desejada(self):
+        data_escolhida = self.cleaned_data.get('data_desejada')
+        if data_escolhida and data_escolhida < date.today():
+            raise ValidationError('A data desejada não pode ser no passado.')
+        return data_escolhida
+
+
+class AnaliseEstiloForm(forms.Form):
+    imagem = forms.ImageField(
+        label='Foto do seu Rosto',
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+        help_text='Tire uma foto frontal, com boa iluminação e rosto centralizado.'
+    )
+    consentimento = forms.BooleanField(
+        label='Concordo com a análise biométrica e de visagismo da minha imagem.',
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+
+class HistoricoVisualClienteForm(forms.ModelForm):
+    class Meta:
+        model = HistoricoVisualCliente
+        fields = ['cliente', 'barbeiro', 'agendamento', 'imagem', 'consentimento', 'observacoes']
+        widgets = {
+            'cliente': forms.Select(attrs={'class': 'form-control'}),
+            'barbeiro': forms.Select(attrs={'class': 'form-control'}),
+            'agendamento': forms.Select(attrs={'class': 'form-control'}),
+            'imagem': forms.FileInput(attrs={'class': 'form-control'}),
+            'consentimento': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }

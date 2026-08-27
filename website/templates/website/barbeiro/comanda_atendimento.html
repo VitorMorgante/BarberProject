@@ -1,0 +1,186 @@
+{% extends "website/modelo.html" %}
+{% block titulo %}Comanda de Atendimento | Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container py-2">
+    
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+      <div>
+        <span class="badge bg-gold text-dark text-uppercase fw-bold px-3 py-1 mb-1">Comanda #{{ comanda.id }}</span>
+        <h2 class="brand-font text-white fw-bold mb-0">
+          Atendimento: <span class="text-gold">{{ agendamento.cliente.nome }}</span>
+        </h2>
+        <p class="text-muted small mb-0">Barbeiro: {{ agendamento.barbeiro.nome }} • Data: {{ agendamento.data|date:"d/m/Y" }} às {{ agendamento.horario|time:"H:i" }}</p>
+      </div>
+      <div>
+        <a href="{% url 'agendamentos_barbeiro' %}" class="btn btn-outline-gold btn-sm"><i class="bi bi-arrow-left me-1"></i> Voltar aos Atendimentos</a>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      
+      <!-- Itens da Comanda -->
+      <div class="col-lg-7">
+        <div class="card card-delacruz p-4 mb-4">
+          <h5 class="text-white fw-bold mb-3"><i class="bi bi-receipt text-gold me-2"></i> Itens da Comanda</h5>
+          
+          <div class="table-responsive mb-3">
+            <table class="table table-dark table-hover align-middle mb-0">
+              <thead>
+                <tr class="small text-muted text-uppercase">
+                  <th>Item / Descrição</th>
+                  <th>Tipo</th>
+                  <th>Qtd</th>
+                  <th>Preço Unit.</th>
+                  <th>Total</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in comanda.itens.all %}
+                  <tr>
+                    <td class="fw-bold text-white">{{ item.descricao }}</td>
+                    <td><span class="badge bg-dark border border-secondary text-gold small">{{ item.get_tipo_display }}</span></td>
+                    <td>{{ item.quantidade }}</td>
+                    <td>R$ {{ item.preco_unitario }}</td>
+                    <td class="text-gold fw-bold">R$ {{ item.total }}</td>
+                    <td>
+                      {% if item.tipo != 'servico' %}
+                        <form method="post" class="d-inline">
+                          {% csrf_token %}
+                          <input type="hidden" name="acao" value="remover_item">
+                          <input type="hidden" name="item_id" value="{{ item.id }}">
+                          <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" title="Remover item">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Resumo Financeiro da Comanda -->
+          <div class="bg-dark p-3 rounded-3 border border-secondary border-opacity-25">
+            <div class="d-flex justify-content-between text-muted small mb-1">
+              <span>Subtotal:</span>
+              <strong class="text-white">R$ {{ comanda.subtotal }}</strong>
+            </div>
+            {% if comanda.desconto > 0 %}
+              <div class="d-flex justify-content-between text-success small mb-1">
+                <span>Desconto / Fidelidade:</span>
+                <strong>- R$ {{ comanda.desconto }}</strong>
+              </div>
+            {% endif %}
+            {% if comanda.creditos_abatidos > 0 %}
+              <div class="d-flex justify-content-between text-info small mb-1">
+                <span>Créditos Barber Club Abatidos:</span>
+                <strong>- R$ {{ comanda.creditos_abatidos }}</strong>
+              </div>
+            {% endif %}
+            {% if comanda.sinal_pago > 0 %}
+              <div class="d-flex justify-content-between text-warning small mb-1">
+                <span>Sinal PIX Já Pago:</span>
+                <strong>- R$ {{ comanda.sinal_pago }}</strong>
+              </div>
+            {% endif %}
+            <hr class="border-secondary my-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-white fw-bold">Total a Cobrar:</span>
+              <span class="fs-4 fw-bold text-gold">R$ {{ comanda.valor_total }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botão de Finalização da Comanda -->
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="acao" value="finalizar_comanda">
+          <button type="submit" class="btn btn-delacruz btn-lg w-100 py-3 fw-bold d-flex align-items-center justify-content-center gap-2" onclick="return confirm('Deseja concluir este atendimento e fechar a comanda? As comissões serão calculadas e o estoque será abatido.');">
+            <i class="bi bi-check2-all fs-4"></i> Finalizar Atendimento e Fechar Comanda
+          </button>
+        </form>
+      </div>
+
+      <!-- Painel de Adicionar Produtos / Serviços Adicionais -->
+      <div class="col-lg-5">
+        <div class="d-flex flex-column gap-4">
+          
+          <!-- Adicionar Produto (Pomadas, Óleos, Bebidas) -->
+          <div class="card card-delacruz p-4">
+            <h5 class="text-white fw-bold mb-3"><i class="bi bi-box-seam text-gold me-2"></i> Adicionar Produto / Bebida</h5>
+            
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="acao" value="adicionar_produto">
+              
+              <div class="mb-3">
+                <label class="form-label text-muted small">Selecione o Produto:</label>
+                <select name="produto_id" class="form-select bg-dark text-light border-secondary border-opacity-50" required>
+                  <option value="">-- Escolha um produto do estoque --</option>
+                  {% for p in produtos_disponiveis %}
+                    <option value="{{ p.id }}">{{ p.nome }} (R$ {{ p.preco }}) [Estoque: {{ p.estoque_atual }}]</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label text-muted small">Quantidade:</label>
+                <input type="number" name="quantidade" value="1" min="1" class="form-control bg-dark text-light border-secondary border-opacity-50" required>
+              </div>
+
+              <button type="submit" class="btn btn-outline-gold w-100 py-2">
+                <i class="bi bi-plus-circle me-1"></i> Incluir Produto na Comanda
+              </button>
+            </form>
+          </div>
+
+          <!-- Adicionar Serviço Extra -->
+          <div class="card card-delacruz p-4">
+            <h5 class="text-white fw-bold mb-3"><i class="bi bi-scissors text-gold me-2"></i> Adicionar Serviço Extra</h5>
+            
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="acao" value="adicionar_servico">
+              
+              <div class="mb-3">
+                <label class="form-label text-muted small">Serviço Adicional:</label>
+                <select name="servico_id" class="form-select bg-dark text-light border-secondary border-opacity-50" required>
+                  <option value="">-- Escolha um serviço adicional --</option>
+                  {% for s in servicos_adicionais %}
+                    <option value="{{ s.id }}">{{ s.nome }} (R$ {{ s.preco }})</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <button type="submit" class="btn btn-outline-light w-100 py-2">
+                <i class="bi bi-plus-circle me-1"></i> Incluir Serviço na Comanda
+              </button>
+            </form>
+          </div>
+
+          <!-- Aplicar Cupom Promocional -->
+          <div class="card card-delacruz p-4">
+            <h5 class="text-white fw-bold mb-2"><i class="bi bi-tag text-gold me-2"></i> Cupom Promocional</h5>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="acao" value="aplicar_cupom">
+              <div class="input-group mb-2">
+                <input type="text" name="codigo_cupom" class="form-control bg-dark text-light border-secondary border-opacity-50 text-uppercase" placeholder="Ex: DELACRUZ10" required>
+                <button type="submit" class="btn btn-outline-warning">Aplicar</button>
+              </div>
+              <span class="small text-muted" style="font-size: 0.75rem;">Validação em tempo real do voucher.</span>
+            </form>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

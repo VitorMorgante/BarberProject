@@ -1,60 +1,169 @@
 {% extends "website/modelo.html" %}
 {% load crispy_forms_tags %}
 
-{% block titulo %}Área do Cliente{% endblock %}
+{% block titulo %}Área do Cliente | Delacruz Barber{% endblock %}
 
 {% block conteudo %}
 <section class="py-5">
-  <div class="container py-4">
+  <div class="container py-2">
+    
+    <!-- Welcome Header & Quick Action -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+      <div>
+        <h2 class="brand-font text-white fw-bold mb-1">
+          Olá, <span class="text-gold">{{ request.user.first_name|default:request.user.username }}</span> 👋
+        </h2>
+        <p class="text-muted small mb-0">Bem-vindo à sua área exclusiva na Delacruz Barber.</p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'repetir_ultimo_corte' %}" class="btn btn-outline-warning d-flex align-items-center gap-2" title="Agendar automaticamente o mesmo corte anterior">
+          <i class="bi bi-arrow-repeat"></i> Repetir Último Corte
+        </a>
+        <a href="{% url 'agendamento' %}" class="btn btn-delacruz d-flex align-items-center gap-2">
+          <i class="bi bi-calendar-plus"></i> Novo Agendamento
+        </a>
+        <a href="{% url 'cliente_waitlist' %}" class="btn btn-outline-gold d-flex align-items-center gap-2">
+          <i class="bi bi-hourglass-split"></i> Lista de Espera
+        </a>
+      </div>
+    </div>
+
+    <!-- Top Highlights: Barber Club + Fidelidade -->
+    <div class="row g-4 mb-4">
+      
+      <!-- Barber Club Card -->
+      <div class="col-md-6">
+        <div class="card card-delacruz h-100 p-4 position-relative overflow-hidden">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <span class="badge bg-gold text-dark text-uppercase fw-bold px-2 py-1 mb-2">Barber Club</span>
+              <h5 class="text-white fw-bold mb-0">
+                {% if club %}
+                  {{ club.plano.nome }}
+                {% else %}
+                  Delacruz Prime
+                {% endif %}
+              </h5>
+            </div>
+            <i class="bi bi-gem text-gold fs-2"></i>
+          </div>
+          
+          {% if club %}
+            <div class="mb-3">
+              <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Créditos disponíveis:</span>
+                <strong class="text-gold">{{ club.disponiveis }} de {{ club.total }}</strong>
+              </div>
+              <div class="progress bg-dark" style="height: 10px;">
+                <div class="progress-bar bg-gold" role="progressbar" style="width: {{ club.porcentagem }}%;" aria-valuenow="{{ club.porcentagem }}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <span class="d-block small text-muted mt-2">
+                <i class="bi bi-arrow-repeat text-gold me-1"></i> Renovação em: <strong>{{ club.renovacao|date:"d/m/Y" }}</strong>
+              </span>
+            </div>
+            <a href="{% url 'cliente_club' %}" class="btn btn-sm btn-outline-gold w-100 mt-auto">
+              Gerenciar Assinatura
+            </a>
+          {% else %}
+            <p class="text-muted small mb-3">Assine o Barber Club e tenha cortes mensais com descontos exclusivos.</p>
+            <a href="{% url 'cliente_club' %}" class="btn btn-sm btn-delacruz w-100 mt-auto">
+              Conhecer Planos Prime
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Fidelidade Digital Card -->
+      <div class="col-md-6">
+        <div class="card card-delacruz h-100 p-4">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <span class="badge bg-success bg-opacity-25 text-success text-uppercase fw-bold px-2 py-1 mb-2">Fidelidade</span>
+              <h5 class="text-white fw-bold mb-0">Cartão Fidelidade</h5>
+            </div>
+            <i class="bi bi-award text-gold fs-2"></i>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+              <span>Progresso no ciclo:</span>
+              <strong class="text-white">{{ fidelidade.atual }} / {{ fidelidade.meta }} cortes</strong>
+            </div>
+            <div class="progress bg-dark" style="height: 10px;">
+              <div class="progress-bar bg-success" role="progressbar" style="width: {{ fidelidade.porcentagem }}%;" aria-valuenow="{{ fidelidade.porcentagem }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            {% if fidelidade.tem_recompensa %}
+              <div class="alert alert-success border-0 py-2 px-3 small mt-2 mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-gift-fill text-success fs-5"></i>
+                <div>
+                  <strong>Recompensa Disponível!</strong><br>
+                  1 Corte gratuito pronto para resgate.
+                </div>
+              </div>
+            {% else %}
+              <span class="d-block small text-muted mt-2">
+                <i class="bi bi-info-circle text-gold me-1"></i> Faltam <strong>{{ fidelidade.faltam }} atendimentos</strong> para sua próxima recompensa.
+              </span>
+            {% endif %}
+          </div>
+          <a href="{% url 'cliente_fidelidade' %}" class="btn btn-sm btn-outline-gold w-100 mt-auto">
+            Ver Recompensas
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Main Content Area: Left Profile & Right Appointments -->
     <div class="row g-4">
       
       <!-- Profile Sidebar -->
       <div class="col-lg-4">
-        <div class="card delacruz-card p-4 h-100">
+        <div class="card card-delacruz p-4">
           <div class="text-center mb-4">
             {% if request.user.perfil.foto_perfil %}
-              <img src="{{ request.user.perfil.foto_perfil.url }}" alt="Foto de Perfil" class="rounded-circle border border-gold img-thumbnail mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+              <img src="{{ request.user.perfil.foto_perfil.url }}" alt="Foto de Perfil" class="rounded-circle border border-warning border-opacity-50 img-thumbnail mb-3" style="width: 110px; height: 110px; object-fit: cover;">
             {% else %}
-              <div class="rounded-circle border border-gold d-flex align-items-center justify-content-center mx-auto mb-3 bg-secondary-subtle" style="width: 120px; height: 120px;">
+              <div class="rounded-circle border border-warning border-opacity-50 d-flex align-items-center justify-content-center mx-auto mb-3 bg-dark" style="width: 110px; height: 110px;">
                 <i class="bi bi-person fs-1 text-gold"></i>
               </div>
             {% endif %}
-            <h4 class="fw-bold mb-1 text-gold">{{ request.user.first_name }} {{ request.user.last_name }}</h4>
-            <span class="badge bg-gold-badge text-dark">{{ request.user.perfil.tipo_usuario }}</span>
+            <h5 class="fw-bold mb-1 text-white">{{ request.user.first_name }} {{ request.user.last_name }}</h5>
+            <span class="badge bg-dark border border-secondary border-opacity-50 text-gold text-uppercase small">{{ request.user.perfil.tipo_usuario|default:"Cliente" }}</span>
           </div>
           
-          <hr class="border-secondary opacity-25">
+          <hr class="border-secondary opacity-25 my-3">
           
-          <h5 class="fw-bold mb-3 text-gold">Editar Dados Pessoais</h5>
+          <h6 class="fw-bold mb-3 text-gold"><i class="bi bi-person-gear me-2"></i>Meus Dados</h6>
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ profile_form|crispy }}
-            <button type="submit" class="btn btn-gold-solid w-100 mt-3">
+            <button type="submit" class="btn btn-delacruz w-100 mt-3">
               Atualizar Perfil
             </button>
           </form>
         </div>
       </div>
 
-      <!-- Main Appointments Panel -->
+      <!-- Appointments & Visual History Panel -->
       <div class="col-lg-8">
         <div class="d-flex flex-column gap-4">
           
           <!-- Upcoming Appointments -->
-          <div class="card delacruz-card p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h3 class="fw-bold mb-0 text-gold"><i class="bi bi-calendar-event me-2"></i> Próximos Agendamentos</h3>
+          <div class="card card-delacruz p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold mb-0 text-white"><i class="bi bi-calendar-event text-gold me-2"></i> Próximos Atendimentos</h5>
               <a href="{% url 'agendamento' %}" class="btn btn-delacruz btn-sm">Novo Agendamento</a>
             </div>
             
             <div class="table-responsive">
-              <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle">
+              <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle mb-0">
                 <thead>
-                  <tr>
+                  <tr class="small text-muted text-uppercase">
                     <th>Serviço</th>
                     <th>Barbeiro</th>
-                    <th>Data/Hora</th>
-                    <th>Preço</th>
+                    <th>Data / Hora</th>
+                    <th>Valor</th>
                     <th>Status</th>
                     <th>Ações</th>
                   </tr>
@@ -65,21 +174,26 @@
                       <td class="fw-bold text-white">{{ a.servico.nome }}</td>
                       <td>{{ a.barbeiro.nome }}</td>
                       <td>{{ a.data|date:"d/m/Y" }} às {{ a.horario|time:"H:i" }}</td>
-                      <td>R$ {{ a.servico.preco }}</td>
+                      <td class="text-gold">R$ {{ a.servico.preco }}</td>
                       <td>
-                        <span class="badge {% if a.status == 'Confirmado' %}bg-success{% else %}bg-warning{% endif %}">
+                        <span class="badge {% if a.status == 'Confirmado' %}bg-success{% elif a.status == 'Em Atendimento' %}bg-primary{% else %}bg-warning text-dark{% endif %}">
                           {{ a.status }}
                         </span>
                       </td>
                       <td>
-                        {% if a.status == 'Pendente' or a.status == 'Confirmado' %}
-                          <form method="post" action="{% url 'cancelar_agendamento_cliente' a.pk %}" onsubmit="return confirm('Deseja realmente cancelar este agendamento?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-outline-danger btn-sm">
-                              Cancelar
-                            </button>
-                          </form>
-                        {% endif %}
+                        <div class="d-flex gap-1 flex-wrap">
+                          <a href="{% url 'agendamento_ics' a.pk %}" class="btn btn-outline-info btn-sm py-0 px-2" title="Adicionar à Agenda (Apple / Android / Outlook)">
+                            <i class="bi bi-calendar-event"></i>
+                          </a>
+                          {% if a.status == 'Pendente' or a.status == 'Confirmado' %}
+                            <form method="post" action="{% url 'cancelar_agendamento_cliente' a.pk %}" onsubmit="return confirm('Deseja realmente cancelar este horário?');" class="d-inline">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" title="Cancelar agendamento">
+                                Cancelar
+                              </button>
+                            </form>
+                          {% endif %}
+                        </div>
                       </td>
                     </tr>
                   {% empty %}
@@ -92,18 +206,47 @@
             </div>
           </div>
 
+          <!-- Private Visual History Preview -->
+          <div class="card card-delacruz p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold mb-0 text-white"><i class="bi bi-images text-gold me-2"></i> Minha Evolução Visual (Privado)</h5>
+              <a href="{% url 'cliente_evolucao' %}" class="small text-gold text-decoration-none fw-bold">Ver Todas <i class="bi bi-arrow-right"></i></a>
+            </div>
+            
+            {% if fotos_evolucao %}
+              <div class="row g-3">
+                {% for f in fotos_evolucao %}
+                  <div class="col-6 col-md-3">
+                    <div class="card bg-dark border border-secondary border-opacity-25 h-100 overflow-hidden text-center">
+                      <img src="{{ f.imagem.url }}" alt="Evolução" class="img-fluid" style="height: 120px; object-fit: cover;">
+                      <div class="p-2 small text-muted">
+                        {{ f.data|date:"d/m/Y" }}<br>
+                        <strong class="text-light">{{ f.barbeiro.nome }}</strong>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted small mb-0">Nenhuma foto salva ainda. Ao concluir seu corte, seu barbeiro pode registrar o resultado para você acompanhar sua evolução.</p>
+            {% endif %}
+          </div>
+
           <!-- History & Completed Services -->
-          <div class="card delacruz-card p-4">
-            <h3 class="fw-bold mb-4 text-gold"><i class="bi bi-clock-history me-2"></i> Últimos Serviços Realizados</h3>
+          <div class="card card-delacruz p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold mb-0 text-white"><i class="bi bi-clock-history text-gold me-2"></i> Histórico de Atendimentos</h5>
+              <a href="{% url 'historico_cliente' %}" class="small text-gold text-decoration-none fw-bold">Histórico Completo <i class="bi bi-arrow-right"></i></a>
+            </div>
             
             <div class="table-responsive">
-              <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle">
+              <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle mb-0">
                 <thead>
-                  <tr>
+                  <tr class="small text-muted text-uppercase">
                     <th>Serviço</th>
                     <th>Barbeiro</th>
-                    <th>Data/Hora</th>
-                    <th>Preço</th>
+                    <th>Data</th>
+                    <th>Valor</th>
                     <th>Avaliação</th>
                   </tr>
                 </thead>
@@ -113,7 +256,7 @@
                       <td class="fw-bold text-white">{{ a.servico.nome }}</td>
                       <td>{{ a.barbeiro.nome }}</td>
                       <td>{{ a.data|date:"d/m/Y" }} às {{ a.horario|time:"H:i" }}</td>
-                      <td>R$ {{ a.servico.preco }}</td>
+                      <td class="text-gold">R$ {{ a.servico.preco }}</td>
                       <td>
                         {% if a.feedback %}
                           <span class="text-gold">
@@ -126,8 +269,8 @@
                             {% endfor %}
                           </span>
                         {% else %}
-                          <a href="{% url 'criar_feedback' a.pk %}" class="btn btn-outline-gold btn-sm">
-                            Avaliar Serviço
+                          <a href="{% url 'criar_feedback' a.pk %}" class="btn btn-outline-gold btn-sm py-0 px-2">
+                            Avaliar
                           </a>
                         {% endif %}
                       </td>
@@ -140,14 +283,6 @@
                 </tbody>
               </table>
             </div>
-            
-            {% if historico %}
-              <div class="text-end mt-3">
-                <a href="{% url 'historico_cliente' %}" class="text-gold text-decoration-none fw-bold" style="font-size: 0.9rem;">
-                  Ver histórico completo <i class="bi bi-arrow-right"></i>
-                </a>
-              </div>
-            {% endif %}
           </div>
           
         </div>

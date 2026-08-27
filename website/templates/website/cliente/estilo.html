@@ -1,0 +1,235 @@
+{% extends "website/modelo.html" %}
+{% load crispy_forms_tags %}
+{% block titulo %}Consultor de Visagismo & Estilo IA | Delacruz Barber{% endblock %}
+
+{% block extra_css %}
+<style>
+  .camera-container {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    height: 320px;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #c5a880;
+    box-shadow: 0 0 25px rgba(197, 168, 128, 0.35);
+    background: #020617;
+  }
+  .camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* Espelhado */
+  }
+  .face-guide-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 220px;
+    height: 270px;
+    border: 2px dashed rgba(197, 168, 128, 0.7);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+</style>
+{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container py-2">
+    
+    <!-- Header -->
+    <div class="text-center max-w-700 mx-auto mb-4">
+      <span class="badge bg-info bg-opacity-25 text-info text-uppercase fw-bold px-3 py-2 mb-2">Visagismo Computacional</span>
+      <h2 class="brand-font text-white fw-bold display-6">Descubra o Corte Ideal para <span class="text-gold">Seu Rosto</span></h2>
+      <p class="text-muted small">Nossa Inteligência Artificial analisa suas proporções faciais e simetria para indicar os cortes e barbas que melhor valorizam seu visual.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+      <!-- Formulário de Upload & Câmera ao Vivo -->
+      <div class="col-lg-5">
+        <div class="card card-delacruz p-4 h-100">
+          <h5 class="text-white fw-bold mb-3"><i class="bi bi-camera text-gold me-2"></i> Foto do Rosto</h5>
+          
+          <!-- Botões de Escolha: Câmera ou Arquivo -->
+          <div class="d-flex gap-2 mb-3">
+            <button type="button" class="btn btn-outline-info btn-sm flex-fill" id="btnAbrirCamera">
+              <i class="bi bi-camera-video me-1"></i> Abrir Câmera
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="btnUploadArquivo">
+              <i class="bi bi-folder me-1"></i> Da Galeria
+            </button>
+          </div>
+
+          <!-- Live Camera Preview (Escondido por padrão) -->
+          <div id="cameraPreviewContainer" class="d-none text-center mb-3">
+            <div class="camera-container mb-2">
+              <video id="webcamVideo" class="camera-video" autoplay playsinline muted></video>
+              <div class="face-guide-overlay"></div>
+            </div>
+            <span class="small text-muted d-block mb-2">Posicione o rosto dentro da moldura</span>
+            <button type="button" class="btn btn-delacruz btn-sm px-4" id="btnCapturarFoto">
+              <i class="bi bi-camera-fill me-1"></i> Tirar Foto Agora
+            </button>
+          </div>
+
+          <form method="post" enctype="multipart/form-data" id="formVisagismo">
+            {% csrf_token %}
+            <div class="mb-3" id="inputArquivoContainer">
+              <label class="form-label text-light small fw-bold">Arquivo de Imagem:</label>
+              <input type="file" name="imagem" id="inputImagemFile" accept="image/*" class="form-control bg-dark text-light border-secondary border-opacity-50" required>
+            </div>
+            
+            <div class="form-check mb-4">
+              <input class="form-check-input" type="checkbox" name="consentimento" id="consentCheck" required checked>
+              <label class="form-check-label small text-muted" for="consentCheck">
+                Concordo com a análise biométrica privada da imagem para sugestão de estilo.
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-delacruz w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2">
+              <i class="bi bi-magic"></i> Analisar Visagismo com IA
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Último Resultado de Análise -->
+      <div class="col-lg-7">
+        <div class="card card-delacruz p-4 h-100">
+          <h5 class="text-white fw-bold mb-3"><i class="bi bi-cpu text-info me-2"></i> Resultado do Visagismo</h5>
+          
+          {% if analises %}
+            {% with ult=analises.0 %}
+              <div class="p-3 bg-dark rounded-3 border border-secondary border-opacity-25 mb-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2 pb-2 border-bottom border-secondary border-opacity-25">
+                  <div>
+                    <span class="text-muted small">Formato Facial Identificado:</span>
+                    <h4 class="text-gold fw-bold mb-0">{{ ult.formato_rosto_detectado }}</h4>
+                  </div>
+                  <span class="badge bg-info bg-opacity-25 text-info px-3 py-2">
+                    Confiança: {{ ult.confianca|floatformat:0 }}%
+                  </span>
+                </div>
+                <p class="small text-light mb-0" style="line-height: 1.6; white-space: pre-line;">{{ ult.recomendacao_texto }}</p>
+              </div>
+
+              <!-- Estilos Recomendados do Catálogo -->
+              <h6 class="text-gold fw-bold mb-2">Cortes Recomendados do Nosso Catálogo:</h6>
+              <div class="row g-2">
+                {% for estilo in ult.estilos_sugeridos.all %}
+                  <div class="col-sm-6">
+                    <div class="p-2 rounded bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-2">
+                      <i class="bi bi-scissors text-gold fs-5"></i>
+                      <div>
+                        <strong class="text-white small d-block">{{ estilo.nome }}</strong>
+                        <span class="text-muted" style="font-size: 0.75rem;">Manutenção: {{ estilo.manutencao }}</span>
+                      </div>
+                    </div>
+                  </div>
+                {% empty %}
+                  <div class="col-12 text-muted small">Nenhum estilo específico catalogado no momento.</div>
+                {% endfor %}
+              </div>
+            {% endwith %}
+          {% else %}
+            <div class="text-center text-muted py-5 my-auto">
+              <i class="bi bi-person-bounding-box display-4 text-secondary opacity-50 d-block mb-3"></i>
+              Tire uma foto ou envie uma imagem para receber o diagnóstico biométrico do seu rosto e os melhores estilos para você.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Catálogo de Estilos da Barbearia -->
+    <h3 class="brand-font text-white fw-bold mb-4"><i class="bi bi-grid text-gold me-2"></i> Catálogo de Cortes Delacruz</h3>
+    <div class="row g-4">
+      {% for estilo in catalogo_cortes %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card card-delacruz h-100 p-4">
+            <h5 class="text-white fw-bold mb-1">{{ estilo.nome }}</h5>
+            <span class="badge bg-dark border border-secondary text-gold small mb-3 align-self-start">Formatos: {{ estilo.formato_rosto }}</span>
+            <p class="text-muted small mb-3">{{ estilo.descricao }}</p>
+            <ul class="list-unstyled small text-muted d-flex flex-column gap-1 mt-auto">
+              <li><i class="bi bi-check text-gold me-1"></i> Tipo de Cabelo: <strong>{{ estilo.tipo_cabelo }}</strong></li>
+              <li><i class="bi bi-clock text-gold me-1"></i> Manutenção: <strong>{{ estilo.manutencao }}</strong></li>
+            </ul>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12 text-center text-muted py-3">
+          Catálogo sendo atualizado.
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnAbrirCamera = document.getElementById('btnAbrirCamera');
+    const btnUploadArquivo = document.getElementById('btnUploadArquivo');
+    const cameraContainer = document.getElementById('cameraPreviewContainer');
+    const video = document.getElementById('webcamVideo');
+    const btnCapturar = document.getElementById('btnCapturarFoto');
+    const fileInput = document.getElementById('inputImagemFile');
+    let stream = null;
+
+    if (btnAbrirCamera) {
+      btnAbrirCamera.addEventListener('click', async () => {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } }
+          });
+          video.srcObject = stream;
+          cameraContainer.classList.remove('d-none');
+        } catch (err) {
+          alert('Não foi possível acessar a câmera do dispositivo. Por favor, utilize o envio de arquivo.');
+        }
+      });
+    }
+
+    if (btnUploadArquivo) {
+      btnUploadArquivo.addEventListener('click', () => {
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        cameraContainer.classList.add('d-none');
+        fileInput.click();
+      });
+    }
+
+    if (btnCapturar) {
+      btnCapturar.addEventListener('click', () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 640;
+        const ctx = canvas.getContext('2d');
+        // Espelhamento na captura
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob((blob) => {
+          const file = new File([blob], 'foto_rosto.jpg', { type: 'image/jpeg' });
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          fileInput.files = dataTransfer.files;
+
+          if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+          }
+          cameraContainer.classList.add('d-none');
+          alert('Foto capturada com sucesso! Clique em "Analisar Visagismo com IA" para continuar.');
+        }, 'image/jpeg', 0.9);
+      });
+    }
+  });
+</script>
+{% endblock %}

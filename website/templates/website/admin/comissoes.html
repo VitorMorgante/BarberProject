@@ -1,0 +1,92 @@
+{% extends 'website/modelo.html' %}
+{% block titulo %}Gestão de Comissões | Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container text-start">
+    
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 pb-3 border-bottom border-secondary border-opacity-25">
+      <div>
+        <span class="text-gold text-uppercase fw-bold small">Administração</span>
+        <h2 class="brand-font text-uppercase fw-bold text-light mb-0">Gestão de Comissões & Repasses</h2>
+      </div>
+      <div>
+        <a href="{% url 'cadastrar_repasse' %}" class="btn btn-delacruz btn-sm d-flex align-items-center gap-1">
+          <i class="bi bi-cash-stack"></i> Registrar Novo Repasse
+        </a>
+      </div>
+    </div>
+
+    <!-- Cards dos Barbeiros -->
+    <div class="row g-4 mb-5">
+      {% for b in barbeiros_resumo %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card card-delacruz p-4 h-100 border-secondary border-opacity-25">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="text-white fw-bold mb-0">{{ b.barbeiro.nome }}</h5>
+              <span class="badge bg-gold text-dark">{{ b.barbeiro.cargo }}</span>
+            </div>
+            
+            <div class="bg-dark p-3 rounded-3 border border-secondary border-opacity-25 mb-3">
+              <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Comissão Total Gerada:</span>
+                <strong class="text-white">R$ {{ b.total_comissao }}</strong>
+              </div>
+              <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Repasses Realizados:</span>
+                <strong class="text-success">R$ {{ b.total_repasses }}</strong>
+              </div>
+              <hr class="border-secondary my-2">
+              <div class="d-flex justify-content-between">
+                <span class="text-white fw-bold">Saldo a Repassar:</span>
+                <span class="text-warning fw-bold fs-5">R$ {{ b.saldo_a_receber }}</span>
+              </div>
+            </div>
+
+            <a href="{% url 'cadastrar_repasse' %}?barbeiro={{ b.barbeiro.id }}&valor={{ b.saldo_a_receber }}" class="btn btn-outline-gold btn-sm w-100 mt-auto">
+              Registrar Pagamento de Repasse
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Histórico de Repasses Efetuados -->
+    <div class="card card-delacruz p-4">
+      <h5 class="brand-font text-white fw-bold mb-3"><i class="bi bi-clock-history text-gold me-2"></i> Histórico de Repasses Efetuados</h5>
+      <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle mb-0">
+          <thead>
+            <tr class="small text-muted text-uppercase">
+              <th>Data Repasse</th>
+              <th>Barbeiro</th>
+              <th>Valor Pago</th>
+              <th>Período Apurado</th>
+              <th>Responsável</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in ultimos_repasses %}
+              <tr>
+                <td>{{ r.data_repasse|date:"d/m/Y H:i" }}</td>
+                <td class="fw-bold text-white">{{ r.barbeiro.nome }}</td>
+                <td class="text-success fw-bold">R$ {{ r.valor }}</td>
+                <td>{{ r.periodo_inicio|date:"d/m/Y" }} a {{ r.periodo_fim|date:"d/m/Y" }}</td>
+                <td class="small">{{ r.usuario_responsavel.username|default:"Admin" }}</td>
+                <td class="small text-muted">{{ r.observacao|default:"-" }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">Nenhum repasse registrado até o momento.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -3,56 +3,174 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>{% block titulo %}Delacruz Barber{% endblock %} | Barbearia Premium</title>
+    
+    <!-- PWA Meta Tags & Manifest -->
+    <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Delacruz Barber">
+    <link rel="manifest" href="{% url 'pwa_manifest' %}">
+    
     <!-- Google Fonts for Luxury Aesthetic -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Bootstrap 5 CSS via CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
     <!-- Bootstrap Icons via CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <!-- Custom CSS Stylesheet -->
     <link rel="stylesheet" href="{% static 'website/css/style.css' %}">
     <style>
-      footer.footer-bar {
-        background-color: #020617 !important;
-        color: #94a3b8 !important;
+      :root {
+        --delacruz-gold: #c5a880;
+        --delacruz-gold-hover: #b09168;
+        --delacruz-dark: #020617;
+        --delacruz-card-bg: #0f172a;
       }
-      footer.footer-bar a.footer-link, footer.footer-bar .text-muted-custom, footer.footer-bar .copyright-text {
-        color: #94a3b8 !important;
+      body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: #020617;
+        color: #f1f5f9;
+        -webkit-tap-highlight-color: transparent;
       }
-      footer.footer-bar a.footer-link:hover {
-        color: #22c55e !important;
+      .brand-font {
+        font-family: 'Playfair Display', serif;
+        letter-spacing: 0.05em;
       }
-      footer.footer-bar h5.text-beige, footer.footer-bar .text-light, footer.footer-bar .fw-bold, footer.footer-bar .text-white {
-        color: #ffffff !important;
+      .text-gold {
+        color: #c5a880 !important;
       }
-      .bg-gold-badge {
+      .bg-gold {
         background-color: #c5a880 !important;
         color: #020617 !important;
       }
-      .btn-gold-solid {
-        background-color: #c5a880 !important;
-        color: #020617 !important;
-        border: 1px solid #c5a880 !important;
+      .btn-delacruz {
+        background: linear-gradient(135deg, #d6b88f 0%, #c5a880 50%, #af8f64 100%);
+        color: #020617;
         font-weight: 600;
-        transition: all 0.3s ease;
+        border: 1px solid #c5a880;
+        transition: all 0.25s ease;
       }
-      .btn-gold-solid:hover {
-        background-color: #b09168 !important;
-        color: #020617 !important;
+      .btn-delacruz:hover, .btn-delacruz:active {
+        background: linear-gradient(135deg, #c5a880 0%, #b09168 100%);
+        color: #020617;
+        border-color: #b09168;
+        transform: translateY(-1px);
       }
       .btn-outline-gold {
         color: #c5a880 !important;
         border-color: #c5a880 !important;
         background: transparent;
-        transition: all 0.3s ease;
+        transition: all 0.25s ease;
       }
-      .btn-outline-gold:hover {
+      .btn-outline-gold:hover, .btn-outline-gold:active {
         background-color: #c5a880 !important;
         color: #020617 !important;
+      }
+      .card-delacruz {
+        background: #0f172a;
+        border: 1px solid rgba(197, 168, 128, 0.18);
+        border-radius: 14px;
+      }
+      .nav-link {
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+      
+      /* Mobile App Bottom Navigation Bar */
+      @media (max-width: 991.98px) {
+        body {
+          padding-bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+        }
+        .custom-navbar {
+          padding-top: 0.6rem;
+          padding-bottom: 0.6rem;
+        }
+        .delacruz-bottom-nav {
+          display: flex !important;
+        }
+      }
+
+      .delacruz-bottom-nav {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: rgba(2, 6, 23, 0.96);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border-top: 1px solid rgba(197, 168, 128, 0.22);
+        z-index: 1040;
+        align-items: center;
+        justify-content: space-around;
+        padding-bottom: env(safe-area-inset-bottom);
+        box-shadow: 0 -8px 24px rgba(0,0,0,0.6);
+      }
+
+      .delacruz-bottom-nav .nav-item-mobile {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.68rem;
+        font-weight: 600;
+        gap: 2px;
+        padding: 4px 0;
+        transition: all 0.2s ease;
+      }
+
+      .delacruz-bottom-nav .nav-item-mobile i {
+        font-size: 1.25rem;
+      }
+
+      .delacruz-bottom-nav .nav-item-mobile.active,
+      .delacruz-bottom-nav .nav-item-mobile:active {
+        color: #c5a880;
+      }
+
+      .delacruz-bottom-nav .nav-item-mobile.active i {
+        transform: scale(1.1);
+      }
+
+      /* Central Floating Action Button (FAB) */
+      .delacruz-bottom-nav .nav-fab-mobile {
+        position: relative;
+        top: -16px;
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #d6b88f 0%, #c5a880 50%, #af8f64 100%);
+        color: #020617 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 16px rgba(197, 168, 128, 0.45);
+        border: 3px solid #020617;
+        transition: transform 0.2s ease;
+      }
+
+      .delacruz-bottom-nav .nav-fab-mobile:active {
+        transform: scale(0.92);
+      }
+
+      /* Touch targets minimum size */
+      button, a.btn, .nav-link {
+        min-height: 38px;
+      }
+      input, select, textarea {
+        font-size: 16px !important; /* Previne zoom automático do iOS */
       }
     </style>
     {% block extra_css %}{% endblock %}
@@ -60,67 +178,81 @@
   <body class="bg-dark-custom">
 
     <!-- FIXED PREMIUM NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark custom-navbar sticky-top" id="main-nav">
-      <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark custom-navbar sticky-top shadow-sm" id="main-nav" style="background-color: rgba(2, 6, 23, 0.96); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(197,168,128,0.15);">
+      <div class="container-fluid px-lg-4">
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{% url 'pagina_inicial' %}">
-          <span class="text-gold"><i class="bi bi-scissors"></i></span>
-          <span class="brand-font text-uppercase">Delacruz <span class="text-gold">Barber</span></span>
+          <span class="text-gold fs-4"><i class="bi bi-scissors"></i></span>
+          <span class="brand-font text-uppercase fs-5">Delacruz <span class="text-gold">Barber</span></span>
         </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-label="Abrir menu">
           <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarMenu">
-          <ul class="navbar-nav ms-auto align-items-lg-center">
+          <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
             {% if request.user.is_authenticated %}
               {% if is_cliente %}
-                <!-- Cliente Navbar -->
-                <li class="nav-item"><a class="nav-link" href="{% url 'pagina_inicial' %}">Início</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'servicos' %}">Serviços</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'barbeiros' %}">Barbeiros</a></li>
-                <li class="nav-item ms-lg-2"><a class="btn btn-delacruz" href="{% url 'agendamento' %}">Agendamento</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'area_cliente' %}">Minha área</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'historico_cliente' %}">Meu histórico</a></li>
+                <!-- Cliente Menu -->
+                <li class="nav-item"><a class="nav-link" href="{% url 'pagina_inicial' %}"><i class="bi bi-house-door me-1"></i>Início</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'area_cliente' %}"><i class="bi bi-person-circle me-1"></i>Minha Área</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'cliente_club' %}"><i class="bi bi-gem text-gold me-1"></i>Barber Club</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'cliente_fidelidade' %}"><i class="bi bi-award text-gold me-1"></i>Fidelidade</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'cliente_evolucao' %}"><i class="bi bi-images me-1"></i>Minha Evolução</a></li>
+                <li class="nav-item ms-lg-2"><a class="btn btn-delacruz btn-sm px-3" href="{% url 'agendamento' %}"><i class="bi bi-calendar-plus me-1"></i>Agendar</a></li>
+
               {% elif is_barbeiro %}
-                <!-- Barbeiro Navbar -->
-                <li class="nav-item"><a class="nav-link" href="{% url 'area_barbeiro' %}">Área do barbeiro</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'agendamentos_barbeiro' %}">Meus agendamentos</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'historico_barbeiro' %}">Histórico</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'relatorios_barbeiro' %}">Relatórios</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'fotos_barbeiro' %}">Minhas fotos</a></li>
+                <!-- Barbeiro Menu -->
+                <li class="nav-item"><a class="nav-link" href="{% url 'area_barbeiro' %}"><i class="bi bi-speedometer2 me-1"></i>Meu Painel</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'agendamentos_barbeiro' %}"><i class="bi bi-calendar-check me-1"></i>Atendimentos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'barbeiro_ganhos' %}"><i class="bi bi-cash-stack text-gold me-1"></i>Meus Ganhos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'barbeiro_metas' %}"><i class="bi bi-graph-up-arrow me-1"></i>Minhas Metas</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'fotos_barbeiro' %}"><i class="bi bi-camera me-1"></i>Portfólio</a></li>
+
               {% elif is_admin %}
-                <!-- Admin/staff Navbar -->
-                <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'listar_servicos' %}">Serviços</a></li>
-                {% if request.user.is_staff or request.user.is_superuser %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'listar_barbeiros' %}">Barbeiros</a></li>
-                {% endif %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'listar_clientes' %}">Clientes</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'listar_horarios' %}">Horários</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'listar_agendamentos' %}">Agendamentos</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'listar_mensagens' %}">Mensagens</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'alterar_senha' %}">Alterar senha</a></li>
+                <!-- Admin Menu -->
+                <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'admin_financeiro' %}"><i class="bi bi-cash-coin text-gold me-1"></i>Financeiro</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'admin_comissoes' %}"><i class="bi bi-percent me-1"></i>Comissões</a></li>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="adminCadastros" role="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-boxes me-1"></i>Cadastros
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
+                    <li><a class="dropdown-item" href="{% url 'listar_servicos' %}"><i class="bi bi-scissors me-2 text-gold"></i>Serviços</a></li>
+                    <li><a class="dropdown-item" href="{% url 'listar_barbeiros' %}"><i class="bi bi-person-badge me-2 text-gold"></i>Barbeiros</a></li>
+                    <li><a class="dropdown-item" href="{% url 'listar_clientes' %}"><i class="bi bi-people me-2 text-gold"></i>Clientes</a></li>
+                    <li><a class="dropdown-item" href="{% url 'listar_produtos' %}"><i class="bi bi-box-seam me-2 text-gold"></i>Produtos (PDV)</a></li>
+                    <li><a class="dropdown-item" href="{% url 'admin_estoque' %}"><i class="bi bi-arrow-left-right me-2 text-gold"></i>Movimentar Estoque</a></li>
+                    <li><a class="dropdown-item" href="{% url 'listar_planos' %}"><i class="bi bi-gem me-2 text-gold"></i>Planos Barber Club</a></li>
+                    <li><a class="dropdown-item" href="{% url 'listar_horarios' %}"><i class="bi bi-clock me-2 text-gold"></i>Horários</a></li>
+                    <li><a class="dropdown-item" href="{% url 'admin_waitlist' %}"><i class="bi bi-hourglass-split me-2 text-gold"></i>Lista de Espera</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'admin_configuracoes' %}"><i class="bi bi-gear me-2 text-gold"></i>Regras PIX & Sinal</a></li>
+                  </ul>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'listar_agendamentos' %}"><i class="bi bi-calendar-event me-1"></i>Agendamentos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'listar_mensagens' %}"><i class="bi bi-chat-dots me-1"></i>Mensagens</a></li>
               {% endif %}
               
               <!-- Logout -->
               <li class="nav-item ms-lg-2">
                 <form method="post" action="{% url 'logout' %}" class="d-inline">
                   {% csrf_token %}
-                  <button type="submit" class="nav-link btn btn-link p-0 text-start text-lg-center d-inline-block border-0 bg-transparent align-baseline" style="color: var(--navbar-link-color, #cbd5f5);">
-                    Sair
+                  <button type="submit" class="btn btn-outline-danger btn-sm border-0 d-inline-flex align-items-center gap-1" title="Sair da conta">
+                    <i class="bi bi-box-arrow-right"></i> Sair
                   </button>
                 </form>
               </li>
             {% else %}
-              <!-- Guest Navbar -->
+              <!-- Guest Menu -->
               <li class="nav-item"><a class="nav-link" href="{% url 'pagina_inicial' %}">Início</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'servicos' %}">Serviços</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'barbeiros' %}">Barbeiros</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'sobre' %}">Sobre</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'contato' %}">Contato</a></li>
-              <li class="nav-item ms-lg-2"><a class="btn btn-delacruz" href="{% url 'agendamento' %}">Agendamento</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+              <li class="nav-item ms-lg-2"><a class="btn btn-delacruz btn-sm px-3" href="{% url 'agendamento' %}">Agendamento</a></li>
+              <li class="nav-item"><a class="nav-link text-gold" href="{% url 'login' %}">Login</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'cadastro' %}">Cadastro</a></li>
             {% endif %}
           </ul>
@@ -133,7 +265,7 @@
     <div class="container mt-3">
       {% for message in messages %}
       <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %} alert-dismissible fade show border-0 shadow" role="alert"
-           style="background-color: {% if message.tags == 'error' %}rgba(220,53,69,0.15){% elif message.tags == 'success' %}rgba(25,135,84,0.15){% elif message.tags == 'warning' %}rgba(255,193,7,0.15){% else %}rgba(13,202,240,0.15){% endif %}; color: #f5f5f5; border-left: 4px solid {% if message.tags == 'error' %}#dc3545{% elif message.tags == 'success' %}#198754{% elif message.tags == 'warning' %}#ffc107{% else %}#0dcaf0{% endif %} !important;">
+           style="background-color: {% if message.tags == 'error' %}rgba(220,53,69,0.18){% elif message.tags == 'success' %}rgba(25,135,84,0.18){% elif message.tags == 'warning' %}rgba(255,193,7,0.18){% else %}rgba(13,202,240,0.18){% endif %}; color: #f8fafc; border-left: 4px solid {% if message.tags == 'error' %}#dc3545{% elif message.tags == 'success' %}#198754{% elif message.tags == 'warning' %}#ffc107{% else %}#0dcaf0{% endif %} !important;">
         <i class="bi {% if message.tags == 'error' %}bi-x-circle-fill text-danger{% elif message.tags == 'success' %}bi-check-circle-fill text-success{% elif message.tags == 'warning' %}bi-exclamation-triangle-fill text-warning{% else %}bi-info-circle-fill text-info{% endif %} me-2"></i>
         {{ message }}
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Fechar"></button>
@@ -143,65 +275,155 @@
     {% endif %}
 
     <!-- MAIN CONTENT -->
-    {% block conteudo %}{% endblock %}
+    <main class="min-vh-100 pb-5">
+      {% block conteudo %}{% endblock %}
+    </main>
+
+    <!-- MOBILE NATIVE BOTTOM NAVIGATION BAR -->
+    <nav class="delacruz-bottom-nav" aria-label="Navegação móvel">
+      {% if request.user.is_authenticated %}
+        {% if is_cliente %}
+          <!-- Cliente Mobile Bottom Nav -->
+          <a href="{% url 'pagina_inicial' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'pagina_inicial' %}active{% endif %}">
+            <i class="bi bi-house-door"></i>
+            <span>Início</span>
+          </a>
+          <a href="{% url 'cliente_club' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'cliente_club' %}active{% endif %}">
+            <i class="bi bi-gem text-gold"></i>
+            <span>Prime</span>
+          </a>
+          <a href="{% url 'agendamento' %}" class="nav-fab-mobile" title="Agendar Horário">
+            <i class="bi bi-calendar-plus-fill"></i>
+          </a>
+          <a href="{% url 'cliente_fidelidade' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'cliente_fidelidade' %}active{% endif %}">
+            <i class="bi bi-award"></i>
+            <span>Fidelidade</span>
+          </a>
+          <a href="{% url 'area_cliente' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'area_cliente' %}active{% endif %}">
+            <i class="bi bi-person-circle"></i>
+            <span>Minha Área</span>
+          </a>
+
+        {% elif is_barbeiro %}
+          <!-- Barbeiro Mobile Bottom Nav -->
+          <a href="{% url 'area_barbeiro' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'area_barbeiro' %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i>
+            <span>Painel</span>
+          </a>
+          <a href="{% url 'agendamentos_barbeiro' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'agendamentos_barbeiro' %}active{% endif %}">
+            <i class="bi bi-calendar-check"></i>
+            <span>Agenda</span>
+          </a>
+          <a href="{% url 'agendamentos_barbeiro' %}" class="nav-fab-mobile" title="Atendimentos do Dia">
+            <i class="bi bi-scissors"></i>
+          </a>
+          <a href="{% url 'barbeiro_ganhos' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'barbeiro_ganhos' %}active{% endif %}">
+            <i class="bi bi-cash-stack text-gold"></i>
+            <span>Ganhos</span>
+          </a>
+          <a href="{% url 'barbeiro_metas' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'barbeiro_metas' %}active{% endif %}">
+            <i class="bi bi-trophy"></i>
+            <span>Metas</span>
+          </a>
+
+        {% elif is_admin %}
+          <!-- Admin Mobile Bottom Nav -->
+          <a href="{% url 'dashboard' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="{% url 'admin_financeiro' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'admin_financeiro' %}active{% endif %}">
+            <i class="bi bi-cash-coin text-gold"></i>
+            <span>Financeiro</span>
+          </a>
+          <a href="{% url 'cadastrar_agendamento' %}" class="nav-fab-mobile" title="Novo Agendamento">
+            <i class="bi bi-plus-lg"></i>
+          </a>
+          <a href="{% url 'admin_estoque' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'admin_estoque' %}active{% endif %}">
+            <i class="bi bi-boxes"></i>
+            <span>Estoque</span>
+          </a>
+          <a href="{% url 'listar_agendamentos' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'listar_agendamentos' %}active{% endif %}">
+            <i class="bi bi-calendar-event"></i>
+            <span>Agenda</span>
+          </a>
+        {% endif %}
+      {% else %}
+        <!-- Guest Mobile Bottom Nav -->
+        <a href="{% url 'pagina_inicial' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'pagina_inicial' %}active{% endif %}">
+          <i class="bi bi-house-door"></i>
+          <span>Início</span>
+        </a>
+        <a href="{% url 'servicos' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'servicos' %}active{% endif %}">
+          <i class="bi bi-scissors"></i>
+          <span>Serviços</span>
+        </a>
+        <a href="{% url 'agendamento' %}" class="nav-fab-mobile" title="Agendar Agora">
+          <i class="bi bi-calendar-plus-fill"></i>
+        </a>
+        <a href="{% url 'barbeiros' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'barbeiros' %}active{% endif %}">
+          <i class="bi bi-people"></i>
+          <span>Equipe</span>
+        </a>
+        <a href="{% url 'login' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+          <i class="bi bi-person-lock text-gold"></i>
+          <span>Entrar</span>
+        </a>
+      {% endif %}
+    </nav>
 
     <!-- FOOTER SECTION -->
-    <footer class="footer-bar footer-text text-start">
+    <footer class="footer-bar footer-text text-start py-5 mt-5 d-none d-md-block">
       <div class="container pb-4 border-bottom border-secondary border-opacity-10">
         <div class="row g-4">
           <!-- Foot Column 1: Logo & Slogan -->
           <div class="col-lg-4 text-start">
             <a class="d-flex align-items-center gap-2 mb-3 text-decoration-none" href="{% url 'pagina_inicial' %}">
               <span class="text-gold"><i class="bi bi-scissors fs-4"></i></span>
-              <span class="brand-font fw-bold text-uppercase text-light" style="font-size: 1.4rem;">Delacruz <span class="text-gold">Barber</span></span>
+              <span class="brand-font fw-bold text-uppercase text-light fs-4">Delacruz <span class="text-gold">Barber</span></span>
             </a>
             <p class="text-muted-custom mb-3" style="font-size: 0.88rem; max-width: 320px;">
-              Corte preciso, barba alinhada e atendimento profissional em Paranavaí.
+              Corte preciso, barba alinhada, Barber Club exclusivo e atendimento de alto padrão em Paranavaí.
             </p>
             <div class="d-flex gap-2">
-              <a href="#" class="footer-social-pill" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-              <a href="https://instagram.com/delacruzbarber_oficial" target="_blank" class="footer-social-pill" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-              <a href="#" class="footer-social-pill" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
-              <a href="https://wa.me/554499190997" target="_blank" class="footer-social-pill" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+              <a href="#" class="footer-social-pill text-secondary" aria-label="Facebook"><i class="bi bi-facebook fs-5"></i></a>
+              <a href="https://instagram.com/delacruzbarber_oficial" target="_blank" class="footer-social-pill text-secondary" aria-label="Instagram"><i class="bi bi-instagram fs-5"></i></a>
+              <a href="https://wa.me/554499190997" target="_blank" class="footer-social-pill text-success" aria-label="WhatsApp"><i class="bi bi-whatsapp fs-5"></i></a>
             </div>
           </div>
 
-          <!-- Foot Column 2: Quick Links Map -->
+          <!-- Foot Column 2: Quick Links -->
           <div class="col-6 col-lg-2 text-start">
-            <h5 class="text-beige text-uppercase fw-600 mb-3" style="font-size: 0.9rem; letter-spacing: 0.05em;">Mapa do Site</h5>
-            <ul class="footer-link-list">
-              <li><a href="{% url 'pagina_inicial' %}" class="footer-link">Início</a></li>
-              <li><a href="{% url 'servicos' %}" class="footer-link">Serviços</a></li>
-              <li><a href="{% url 'barbeiros' %}" class="footer-link">Barbeiros</a></li>
-              <li><a href="{% url 'pagina_inicial' %}#galeria" class="footer-link">Nossos Cortes</a></li>
+            <h6 class="text-gold text-uppercase fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.05em;">Plataforma</h6>
+            <ul class="list-unstyled d-flex flex-column gap-2" style="font-size: 0.88rem;">
+              <li><a href="{% url 'pagina_inicial' %}" class="footer-link text-decoration-none">Início</a></li>
+              <li><a href="{% url 'servicos' %}" class="footer-link text-decoration-none">Serviços</a></li>
+              <li><a href="{% url 'barbeiros' %}" class="footer-link text-decoration-none">Nossa Equipe</a></li>
+              <li><a href="{% url 'agendamento' %}" class="footer-link text-decoration-none">Agendamento</a></li>
             </ul>
           </div>
 
-          <!-- Foot Column 3: Secondary Map links -->
+          <!-- Foot Column 3: Institutional -->
           <div class="col-6 col-lg-2 text-start">
-            <h5 class="text-beige text-uppercase fw-600 mb-3" style="font-size: 0.9rem; letter-spacing: 0.05em;">Institucional</h5>
-            <ul class="footer-link-list">
-              <li><a href="{% url 'sobre' %}" class="footer-link">Sobre</a></li>
-              <li><a href="{% url 'contato' %}" class="footer-link">Contato</a></li>
-              <li><a href="{% url 'agendamento' %}" class="footer-link">Agendamento</a></li>
+            <h6 class="text-gold text-uppercase fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.05em;">Institucional</h6>
+            <ul class="list-unstyled d-flex flex-column gap-2" style="font-size: 0.88rem;">
+              <li><a href="{% url 'sobre' %}" class="footer-link text-decoration-none">Sobre Nós</a></li>
+              <li><a href="{% url 'contato' %}" class="footer-link text-decoration-none">Fale Conosco</a></li>
               {% if user.is_authenticated %}
-                <li><a href="{% url 'dashboard' %}" class="footer-link">Dashboard</a></li>
+                <li><a href="{% url 'dashboard' %}" class="footer-link text-decoration-none">Área Restrita</a></li>
               {% else %}
-                <li><a href="{% url 'login' %}" class="footer-link">Área Restrita</a></li>
+                <li><a href="{% url 'login' %}" class="footer-link text-decoration-none">Acesso Barbeiro/Cliente</a></li>
               {% endif %}
             </ul>
           </div>
 
-          <!-- Foot Column 4: Contact details recap & Opening hours -->
+          <!-- Foot Column 4: Contact & Hours -->
           <div class="col-lg-4 text-start">
-            <h5 class="text-beige text-uppercase fw-600 mb-3" style="font-size: 0.9rem; letter-spacing: 0.05em;">Atendimento e Contato</h5>
-            <p class="text-muted-custom mb-1" style="font-size: 0.88rem;"><i class="bi bi-geo-alt-fill text-gold me-2"></i> Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</p>
-            <p class="text-muted-custom mb-1" style="font-size: 0.88rem;"><i class="bi bi-whatsapp text-gold me-2"></i> Danilo: (44) 9919-0997</p>
-            <p class="text-muted-custom mb-3" style="font-size: 0.88rem;"><i class="bi bi-whatsapp text-gold me-2"></i> Heitor: (44) 9102-2176</p>
-            
-            <h5 class="text-beige text-uppercase fw-600 mb-2" style="font-size: 0.8rem; letter-spacing: 0.05em;">Funcionamento</h5>
-            <p class="text-muted-custom mb-1" style="font-size: 0.82rem;"><i class="bi bi-clock-fill text-gold me-2"></i> Segunda a sábado: 08:00 às 21:00</p>
-            <p class="text-muted-custom mb-0" style="font-size: 0.82rem;"><i class="bi bi-calendar-x text-gold me-2"></i> Domingo: fechado</p>
+            <h6 class="text-gold text-uppercase fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.05em;">Atendimento & Localização</h6>
+            <p class="text-muted-custom mb-1" style="font-size: 0.85rem;"><i class="bi bi-geo-alt-fill text-gold me-2"></i> Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</p>
+            <p class="text-muted-custom mb-1" style="font-size: 0.85rem;"><i class="bi bi-whatsapp text-gold me-2"></i> Danilo: (44) 9919-0997</p>
+            <p class="text-muted-custom mb-3" style="font-size: 0.85rem;"><i class="bi bi-whatsapp text-gold me-2"></i> Heitor: (44) 9102-2176</p>
+            <p class="text-muted-custom mb-0" style="font-size: 0.82rem;"><i class="bi bi-clock-fill text-gold me-2"></i> Seg a Sáb: 08:00 às 21:00</p>
           </div>
         </div>
       </div>
@@ -210,13 +432,13 @@
       <div class="container pt-4 text-start">
         <div class="row align-items-center">
           <div class="col-md-6 text-center text-md-start">
-            <p class="copyright-text">
+            <p class="copyright-text mb-0" style="font-size: 0.82rem;">
               &copy; 2026 Delacruz Barber. Todos os direitos reservados.
             </p>
           </div>
           <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
-            <p class="copyright-text" style="font-size: 0.72rem;">
-              Corte preciso, barba alinhada e atendimento profissional em Paranavaí.
+            <p class="copyright-text mb-0" style="font-size: 0.82rem;">
+              Sistema Premium de Gestão e Agendamento.
             </p>
           </div>
         </div>
@@ -225,8 +447,24 @@
 
     <!-- Bootstrap 5 Bundle JS from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <!-- Chart.js for Interactive Dashboards & Metrics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <!-- Custom Interactive JS -->
     <script src="{% static 'website/js/main.js' %}"></script>
+    
+    <!-- PWA Service Worker Registration Script -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then((reg) => console.log('Delacruz PWA Service Worker registrado com sucesso.'))
+            .catch((err) => console.log('Falha ao registrar Service Worker:', err));
+        });
+      }
+    </script>
+    
     {% block extra_js %}{% endblock %}
   </body>
 </html>

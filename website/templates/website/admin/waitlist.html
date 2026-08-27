@@ -1,0 +1,60 @@
+{% extends 'website/modelo.html' %}
+{% block titulo %}Lista de Espera Global | Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container text-start">
+    
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 pb-3 border-bottom border-secondary border-opacity-25">
+      <div>
+        <span class="text-gold text-uppercase fw-bold small">Gestão de Vagas</span>
+        <h2 class="brand-font text-uppercase fw-bold text-light mb-0">Fila de Espera & Encaixes</h2>
+      </div>
+    </div>
+
+    <!-- Tabela Global da Waitlist -->
+    <div class="card card-delacruz p-4">
+      <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle mb-0">
+          <thead>
+            <tr class="small text-muted text-uppercase">
+              <th>Data Desejada</th>
+              <th>Horário</th>
+              <th>Cliente</th>
+              <th>Telefone / WhatsApp</th>
+              <th>Serviço</th>
+              <th>Barbeiro Preferido</th>
+              <th>Status</th>
+              <th>Criado em</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for w in waitlist %}
+              <tr>
+                <td class="fw-bold text-gold">{{ w.data_desejada|date:"d/m/Y" }}</td>
+                <td>{{ w.horario_inicio|time:"H:i" }} às {{ w.horario_fim|time:"H:i" }}</td>
+                <td class="text-white fw-semibold">{{ w.cliente.nome }}</td>
+                <td>{{ w.cliente.telefone }}</td>
+                <td>{{ w.servico.nome }}</td>
+                <td>{{ w.barbeiro.nome|default:"Qualquer Barbeiro" }}</td>
+                <td>
+                  <span class="badge {% if w.status == 'Notificado' %}bg-success text-white{% elif w.status == 'Aguardando' %}bg-warning text-dark{% elif w.status == 'Agendado' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+                    {{ w.status }}
+                  </span>
+                </td>
+                <td class="small text-muted">{{ w.criado_em|date:"d/m/Y H:i" }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="8" class="text-center text-muted py-4">Nenhum cliente na lista de espera no momento.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -47,11 +47,31 @@
       </div>
     </div>
 
-    <div class="row g-4">
-      <!-- Most Requested Services -->
+    <!-- Interactive Financial & Service Charts -->
+    <div class="row g-4 mb-5">
       <div class="col-lg-6">
         <div class="card delacruz-card p-4 h-100">
-          <h4 class="fw-bold text-white mb-4"><i class="bi bi-pie-chart me-2"></i> Serviços Mais Solicitados</h4>
+          <h5 class="fw-bold text-white mb-3"><i class="bi bi-bar-chart-fill text-gold me-2"></i> Evolução de Faturamento</h5>
+          <div class="position-relative" style="height: 250px;">
+            <canvas id="graficoFaturamentoBarbeiro"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card delacruz-card p-4 h-100">
+          <h5 class="fw-bold text-white mb-3"><i class="bi bi-pie-chart-fill text-gold me-2"></i> Distribuição dos Serviços</h5>
+          <div class="position-relative" style="height: 250px;">
+            <canvas id="graficoServicosBarbeiro"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Most Requested Services Table -->
+      <div class="col-lg-6">
+        <div class="card delacruz-card p-4 h-100">
+          <h4 class="fw-bold text-white mb-4"><i class="bi bi-list-stars me-2 text-gold"></i> Ranking de Serviços (30 Dias)</h4>
           <div class="d-flex flex-column gap-3">
             {% for item in servicos_mais_pedidos %}
               <div>
@@ -74,14 +94,14 @@
       <!-- Professional Profile Stat -->
       <div class="col-lg-6">
         <div class="card delacruz-card p-4 h-100">
-          <h4 class="fw-bold text-white mb-4"><i class="bi bi-award me-2"></i> Visão Geral</h4>
+          <h4 class="fw-bold text-white mb-4"><i class="bi bi-award me-2 text-gold"></i> Visão Geral & Desempenho</h4>
           <p class="text-muted-custom">Resumo de desempenho para o profissional logado. Os valores acumulados consideram apenas atendimentos com status <strong>Concluído</strong>.</p>
           <div class="p-3 bg-dark bg-opacity-20 rounded border border-secondary border-opacity-10 mt-3">
-            <h5 class="fw-bold text-gold mb-3">Dicas de Faturamento</h5>
+            <h5 class="fw-bold text-gold mb-3">Dicas para Potencializar seu Faturamento</h5>
             <ul class="text-muted-custom ps-3 mb-0" style="font-size: 0.88rem;">
-              <li class="mb-2">Mantenha a agenda atualizada para evitar horários duplicados.</li>
-              <li class="mb-2">Fotos de qualidade na galeria atraem mais clientes para seu perfil.</li>
-              <li>A avaliação média dos clientes impacta diretamente sua visibilidade no site.</li>
+              <li class="mb-2">Mantenha a agenda atualizada e confirme os agendamentos via WhatsApp.</li>
+              <li class="mb-2">Ofereça produtos no fechamento da comanda para elevar seu faturamento adicional.</li>
+              <li>A alta pontuação nas avaliações eleva sua prioridade de recomendação.</li>
             </ul>
           </div>
         </div>
@@ -90,4 +110,100 @@
     
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Gráfico de Faturamento
+    const ctxFat = document.getElementById('graficoFaturamentoBarbeiro');
+    if (ctxFat) {
+      const recHoje = parseFloat("{{ receita_hoje|default:'0' }}".replace(',', '.')) || 0;
+      const recOntem = parseFloat("{{ receita_ontem|default:'0' }}".replace(',', '.')) || 0;
+      const rec30d = parseFloat("{{ receita_30_dias|default:'0' }}".replace(',', '.')) || 0;
+      const mediaDiaria = rec30d > 0 ? (rec30d / 30) : 0;
+
+      new Chart(ctxFat, {
+        type: 'bar',
+        data: {
+          labels: ['Faturamento Hoje', 'Faturamento Ontem', 'Média Diária (30d)'],
+          datasets: [{
+            label: 'Faturamento (R$)',
+            data: [recHoje, recOntem, mediaDiaria],
+            backgroundColor: ['#c5a880', '#38bdf8', '#10b981'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: context => ` R$ ${context.raw.toFixed(2)}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#94a3b8' },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            },
+            y: {
+              ticks: {
+                color: '#94a3b8',
+                callback: value => 'R$ ' + value
+              },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            }
+          }
+        }
+      });
+    }
+
+    // 2. Gráfico de Distribuição dos Serviços
+    const ctxServ = document.getElementById('graficoServicosBarbeiro');
+    if (ctxServ) {
+      const labels = [
+        {% for item in servicos_mais_pedidos %}
+          "{{ item.servico__nome|escapejs }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ];
+      const dataValues = [
+        {% for item in servicos_mais_pedidos %}
+          {{ item.quantidade }}{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ];
+
+      if (labels.length === 0) {
+        labels.push('Sem serviços registrados');
+        dataValues.push(1);
+      }
+
+      new Chart(ctxServ, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: dataValues,
+            backgroundColor: ['#c5a880', '#38bdf8', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'],
+            borderColor: '#1e293b',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#94a3b8', font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
 {% endblock %}

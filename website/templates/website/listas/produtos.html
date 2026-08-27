@@ -1,0 +1,75 @@
+{% extends 'website/modelo.html' %}
+{% block titulo %}Produtos & PDV | Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container text-start">
+    
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 pb-3 border-bottom border-secondary border-opacity-25">
+      <div>
+        <span class="text-gold text-uppercase fw-bold small">Catálogo & PDV</span>
+        <h2 class="brand-font text-uppercase fw-bold text-light mb-0">Produtos Cadastrados</h2>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'cadastrar_produto' %}" class="btn btn-delacruz btn-sm"><i class="bi bi-plus-lg me-1"></i>Novo Produto</a>
+        <a href="{% url 'admin_estoque' %}" class="btn btn-outline-gold btn-sm"><i class="bi bi-arrow-left-right me-1"></i>Estoque</a>
+      </div>
+    </div>
+
+    <!-- Tabela de Produtos -->
+    <div class="card card-delacruz p-4">
+      <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle mb-0">
+          <thead>
+            <tr class="small text-muted text-uppercase">
+              <th>Produto</th>
+              <th>SKU</th>
+              <th>Categoria</th>
+              <th>Preço de Venda</th>
+              <th>Custo</th>
+              <th>Estoque</th>
+              <th>Status</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in produtos %}
+              <tr>
+                <td class="fw-bold text-white">{{ p.nome }}</td>
+                <td class="small text-muted">{{ p.sku|default:"-" }}</td>
+                <td><span class="badge bg-dark border border-secondary text-gold">{{ p.categoria }}</span></td>
+                <td class="text-gold fw-bold">R$ {{ p.preco }}</td>
+                <td class="text-muted small">R$ {{ p.custo }}</td>
+                <td>
+                  <strong class="{% if p.is_estoque_baixo %}text-warning{% else %}text-success{% endif %}">
+                    {{ p.estoque_atual }} {{ p.unidade }}
+                  </strong>
+                </td>
+                <td>
+                  {% if p.ativo %}
+                    <span class="badge bg-success">Ativo</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Inativo</span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <div class="d-flex justify-content-center gap-1">
+                    <a href="{% url 'editar_produto' p.pk %}" class="btn btn-sm btn-outline-warning py-0 px-2" title="Editar"><i class="bi bi-pencil"></i></a>
+                    <a href="{% url 'excluir_produto' p.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir"><i class="bi bi-trash"></i></a>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="8" class="text-center text-muted py-4">Nenhum produto cadastrado até o momento.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,184 @@
+{% extends "website/modelo.html" %}
+{% block titulo %}Metas & Performance | Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container py-2">
+    
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+      <div>
+        <span class="badge bg-gold text-dark text-uppercase fw-bold px-3 py-1 mb-1">Performance</span>
+        <h2 class="brand-font text-white fw-bold mb-0">Minhas <span class="text-gold">Metas Mensais</span></h2>
+        <p class="text-muted small mb-0">{{ barbeiro.nome }} • Acompanhe seu desempenho e alcance os bônus da barbearia.</p>
+      </div>
+      <div>
+        <span class="badge bg-dark border border-secondary text-gold px-3 py-2 fs-6">
+          Mês de Referência: {{ meta_info.mes }}/{{ meta_info.ano }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Main Goal Card -->
+    <div class="card card-delacruz p-4 p-md-5 mb-4 border-warning border-opacity-40">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+          <span class="text-muted small text-uppercase">Meta Principal de Faturamento:</span>
+          <div class="d-flex align-items-baseline gap-3 mb-3">
+            <h1 class="display-5 fw-bold text-white mb-0">{{ meta_info.porcentagem }}%</h1>
+            <span class="text-muted fs-5">R$ {{ meta_info.faturamento_real }} / R$ {{ meta_info.meta_faturamento }}</span>
+          </div>
+
+          <div class="progress bg-dark mb-3" style="height: 18px;">
+            <div class="progress-bar bg-gold progress-bar-striped progress-bar-animated" role="progressbar" style="width: {{ meta_info.porcentagem }}%;"></div>
+          </div>
+          <span class="text-muted small">
+            {% if meta_info.porcentagem >= 100 %}
+              🎉 <strong class="text-success">Parabéns! Meta atingida com sucesso!</strong>
+            {% else %}
+              Faltam <strong>R$ {{ meta_info.meta_faturamento }}</strong> para você bater a meta máxima do mês.
+            {% endif %}
+          </span>
+        </div>
+
+        <div class="col-lg-5 text-center">
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="p-3 bg-dark rounded border border-secondary border-opacity-25 text-center">
+                <span class="small text-muted d-block">Ticket Médio:</span>
+                <span class="fs-4 fw-bold text-gold">R$ {{ meta_info.ticket_medio }}</span>
+                <span class="small text-muted d-block" style="font-size: 0.72rem;">por atendimento</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 bg-dark rounded border border-secondary border-opacity-25 text-center">
+                <span class="small text-muted d-block">Cortes Realizados:</span>
+                <span class="fs-4 fw-bold text-white">{{ meta_info.cortes_real }}</span>
+                <span class="small text-muted d-block" style="font-size: 0.72rem;">de {{ meta_info.meta_cortes }} cortes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Goal Progress Chart -->
+    <div class="card card-delacruz p-4 mb-4">
+      <h5 class="text-white fw-bold mb-3"><i class="bi bi-graph-up-arrow text-gold me-2"></i> Gráfico de Atingimento: Metas vs Realizado</h5>
+      <div class="position-relative" style="height: 280px;">
+        <canvas id="graficoProgressoMetas"></canvas>
+      </div>
+    </div>
+
+    <!-- Dicas para Alavancar o Faturamento -->
+    <div class="card card-delacruz p-4">
+      <h5 class="text-white fw-bold mb-3"><i class="bi bi-lightbulb text-gold me-2"></i> Estratégias para Aumentar seu Ticket Médio</h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25 h-100">
+            <h6 class="text-gold fw-bold"><i class="bi bi-tag me-1"></i> Ofereça Produtos de Finalização</h6>
+            <p class="small text-muted mb-0">Cada pomada matte ou óleo para barba adiciona comissão de 15% direto no seu bolso e melhora o resultado do cliente em casa.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25 h-100">
+            <h6 class="text-gold fw-bold"><i class="bi bi-scissors me-1"></i> Sugira Combos & Adicionais</h6>
+            <p class="small text-muted mb-0">Ao cortar o cabelo, ofereça o alinhamento da barba ou sobrancelha na navalha. Pequenos adicionais elevam o ticket de R$ 40 para R$ 70+.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25 h-100">
+            <h6 class="text-gold fw-bold"><i class="bi bi-camera me-1"></i> Registre Fotos no Histórico</h6>
+            <p class="small text-muted mb-0">Clientes que acompanham sua evolução visual voltam com 40% mais frequência para manter o degradê sempre alinhado.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const ctxMetas = document.getElementById('graficoProgressoMetas');
+    if (ctxMetas) {
+      const faturamentoMeta = parseFloat("{{ meta_info.meta_faturamento|default:'0' }}".replace(',', '.')) || 0;
+      const faturamentoReal = parseFloat("{{ meta_info.faturamento_real|default:'0' }}".replace(',', '.')) || 0;
+      const cortesMeta = parseFloat("{{ meta_info.meta_cortes|default:'0' }}".replace(',', '.')) || 0;
+      const cortesReal = parseFloat("{{ meta_info.cortes_real|default:'0' }}".replace(',', '.')) || 0;
+      const produtosMeta = parseFloat("{{ meta_info.meta_produtos|default:'0' }}".replace(',', '.')) || 0;
+      const produtosReal = parseFloat("{{ meta_info.produtos_real|default:'0' }}".replace(',', '.')) || 0;
+
+      // Cálculo percentual normalizado de cada indicador
+      const percFat = faturamentoMeta > 0 ? Math.min(100, (faturamentoReal / faturamentoMeta) * 100) : 0;
+      const percCortes = cortesMeta > 0 ? Math.min(100, (cortesReal / cortesMeta) * 100) : 0;
+      const percProd = produtosMeta > 0 ? Math.min(100, (produtosReal / produtosMeta) * 100) : 0;
+
+      new Chart(ctxMetas, {
+        type: 'bar',
+        data: {
+          labels: [
+            `Faturamento (R$ ${faturamentoReal.toFixed(0)} / ${faturamentoMeta.toFixed(0)})`,
+            `Atendimentos / Cortes (${cortesReal} / ${cortesMeta})`,
+            `Venda de Produtos (${produtosReal} / ${produtosMeta})`
+          ],
+          datasets: [
+            {
+              label: 'Meta Planejada (100%)',
+              data: [100, 100, 100],
+              backgroundColor: 'rgba(148, 163, 184, 0.25)',
+              borderColor: '#64748b',
+              borderWidth: 1
+            },
+            {
+              label: 'Atingimento Realizado (%)',
+              data: [percFat, percCortes, percProd],
+              backgroundColor: [
+                percFat >= 100 ? '#10b981' : '#c5a880',
+                percCortes >= 100 ? '#10b981' : '#38bdf8',
+                percProd >= 100 ? '#10b981' : '#f59e0b'
+              ],
+              borderRadius: 6,
+              borderWidth: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y', // Barra horizontal para leitura perfeita no mobile e desktop
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#94a3b8', font: { size: 12 } }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ` ${context.dataset.label}: ${context.raw.toFixed(1)}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              max: 120,
+              ticks: {
+                color: '#94a3b8',
+                callback: value => value + '%'
+              },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            },
+            y: {
+              ticks: { color: '#ffffff', font: { weight: '600' } },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

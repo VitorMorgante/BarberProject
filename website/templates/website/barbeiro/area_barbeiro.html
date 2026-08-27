@@ -1,114 +1,195 @@
 {% extends "website/modelo.html" %}
 {% load crispy_forms_tags %}
 
-{% block titulo %}Área do Barbeiro{% endblock %}
+{% block titulo %}Painel do Barbeiro | Delacruz Barber{% endblock %}
 
 {% block conteudo %}
 <section class="py-5">
-  <div class="container py-4">
+  <div class="container py-2">
+    
+    <!-- Welcome Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+      <div>
+        <h2 class="brand-font text-white fw-bold mb-1">
+          Painel Profissional — <span class="text-gold">{{ barbeiro.nome|default:request.user.get_full_name }}</span>
+        </h2>
+        <p class="text-muted small mb-0">{{ barbeiro.cargo|default:"Barbeiro" }} • Delacruz Barber Paranavaí</p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'agendamentos_barbeiro' %}" class="btn btn-delacruz d-flex align-items-center gap-2">
+          <i class="bi bi-calendar-check"></i> Meus Atendimentos
+        </a>
+        <a href="{% url 'barbeiro_ganhos' %}" class="btn btn-outline-gold d-flex align-items-center gap-2">
+          <i class="bi bi-cash-stack"></i> Extrato de Comissões
+        </a>
+      </div>
+    </div>
+
+    <!-- Top KPI Cards -->
+    <div class="row g-4 mb-4">
+      <!-- Comissão Hoje -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small text-uppercase">Minha Comissão Hoje:</span>
+            <i class="bi bi-wallet2 text-gold fs-4"></i>
+          </div>
+          <span class="fs-3 fw-bold text-gold">R$ {{ comissao_hoje|floatformat:2 }}</span>
+          <span class="small text-muted mt-1 d-block">Comissões de serviços e produtos</span>
+        </div>
+      </div>
+
+      <!-- Faturamento 30 Dias -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small text-uppercase">Faturamento 30 Dias:</span>
+            <i class="bi bi-graph-up text-success fs-4"></i>
+          </div>
+          <span class="fs-3 fw-bold text-white">R$ {{ extrato.faturamento_total|floatformat:2 }}</span>
+          <span class="small text-muted mt-1 d-block">{{ extrato.qtd_atendimentos }} atendimentos concluídos</span>
+        </div>
+      </div>
+
+      <!-- Saldo a Receber -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small text-uppercase">Saldo a Receber:</span>
+            <i class="bi bi-cash-coin text-warning fs-4"></i>
+          </div>
+          <span class="fs-3 fw-bold text-warning">R$ {{ extrato.saldo_a_receber|floatformat:2 }}</span>
+          <span class="small text-muted mt-1 d-block">Pendente de repasse</span>
+        </div>
+      </div>
+
+      <!-- Meta Mensal -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card card-delacruz p-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-muted small text-uppercase">Meta do Mês:</span>
+            <i class="bi bi-trophy text-gold fs-4"></i>
+          </div>
+          <div class="d-flex justify-content-between align-items-baseline mb-1">
+            <span class="fs-4 fw-bold text-white">{{ meta_info.porcentagem }}%</span>
+            <span class="small text-muted">R$ {{ meta_info.faturamento_real|floatformat:0 }} / {{ meta_info.meta_faturamento|floatformat:0 }}</span>
+          </div>
+          <div class="progress bg-dark" style="height: 8px;">
+            <div class="progress-bar bg-gold" style="width: {{ meta_info.porcentagem }}%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Section: Left Profile/Finance & Right Appointments -->
     <div class="row g-4">
       
-      <!-- Profile & Photo Upload Sidebar -->
+      <!-- Profile & Quick Settings Sidebar -->
       <div class="col-lg-4">
-        <div class="card delacruz-card p-4 mb-4">
+        <div class="card card-delacruz p-4 mb-4">
           <div class="text-center mb-4">
             {% if request.user.perfil.foto_perfil %}
-              <img src="{{ request.user.perfil.foto_perfil.url }}" alt="Foto de Perfil" class="rounded-circle border border-gold img-thumbnail mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+              <img src="{{ request.user.perfil.foto_perfil.url }}" alt="Foto de Perfil" class="rounded-circle border border-warning border-opacity-50 img-thumbnail mb-3" style="width: 110px; height: 110px; object-fit: cover;">
             {% else %}
-              <div class="rounded-circle border border-gold d-flex align-items-center justify-content-center mx-auto mb-3 bg-secondary-subtle" style="width: 120px; height: 120px;">
+              <div class="rounded-circle border border-warning border-opacity-50 d-flex align-items-center justify-content-center mx-auto mb-3 bg-dark" style="width: 110px; height: 110px;">
                 <i class="bi bi-scissors fs-1 text-gold"></i>
               </div>
             {% endif %}
-            <h4 class="fw-bold mb-1 text-gold">{{ request.user.first_name }} {{ request.user.last_name }}</h4>
-            <span class="badge bg-gold-badge text-dark">{{ request.user.perfil.tipo_usuario }}</span>
+            <h5 class="fw-bold mb-1 text-white">{{ request.user.first_name }} {{ request.user.last_name }}</h5>
+            <span class="badge bg-gold text-dark text-uppercase small">{{ request.user.perfil.tipo_usuario|default:"Barbeiro" }}</span>
           </div>
           
-          <hr class="border-secondary opacity-25">
+          <hr class="border-secondary opacity-25 my-3">
           
-          <h5 class="fw-bold mb-3 text-gold">Editar Dados Pessoais</h5>
+          <h6 class="fw-bold mb-3 text-gold"><i class="bi bi-person-gear me-2"></i>Meus Dados</h6>
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ profile_form|crispy }}
-            <button type="submit" class="btn btn-gold-solid w-100 mt-3">
+            <button type="submit" class="btn btn-delacruz w-100 mt-3">
               Atualizar Perfil
             </button>
           </form>
         </div>
-        
-        <!-- Quick Financial Card -->
-        <div class="card delacruz-card p-4 bg-gradient-gold text-dark mb-4">
-          <h5 class="fw-bold text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 0.05em;">Faturamento Estimado</h5>
-          <div class="mb-3">
-            <span class="text-muted-custom text-dark opacity-75 d-block" style="font-size: 0.8rem;">Hoje:</span>
-            <span class="fs-3 fw-bold">R$ {{ receita_hoje|floatformat:2 }}</span>
-          </div>
-          <div>
-            <span class="text-muted-custom text-dark opacity-75 d-block" style="font-size: 0.8rem;">Últimos 30 Dias:</span>
-            <span class="fs-4 fw-bold">R$ {{ receita_30_dias|floatformat:2 }}</span>
-          </div>
-          <a href="{% url 'relatorios_barbeiro' %}" class="btn btn-dark btn-sm w-100 mt-3">Ver Relatório Completo</a>
-        </div>
       </div>
 
-      <!-- Main Panel -->
+      <!-- Appointments & Actions Panel -->
       <div class="col-lg-8">
         <div class="d-flex flex-column gap-4">
           
-          <!-- Upcoming Appointments -->
-          <div class="card delacruz-card p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h3 class="fw-bold mb-0 text-gold"><i class="bi bi-calendar-event me-2"></i> Meus Próximos Clientes</h3>
-              <a href="{% url 'agendamentos_barbeiro' %}" class="btn btn-delacruz btn-sm">Ver Todos</a>
+          <!-- Upcoming Clients Table -->
+          <div class="card card-delacruz p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold mb-0 text-white"><i class="bi bi-calendar-event text-gold me-2"></i> Próximos Atendimentos</h5>
+              <a href="{% url 'agendamentos_barbeiro' %}" class="btn btn-outline-gold btn-sm">Ver Todos</a>
             </div>
             
             <div class="table-responsive">
-              <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle">
+              <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle mb-0">
                 <thead>
-                  <tr>
+                  <tr class="small text-muted text-uppercase">
                     <th>Cliente</th>
                     <th>Serviço</th>
-                    <th>Data/Hora</th>
-                    <th>Telefone</th>
+                    <th>Horário</th>
                     <th>Status</th>
+                    <th>WhatsApp</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for a in proximos %}
                     <tr>
-                      <td class="fw-bold text-white">{{ a.cliente.nome }}</td>
-                      <td>{{ a.servico.nome }}</td>
-                      <td>{{ a.data|date:"d/m/Y" }} às {{ a.horario|time:"H:i" }}</td>
-                      <td>{{ a.cliente.telefone }}</td>
                       <td>
-                        <span class="badge {% if a.status == 'Confirmado' %}bg-success{% elif a.status == 'Concluído' %}bg-secondary{% elif a.status == 'Cancelado' %}bg-danger{% else %}bg-warning{% endif %}">
+                        <strong class="text-white d-block">{{ a.cliente.nome }}</strong>
+                        <span class="text-muted" style="font-size: 0.78rem;">{{ a.cliente.telefone }}</span>
+                      </td>
+                      <td class="small">{{ a.servico.nome }}</td>
+                      <td>
+                        <strong class="text-gold">{{ a.horario|time:"H:i" }}</strong>
+                        <span class="text-muted d-block" style="font-size: 0.75rem;">{{ a.data|date:"d/m" }}</span>
+                      </td>
+                      <td>
+                        <span class="badge {% if a.status == 'Confirmado' %}bg-success{% elif a.status == 'Em Atendimento' %}bg-primary{% elif a.status == 'Concluído' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
                           {{ a.status }}
                         </span>
                       </td>
                       <td>
-                        {% if a.status == 'Pendente' or a.status == 'Confirmado' %}
-                          <div class="d-flex gap-1">
-                            {% if a.status == 'Pendente' %}
-                              <form method="post" action="{% url 'agendamentos_barbeiro' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="agendamento_id" value="{{ a.pk }}">
-                                <input type="hidden" name="status" value="Confirmado">
-                                <button type="submit" class="btn btn-success btn-sm py-0 px-2" style="font-size: 0.75rem;">Confirmar</button>
-                              </form>
-                            {% endif %}
-                            <form method="post" action="{% url 'agendamentos_barbeiro' %}">
+                        <a href="{{ a.whatsapp_link }}" target="_blank" class="btn btn-sm btn-outline-success py-1 px-2 d-inline-flex align-items-center gap-1" title="Chamar cliente no WhatsApp">
+                          <i class="bi bi-whatsapp"></i> Chamar
+                        </a>
+                      </td>
+                      <td>
+                        <div class="d-flex gap-1 flex-wrap">
+                          <a href="{% url 'barbeiro_comanda' a.pk %}" class="btn btn-sm btn-outline-warning py-0 px-2" title="Comanda e Produtos">
+                            <i class="bi bi-receipt"></i> Comanda
+                          </a>
+                          {% if a.status == 'Confirmado' %}
+                            <form method="post" action="{% url 'agendamentos_barbeiro' %}" class="d-inline">
+                              {% csrf_token %}
+                              <input type="hidden" name="agendamento_id" value="{{ a.pk }}">
+                              <input type="hidden" name="status" value="Em Atendimento">
+                              <button type="submit" class="btn btn-primary btn-sm py-0 px-2" title="Iniciar Atendimento">
+                                Iniciar
+                              </button>
+                            </form>
+                          {% elif a.status == 'Em Atendimento' or a.status == 'Pendente' %}
+                            <form method="post" action="{% url 'agendamentos_barbeiro' %}" class="d-inline">
                               {% csrf_token %}
                               <input type="hidden" name="agendamento_id" value="{{ a.pk }}">
                               <input type="hidden" name="status" value="Concluído">
-                              <button type="submit" class="btn btn-gold-solid btn-sm py-0 px-2" style="font-size: 0.75rem;">Concluir</button>
+                              <button type="submit" class="btn btn-delacruz btn-sm py-0 px-2" title="Concluir Atendimento">
+                                Concluir
+                              </button>
                             </form>
-                          </div>
-                        {% endif %}
+                          {% endif %}
+                          <a href="{% url 'barbeiro_foto_resultado' a.pk %}" class="btn btn-sm btn-outline-info py-0 px-2" title="Anexar foto do resultado (Privado)">
+                            <i class="bi bi-camera"></i>
+                          </a>
+                        </div>
                       </td>
                     </tr>
                   {% empty %}
                     <tr>
-                      <td colspan="6" class="text-center text-muted py-4">Nenhum cliente agendado.</td>
+                      <td colspan="6" class="text-center text-muted py-4">Nenhum agendamento pendente no momento.</td>
                     </tr>
                   {% endfor %}
                 </tbody>
@@ -116,48 +197,17 @@
             </div>
           </div>
 
-          <!-- Barber Work Gallery (Photos) -->
-          <div class="card delacruz-card p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h3 class="fw-bold mb-0 text-gold"><i class="bi bi-images me-2"></i> Minhas Fotos na Galeria</h3>
-              <div class="d-flex gap-2">
-                <a href="{% url 'cadastrar_foto_barbeiro' %}" class="btn btn-gold-solid btn-sm"><i class="bi bi-upload me-1"></i> Nova Foto</a>
-                <a href="{% url 'fotos_barbeiro' %}" class="btn btn-outline-light btn-sm">Ver Todas</a>
-              </div>
-            </div>
-            
-            <div class="row g-3">
-              {% for f in fotos %}
-                <div class="col-md-4">
-                  <div class="card bg-dark border-secondary border-opacity-10 h-100 overflow-hidden">
-                    <img src="{{ f.imagem.url }}" alt="{{ f.titulo }}" class="card-img-top" style="height: 140px; object-fit: cover;">
-                    <div class="p-3 text-start">
-                      <h6 class="fw-bold text-white text-truncate mb-1">{{ f.titulo }}</h6>
-                      <span class="badge bg-secondary mb-2" style="font-size: 0.7rem;">{{ f.categoria }}</span>
-                      <div class="d-flex justify-content-between gap-1 mt-2">
-                        <a href="{% url 'editar_foto_barbeiro' f.pk %}" class="btn btn-outline-light btn-sm py-0 px-2" style="font-size: 0.75rem;">Editar</a>
-                        <a href="{% url 'excluir_foto_barbeiro' f.pk %}" class="btn btn-outline-danger btn-sm py-0 px-2" style="font-size: 0.75rem;">Excluir</a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              {% empty %}
-                <div class="col-12 text-center text-muted py-4">
-                  Você ainda não cadastrou nenhuma foto de corte ou barba na galeria.
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-
-          <!-- Feedbacks Received -->
-          <div class="card delacruz-card p-4">
-            <h3 class="fw-bold mb-4 text-gold"><i class="bi bi-chat-heart me-2"></i> Avaliações dos Clientes</h3>
-            
-            <div class="d-flex flex-column gap-3">
+          <!-- Feedbacks Recentes -->
+          <div class="card card-delacruz p-4">
+            <h5 class="fw-bold mb-3 text-white"><i class="bi bi-chat-heart text-gold me-2"></i> Últimas Avaliações Recebidas</h5>
+            <div class="d-flex flex-column gap-2">
               {% for f in feedbacks %}
-                <div class="p-3 rounded bg-dark-custom text-start border-start border-gold">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="fw-bold text-white mb-0">{{ f.cliente.nome }}</h6>
+                <div class="p-3 rounded bg-dark border-start border-warning border-3 d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 class="fw-bold text-white mb-1">{{ f.cliente.nome }}</h6>
+                    <p class="small text-muted mb-0 italic">"{{ f.comentario }}"</p>
+                  </div>
+                  <div class="text-end">
                     <span class="text-gold">
                       {% for i in "12345" %}
                         {% if forloop.counter <= f.nota %}
@@ -167,12 +217,11 @@
                         {% endif %}
                       {% endfor %}
                     </span>
+                    <span class="d-block text-muted" style="font-size: 0.72rem;">{{ f.criado_em|date:"d/m/Y" }}</span>
                   </div>
-                  <p class="text-muted-custom mb-1 italic" style="font-size: 0.88rem;">"{{ f.comentario }}"</p>
-                  <span class="text-muted d-block text-end" style="font-size: 0.7rem;">{{ f.criado_em|date:"d/m/Y" }}</span>
                 </div>
               {% empty %}
-                <p class="text-muted-custom text-center py-3 mb-0">Nenhuma avaliação recebida.</p>
+                <p class="text-muted text-center py-3 mb-0 small">Nenhuma avaliação recebida ainda.</p>
               {% endfor %}
             </div>
           </div>

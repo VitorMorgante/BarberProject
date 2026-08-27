@@ -2,15 +2,36 @@
 Django settings for BarberProject project.
 """
 
+import os
 from pathlib import Path
+
+# Carrega variáveis de ambiente de .env se existir
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-k8$x!q3v@mz#7f&w+r2^t9p=y6u0j4e1s5n8c_b(g)d%hloai'
+SECRET_KEY = os.getenv(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-k8$x!q3v@mz#7f&w+r2^t9p=y6u0j4e1s5n8c_b(g)d%hloai'
+)
 
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('DJANGO_ALLOWED_HOSTS', '*').split(',')
+    if host.strip()
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://localhost:8000,http://127.0.0.1:8000').split(',')
+    if origin.strip()
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -91,6 +112,24 @@ LOGOUT_REDIRECT_URL = 'pagina_inicial'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
+# Configurações de Módulos Delacruz Barber
+PAYMENT_GATEWAY = os.getenv('PAYMENT_GATEWAY', 'mock')
+PAYMENT_ACCESS_TOKEN = os.getenv('PAYMENT_ACCESS_TOKEN', '')
+PAYMENT_WEBHOOK_SECRET = os.getenv('PAYMENT_WEBHOOK_SECRET', '')
+PIX_CHAVE = os.getenv('PIX_CHAVE', 'delacruzbarber@email.com')
+PIX_TITULAR = os.getenv('PIX_TITULAR', 'Delacruz Barber')
+PIX_CIDADE = os.getenv('PIX_CIDADE', 'Paranavai')
+
+WHATSAPP_PROVIDER = os.getenv('WHATSAPP_PROVIDER', 'none')
+WHATSAPP_API_TOKEN = os.getenv('WHATSAPP_API_TOKEN', '')
+WHATSAPP_PHONE_NUMBER_ID = os.getenv('WHATSAPP_PHONE_NUMBER_ID', '')
+
+AI_PROVIDER = os.getenv('AI_PROVIDER', 'mock')
+AI_API_KEY = os.getenv('AI_API_KEY', '')
+
+VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', '')
+VAPID_PRIVATE_KEY = os.getenv('VAPID_PRIVATE_KEY', '')
+VAPID_ADMIN_EMAIL = os.getenv('VAPID_ADMIN_EMAIL', 'contato@delacruzbarber.com.br')

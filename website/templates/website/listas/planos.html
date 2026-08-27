@@ -1,0 +1,76 @@
+{% extends 'website/modelo.html' %}
+{% block titulo %}Planos Barber Club | Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container text-start">
+    
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 pb-3 border-bottom border-secondary border-opacity-25">
+      <div>
+        <span class="text-gold text-uppercase fw-bold small">Assinaturas Recorrentes</span>
+        <h2 class="brand-font text-uppercase fw-bold text-light mb-0">Planos Barber Club</h2>
+      </div>
+      <div>
+        <a href="{% url 'cadastrar_plano' %}" class="btn btn-delacruz btn-sm"><i class="bi bi-plus-lg me-1"></i>Novo Plano</a>
+      </div>
+    </div>
+
+    <!-- Tabela de Planos -->
+    <div class="card card-delacruz p-4">
+      <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle mb-0">
+          <thead>
+            <tr class="small text-muted text-uppercase">
+              <th>Nome do Plano</th>
+              <th>Mensalidade</th>
+              <th>Créditos / Mês</th>
+              <th>Desconto em Produtos</th>
+              <th>Validade</th>
+              <th>Destaque</th>
+              <th>Status</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in planos %}
+              <tr>
+                <td class="fw-bold text-white">{{ p.nome }}</td>
+                <td class="text-gold fw-bold">R$ {{ p.preco_mensal }}</td>
+                <td><strong class="text-white">{{ p.quantidade_creditos }} cortes</strong></td>
+                <td>{{ p.desconto_produtos }}%</td>
+                <td>{{ p.validade_dias }} dias</td>
+                <td>
+                  {% if p.destaque %}
+                    <span class="badge bg-gold text-dark">Sim</span>
+                  {% else %}
+                    <span class="text-muted small">Não</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if p.ativo %}
+                    <span class="badge bg-success">Ativo</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Inativo</span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <div class="d-flex justify-content-center gap-1">
+                    <a href="{% url 'editar_plano' p.pk %}" class="btn btn-sm btn-outline-warning py-0 px-2" title="Editar"><i class="bi bi-pencil"></i></a>
+                    <a href="{% url 'excluir_plano' p.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir"><i class="bi bi-trash"></i></a>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="8" class="text-center text-muted py-4">Nenhum plano cadastrado no momento.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

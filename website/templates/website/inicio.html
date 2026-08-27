@@ -174,7 +174,7 @@
             <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=600" alt="{{ barbeiro.nome }}" class="barber-img">
             {% endif %}
             <div class="barber-overlay"></div>
-            <div class="barber-badge-{% if barbeiro.cargo == 'Barbeiro Chefe' %}chef{% else %}standard{% endif %}">{{ barbeiro.cargo }}</div>
+            <div class="barber-badge-standard">{{ barbeiro.cargo }}</div>
           </div>
           <div class="barber-info">
             <h3 class="barber-name">{{ barbeiro.nome }}</h3>
@@ -268,7 +268,7 @@
         <div class="d-flex align-items-center gap-3">
           <div class="border-start border-3 border-warning ps-3">
             <h5 class="mb-1 text-gold">Danilo Delacruz</h5>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.85rem;">Barbeiro Chefe</p>
+            <p class="mb-0 text-muted-custom" style="font-size: 0.85rem;">Barbeiro</p>
           </div>
         </div>
       </div>

@@ -1,5 +1,4 @@
-from django.urls import path
-from django.urls import reverse_lazy
+from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
 from . import views
 
@@ -17,7 +16,6 @@ urlpatterns = [
         extra_context={'titulo': 'Alterar Senha', 'botao': 'Alterar'},
     ), name='alterar_senha'),
 
-
     # Public
     path('', views.IndexView.as_view(), name='pagina_inicial'),
     path('sobre/', views.SobreView.as_view(), name='sobre'),
@@ -26,11 +24,42 @@ urlpatterns = [
     path('servicos/', views.ServicosPublicView.as_view(), name='servicos'),
     path('barbeiros/', views.BarbeirosPublicView.as_view(), name='barbeiros'),
 
+    # Pagamentos & PIX
+    path('pagamento/pix/<str:identificador>/', views.PagamentoPixView.as_view(), name='pagamento_pix'),
+    path('api/pagamento/status/<str:identificador>/', views.pagamento_status_api, name='api_pagamento_status'),
+    path('api/webhook/pagamento/<str:gateway>/', views.webhook_pagamento, name='api_webhook_pagamento'),
+
+    # PWA & Web Push
+    path('manifest.webmanifest', views.manifest_view, name='pwa_manifest'),
+    path('service-worker.js', views.service_worker_view, name='pwa_sw'),
+    path('api/push/subscribe/', views.push_subscription_api, name='api_push_subscribe'),
+
     # API
     path('api/horarios-disponiveis/', views.horarios_disponiveis_api, name='api_horarios_disponiveis'),
+    path('horarios-disponiveis/', views.horarios_disponiveis_api, name='horarios_disponiveis'),
+    path('api/cupom/validar/', views.validar_cupom_api, name='api_validar_cupom'),
+    path('agendamento/<int:pk>/ics/', views.download_ics_view, name='agendamento_ics'),
 
-    # Dashboard
+    # Dashboard & Admin Central
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
+    path('dashboard/financeiro/', views.FinanceiroAdminView.as_view(), name='admin_financeiro'),
+    path('dashboard/comissoes/', views.ComissoesAdminView.as_view(), name='admin_comissoes'),
+    path('dashboard/repasses/cadastrar/', views.RepasseComissaoCreateView.as_view(), name='cadastrar_repasse'),
+    path('dashboard/estoque/', views.EstoqueMovimentacaoView.as_view(), name='admin_estoque'),
+    path('dashboard/configuracoes/', views.ConfiguracaoEstabelecimentoView.as_view(), name='admin_configuracoes'),
+    path('dashboard/waitlist/', views.WaitlistAdminView.as_view(), name='admin_waitlist'),
+
+    # Produtos CRUD
+    path('cadastrar/produto/', views.ProdutoCreate.as_view(), name='cadastrar_produto'),
+    path('listar/produtos/', views.ProdutoListView.as_view(), name='listar_produtos'),
+    path('editar/produto/<int:pk>/', views.ProdutoUpdate.as_view(), name='editar_produto'),
+    path('excluir/produto/<int:pk>/', views.ProdutoDelete.as_view(), name='excluir_produto'),
+
+    # Planos Barber Club CRUD
+    path('cadastrar/plano/', views.PlanoAssinaturaCreate.as_view(), name='cadastrar_plano'),
+    path('listar/planos/', views.PlanoAssinaturaListView.as_view(), name='listar_planos'),
+    path('editar/plano/<int:pk>/', views.PlanoAssinaturaUpdate.as_view(), name='editar_plano'),
+    path('excluir/plano/<int:pk>/', views.PlanoAssinaturaDelete.as_view(), name='excluir_plano'),
 
     # Servico CRUD
     path('cadastrar/servico/', views.ServicoCreate.as_view(), name='cadastrar_servico'),
@@ -72,23 +101,31 @@ urlpatterns = [
     path('ver/mensagem/<int:pk>/', views.MensagemContatoDetail.as_view(), name='ver_mensagem'),
     path('excluir/mensagem/<int:pk>/', views.MensagemContatoDelete.as_view(), name='excluir_mensagem'),
 
-    # Client Area
+    # Client Area (Portal Expandido)
     path('cliente/area/', views.AreaClienteView.as_view(), name='area_cliente'),
+    path('cliente/repetir-ultimo-corte/', views.RepetirUltimoCorteView.as_view(), name='repetir_ultimo_corte'),
     path('cliente/historico/', views.HistoricoClienteView.as_view(), name='historico_cliente'),
+    path('cliente/club/', views.ClienteClubView.as_view(), name='cliente_club'),
+    path('cliente/fidelidade/', views.ClienteFidelidadeView.as_view(), name='cliente_fidelidade'),
+    path('cliente/estilo/', views.ClienteEstiloView.as_view(), name='cliente_estilo'),
+    path('cliente/evolucao/', views.ClienteEvolucaoView.as_view(), name='cliente_evolucao'),
+    path('cliente/waitlist/', views.ClienteWaitlistView.as_view(), name='cliente_waitlist'),
+    path('cliente/waitlist/cancelar/<int:pk>/', views.CancelarWaitlistView.as_view(), name='cancelar_waitlist'),
     path('cliente/feedback/<int:pk>/', views.FeedbackCreateView.as_view(), name='criar_feedback'),
     path('cliente/perfil/', views.PerfilClienteView.as_view(), name='perfil_cliente'),
     path('cliente/cancelar/<int:pk>/', views.CancelarAgendamentoClienteView.as_view(), name='cancelar_agendamento_cliente'),
 
-    # Barber Area
+    # Barber Area (Portal Profissional Expandido)
     path('barbeiro/area/', views.AreaBarbeiroView.as_view(), name='area_barbeiro'),
     path('barbeiro/agendamentos/', views.AgendamentosBarbeiroView.as_view(), name='agendamentos_barbeiro'),
+    path('barbeiro/atendimento/<int:pk>/comanda/', views.BarbeiroComandaView.as_view(), name='barbeiro_comanda'),
+    path('barbeiro/atendimento/<int:pk>/foto/', views.BarbeiroFotoResultadoView.as_view(), name='barbeiro_foto_resultado'),
+    path('barbeiro/ganhos/', views.BarbeiroGanhosView.as_view(), name='barbeiro_ganhos'),
+    path('barbeiro/metas/', views.BarbeiroMetasView.as_view(), name='barbeiro_metas'),
     path('barbeiro/historico/', views.HistoricoBarbeiroView.as_view(), name='historico_barbeiro'),
     path('barbeiro/relatorios/', views.RelatoriosBarbeiroView.as_view(), name='relatorios_barbeiro'),
     path('barbeiro/fotos/', views.FotoTrabalhoListView.as_view(), name='fotos_barbeiro'),
     path('barbeiro/fotos/cadastrar/', views.FotoTrabalhoCreateView.as_view(), name='cadastrar_foto_barbeiro'),
     path('barbeiro/fotos/editar/<int:pk>/', views.FotoTrabalhoUpdateView.as_view(), name='editar_foto_barbeiro'),
     path('barbeiro/fotos/excluir/<int:pk>/', views.FotoTrabalhoDeleteView.as_view(), name='excluir_foto_barbeiro'),
-
-    # Available Times Helper View (alias)
-    path('horarios-disponiveis/', views.horarios_disponiveis_api, name='horarios_disponiveis'),
 ]
