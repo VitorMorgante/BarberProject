@@ -9,6 +9,10 @@ db.sqlite3
 .env
 .env.*
 *.env
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
 
 # Local media uploads
 media/

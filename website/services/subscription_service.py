@@ -116,7 +116,14 @@ class SubscriptionService:
     def estornar_credito(agendamento: Agendamento) -> bool:
         """
         Estorna o crédito de um agendamento cancelado de volta para a assinatura do cliente.
+        Garante idempotência estrita (apenas 1 estorno por agendamento).
         """
+        if MovimentacaoCredito.objects.filter(
+            agendamento=agendamento,
+            tipo=MovimentacaoCredito.Tipo.ESTORNO
+        ).exists():
+            return False
+
         mov_consumo = MovimentacaoCredito.objects.filter(
             agendamento=agendamento,
             tipo=MovimentacaoCredito.Tipo.CONSUMO

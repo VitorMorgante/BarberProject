@@ -1,9 +1,10 @@
 import os
 import json
+import uuid
 from decimal import Decimal
 from datetime import date, datetime, timedelta
 from django.conf import settings
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import Sum, Count, Q, Avg, F
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -26,7 +27,18 @@ from .models import (
     RegraComissao, Comissao, RepasseComissao, MetaBarbeiro,
     ConfiguracaoEstabelecimento, Pagamento, EventoWebhookPagamento,
     ListaEspera, Notificacao, EstiloCorte, AnaliseEstilo,
-    HistoricoVisualCliente, PushSubscription, CupomDesconto
+    HistoricoVisualCliente, PushSubscription, CupomDesconto,
+    UnidadeBarbearia, BarbeiroServico, EscalaBarbeiro, BloqueioAgenda,
+    PerfilDependente, ContaCorrenteCliente, MovimentacaoContaCorrente,
+    PacoteServico, LocalEstoque, SaldoEstoqueLocal, TransferenciaEstoque,
+    PerdaEstoque, KitConsumoServico, Fornecedor, PedidoCompra, ItemPedidoCompra,
+    InventarioEstoque, ItemInventarioEstoque, LoteValidade, PagamentoDividido,
+    Gorjeta, MetaGlobal, RegistroPontoBarbeiro, CaixaDiario, MovimentacaoCaixa,
+    CategoriaDespesa, Despesa, TaxaMetodoPagamento, RegraAutomacao,
+    FichaTecnicaCorte, TarefaRecepcao, HandoffTurno, OcorrenciaOperacional,
+    ChecklistOperacional, ItemChecklistOperacional, RegistroHigienizacao,
+    Equipamento, ManutencaoEquipamento, RegistroAuditoria, AprovacaoAcaoSensivel,
+    ConsentimentoCliente, DadosFiscaisEmpresa
 )
 from .forms import (
     ServicoForm, BarbeiroForm, ClienteForm, HorarioDisponivelForm,
@@ -35,16 +47,17 @@ from .forms import (
     PlanoAssinaturaForm, ProdutoForm, MovimentacaoEstoqueForm, ItemComandaForm,
     RegraComissaoForm, MetaBarbeiroForm, RepasseComissaoForm,
     ConfiguracaoEstabelecimentoForm, ListaEsperaForm, AnaliseEstiloForm,
-    HistoricoVisualClienteForm
+    HistoricoVisualClienteForm, FichaTecnicaCorteForm, PerfilDependenteForm,
+    EscalaBarbeiroForm, BloqueioAgendaForm, DespesaForm, TarefaRecepcaoForm,
+    OcorrenciaOperacionalForm, ConsentimentoClienteForm, PacoteServicoForm,
+    FornecedorForm, CaixaDiarioAberturaForm, CaixaDiarioFechamentoForm
 )
-from website.services.agendamento_service import AgendamentoService
-from website.services.subscription_service import SubscriptionService
-from website.services.loyalty_service import LoyaltyService
-from website.services.inventory_service import InventoryService
-from website.services.comissao_service import ComissaoService
-from website.services.payment_service import PaymentService
-from website.services.whatsapp_service import WhatsAppService
-from website.services.style_ai_service import StyleAIService
+from website.services import (
+    AgendamentoService, AgendaInteligenteService, SubscriptionService,
+    LoyaltyService, InventoryService, ComissaoService, PaymentService,
+    WhatsAppService, StyleAIService, CRMService, FinanceService,
+    AutomationService, AIAssistantService, AuditService
+)
 
 
 # ==============================================================================
@@ -226,17 +239,21 @@ class AgendamentoPublicoView(FormView):
             messages.error(self.request, 'Este horário acabou de ser reservado por outro cliente. Por favor, escolha outro.')
             return redirect('agendamento')
 
-        # Cria o agendamento
-        agendamento = Agendamento.objects.create(
-            usuario=self.request.user if self.request.user.is_authenticated else None,
-            cliente=cliente,
-            servico=servico,
-            barbeiro=barbeiro,
-            data=data_agendamento,
-            horario=horario_agendamento,
-            observacoes=observacoes,
-            status=Agendamento.Status.PENDENTE
-        )
+        # Cria o agendamento de forma segura contra concorrência
+        try:
+            agendamento = Agendamento.objects.create(
+                usuario=self.request.user if self.request.user.is_authenticated else None,
+                cliente=cliente,
+                servico=servico,
+                barbeiro=barbeiro,
+                data=data_agendamento,
+                horario=horario_agendamento,
+                observacoes=observacoes,
+                status=Agendamento.Status.PENDENTE
+            )
+        except IntegrityError:
+            messages.error(self.request, 'Este horário acabou de ser reservado por outro cliente. Por favor, escolha outro.')
+            return redirect('agendamento')
 
         # Cria Comanda inicial
         comanda = Comanda.objects.create(
@@ -636,6 +653,20 @@ class FeedbackCreateView(LoginRequiredMixin, CreateView):
     template_name = 'website/cliente/feedback.html'
     success_url = reverse_lazy('area_cliente')
 
+    def dispatch(self, request, *args, **kwargs):
+        agendamento = get_object_or_404(Agendamento, pk=self.kwargs['pk'])
+        cliente = Cliente.objects.filter(usuario=request.user).first()
+        if not cliente or agendamento.cliente != cliente:
+            messages.error(request, 'Você não tem permissão para avaliar este agendamento.')
+            return redirect('area_cliente')
+        if agendamento.status != Agendamento.Status.CONCLUIDO:
+            messages.error(request, 'Apenas agendamentos concluídos podem ser avaliados.')
+            return redirect('area_cliente')
+        if Feedback.objects.filter(agendamento=agendamento).exists():
+            messages.error(request, 'Você já enviou avaliação para este atendimento.')
+            return redirect('area_cliente')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['agendamento'] = get_object_or_404(Agendamento, pk=self.kwargs['pk'])
@@ -932,6 +963,14 @@ class BarbeiroComandaView(BarbeiroRequiredMixin, TemplateView):
     """Gerenciamento de Comanda / PDV do atendimento pelo barbeiro."""
     template_name = 'website/barbeiro/comanda_atendimento.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        agendamento = get_object_or_404(Agendamento, pk=self.kwargs['pk'])
+        barbeiro = Barbeiro.objects.filter(usuario=request.user).first()
+        if not (request.user.is_superuser or request.user.is_staff) and agendamento.barbeiro != barbeiro:
+            messages.error(request, 'Permissão negada para gerenciar esta comanda.')
+            return redirect('area_barbeiro')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         agendamento = get_object_or_404(Agendamento, pk=self.kwargs['pk'])
@@ -1039,6 +1078,14 @@ class BarbeiroFotoResultadoView(BarbeiroRequiredMixin, CreateView):
     template_name = 'website/form.html'
     success_url = reverse_lazy('agendamentos_barbeiro')
     extra_context = {'titulo': 'Registrar Foto do Resultado (Privado)', 'botao': 'Salvar Foto de Evolução'}
+
+    def dispatch(self, request, *args, **kwargs):
+        agendamento = get_object_or_404(Agendamento, pk=self.kwargs['pk'])
+        barbeiro = Barbeiro.objects.filter(usuario=request.user).first()
+        if not (request.user.is_superuser or request.user.is_staff) and agendamento.barbeiro != barbeiro:
+            messages.error(request, 'Permissão negada para adicionar foto a este agendamento.')
+            return redirect('agendamentos_barbeiro')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_initial(self):
         agendamento = get_object_or_404(Agendamento, pk=self.kwargs['pk'])
@@ -1758,6 +1805,15 @@ def download_ics_view(request, pk):
     """Gera e retorna um arquivo .ics (iCalendar) para sincronizar o agendamento no iPhone / Android / Google Calendar."""
     agendamento = get_object_or_404(Agendamento, pk=pk)
 
+    if request.user.is_authenticated:
+        user = request.user
+        cliente = Cliente.objects.filter(usuario=user).first()
+        barbeiro = Barbeiro.objects.filter(usuario=user).first()
+        is_owner_client = cliente and agendamento.cliente == cliente
+        is_assigned_barber = barbeiro and agendamento.barbeiro == barbeiro
+        if not (user.is_superuser or user.is_staff or is_owner_client or is_assigned_barber):
+            return HttpResponse("Acesso não autorizado para este agendamento.", status=403)
+
     # Início e fim do agendamento
     data_hora_inicio = datetime.combine(agendamento.data, agendamento.horario)
     duracao = agendamento.servico.duracao_minutos or 40
@@ -1815,3 +1871,572 @@ class RepetirUltimoCorteView(LoginRequiredMixin, View):
 
         messages.info(request, "Nenhum histórico anterior encontrado. Selecione seu serviço e barbeiro preferido.")
         return redirect('agendamento')
+
+
+# ==============================================================================
+# 10. MODO RECEPÇÃO, MODO TV & CARDÁPIO DIGITAL
+# ==============================================================================
+
+class ModoRecepcaoView(LoginRequiredMixin, TemplateView):
+    """
+    Interface simplificada e ultrarrápida para a recepção da barbearia:
+    Agenda do dia, Fila em tempo real, Check-in com 1 clique, Clientes Walk-in, Comandas e Caixa.
+    """
+    template_name = 'website/recepcao.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        hoje = timezone.localtime().date()
+        context['hoje'] = hoje
+        context['fila'] = AgendaInteligenteService.obter_fila_tempo_real()
+        context['agendamentos_hoje'] = Agendamento.objects.filter(
+            data=hoje
+        ).exclude(status=Agendamento.Status.CANCELADO).order_by('horario').select_related('cliente', 'barbeiro', 'servico', 'dependente')
+        context['barbeiros'] = Barbeiro.objects.filter(ativo=True)
+        context['servicos'] = Servico.objects.filter(ativo=True)
+        context['tarefas'] = TarefaRecepcao.objects.filter(data_limite=hoje, concluida=False)
+        context['caixa_aberto'] = CaixaDiario.objects.filter(operador=self.request.user, status=CaixaDiario.Status.ABERTO).first()
+        return context
+
+
+class ModoTVView(TemplateView):
+    """
+    Painel em tela cheia (Modo TV) para a sala de espera:
+    Exibe cadeiras em atendimento e clientes aguardando na fila com previsão de espera.
+    Totalmente seguro: omite telefones, e-mails e dados financeiros.
+    """
+    template_name = 'website/modo_tv.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['fila'] = AgendaInteligenteService.obter_fila_tempo_real()
+        context['barbeiros'] = Barbeiro.objects.filter(ativo=True)
+        context['agora'] = timezone.localtime()
+        return context
+
+
+class CardapioDigitalView(TemplateView):
+    """
+    Cardápio Digital de Serviços, Combos e Produtos acessível por QR Code na cadeira/recepção.
+    """
+    template_name = 'website/cardapio_digital.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['servicos'] = Servico.objects.filter(ativo=True).order_by('ordem', 'nome')
+        context['pacotes'] = PacoteServico.objects.filter(ativo=True).order_by('preco_promocional')
+        context['produtos'] = Produto.objects.filter(ativo=True, is_insumo_interno=False, estoque_atual__gt=0).order_by('categoria', 'nome')
+        context['planos'] = PlanoAssinatura.objects.filter(ativo=True).order_by('preco_mensal')
+        return context
+
+
+class RealizarCheckinView(View):
+    """
+    Endpoint para check-in imediato do cliente (via QR Code na recepção ou link na Área do Cliente).
+    """
+    def get(self, request, token=None, pk=None):
+        if token:
+            agendamento = get_object_or_404(Agendamento, checkin_token=token)
+        else:
+            agendamento = get_object_or_404(Agendamento, pk=pk)
+
+        sucesso = AgendaInteligenteService.registrar_checkin(agendamento)
+        if sucesso:
+            messages.success(request, f"Check-in confirmado para {agendamento.cliente.nome}! Você já está na fila de atendimento.")
+        else:
+            messages.error(request, "Não foi possível realizar o check-in deste agendamento.")
+
+        if request.user.is_authenticated and (request.user.is_staff or getattr(request.user, 'perfil', None) and request.user.perfil.tipo_usuario in ['administrador', 'recepcionista']):
+            return redirect('modo_recepcao')
+        return redirect('area_cliente')
+
+
+class WalkinCreateView(AdminStaffRequiredMixin, View):
+    """
+    Registra cliente que chegou sem agendamento (Walk-in) e insere direto na fila operacional.
+    """
+    def post(self, request):
+        nome = request.POST.get('nome', 'Cliente Walk-in')
+        telefone = request.POST.get('telefone', '')
+        servico_id = request.POST.get('servico_id')
+        barbeiro_id = request.POST.get('barbeiro_id')
+
+        servico = get_object_or_404(Servico, pk=servico_id)
+        barbeiro = get_object_or_404(Barbeiro, pk=barbeiro_id) if barbeiro_id else Barbeiro.objects.filter(ativo=True).first()
+
+        cliente, _ = Cliente.objects.get_or_create(
+            telefone=telefone if telefone else f"walkin-{uuid.uuid4().hex[:6]}",
+            defaults={'nome': nome, 'email': f'walkin-{uuid.uuid4().hex[:6]}@delacruzbarber.com.br', 'canal_origem': 'Passou em frente'}
+        )
+
+        hoje = timezone.localtime().date()
+        agora_hora = timezone.localtime().time()
+
+        agendamento = Agendamento.objects.create(
+            cliente=cliente,
+            servico=servico,
+            barbeiro=barbeiro,
+            data=hoje,
+            horario=agora_hora,
+            status=Agendamento.Status.AGUARDANDO,
+            is_walkin=True,
+            checkin_em=timezone.now(),
+            observacoes="Cliente Walk-in (Encaixe sem agendamento prévio)"
+        )
+
+        messages.success(request, f"Cliente Walk-in {nome} inserido na fila com sucesso com {barbeiro.nome}!")
+        return redirect('modo_recepcao')
+
+
+# ==============================================================================
+# 11. CENTRAL LGPD E PRIVACIDADE
+# ==============================================================================
+
+class CentralLGPDView(LoginRequiredMixin, View):
+    """
+    Central de Privacidade e Direitos LGPD do Cliente:
+    Gerenciamento de consentimentos (fotos, IA, WhatsApp marketing), solicitação de exclusão.
+    """
+    def get(self, request):
+        cliente = Cliente.objects.filter(usuario=request.user).first()
+        if not cliente:
+            messages.warning(request, "Perfil de cliente não encontrado.")
+            return redirect('pagina_inicial')
+
+        consentimento, _ = ConsentimentoCliente.objects.get_or_create(cliente=cliente)
+        fotos = HistoricoVisualCliente.objects.filter(cliente=cliente)
+        return render(request, 'website/cliente/lgpd.html', {
+            'cliente': cliente,
+            'consentimento': consentimento,
+            'fotos': fotos
+        })
+
+    def post(self, request):
+        cliente = Cliente.objects.filter(usuario=request.user).first()
+        consentimento, _ = ConsentimentoCliente.objects.get_or_create(cliente=cliente)
+
+        consentimento.fotos_privadas = 'fotos_privadas' in request.POST
+        consentimento.fotos_portfolio = 'fotos_portfolio' in request.POST
+        consentimento.ia_visagismo = 'ia_visagismo' in request.POST
+        consentimento.whatsapp_notificacoes = 'whatsapp_notificacoes' in request.POST
+        consentimento.whatsapp_marketing = 'whatsapp_marketing' in request.POST
+        consentimento.email_marketing = 'email_marketing' in request.POST
+        consentimento.save()
+
+        messages.success(request, "Suas preferências de privacidade e LGPD foram salvas com sucesso.")
+        return redirect('central_lgpd')
+
+
+class ExportarDadosLGPDView(LoginRequiredMixin, View):
+    """Exporta todos os dados do titular em formato JSON (Portabilidade LGPD)."""
+    def get(self, request):
+        cliente = Cliente.objects.filter(usuario=request.user).first()
+        if not cliente:
+            return JsonResponse({'erro': 'Cliente não localizado'}, status=404)
+
+        agendamentos = list(cliente.agendamentos.values('id', 'data', 'horario', 'status', 'servico__nome', 'barbeiro__nome', 'criado_em'))
+        comandas = list(cliente.comandas.values('id', 'status', 'subtotal', 'desconto', 'valor_total', 'metodo_pagamento', 'criada_em'))
+        feedbacks = list(cliente.feedbacks.values('id', 'nota', 'comentario', 'criado_em'))
+
+        dados = {
+            'titular': {
+                'nome': cliente.nome,
+                'email': cliente.email,
+                'telefone': cliente.telefone,
+                'cadastrado_em': cliente.cadastrado_em.isoformat()
+            },
+            'agendamentos': agendamentos,
+            'comandas': comandas,
+            'feedbacks': feedbacks,
+            'exportado_em': timezone.now().isoformat()
+        }
+
+        response = HttpResponse(json.dumps(dados, indent=2, default=str), content_type='application/json; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="delacruz_meus_dados_{cliente.id}.json"'
+        return response
+
+
+class ExcluirFotoClienteLGPDView(LoginRequiredMixin, View):
+    """Permite ao cliente excluir uma foto do seu histórico visual privado."""
+    def post(self, request, pk):
+        cliente = Cliente.objects.filter(usuario=request.user).first()
+        foto = get_object_or_404(HistoricoVisualCliente, pk=pk, cliente=cliente)
+        foto.delete()
+        messages.success(request, "Foto removida com sucesso do seu histórico visual.")
+        return redirect('central_lgpd')
+
+
+# ==============================================================================
+# 12. CHATBOT IA & GESTÃO INTELIGENTE
+# ==============================================================================
+
+@csrf_exempt
+def ai_assistant_chat_api(request):
+    """
+    Endpoint JSON do Assistente Virtual de Agendamento e Consultas de Gestão.
+    Conectado diretamente ao banco real da barbearia.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'erro': 'Método não permitido'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        mensagem = data.get('mensagem', '')
+        tipo = data.get('tipo', 'agendamento')  # 'agendamento' ou 'gestao'
+
+        cliente = None
+        if request.user.is_authenticated:
+            cliente = Cliente.objects.filter(usuario=request.user).first()
+
+        if tipo == 'gestao' and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+            resposta = AIAssistantService.responder_consulta_gestao(mensagem)
+            return JsonResponse({'resposta': resposta})
+
+        resultado = AIAssistantService.processar_mensagem_agendamento(mensagem, cliente=cliente)
+        return JsonResponse(resultado)
+    except Exception as e:
+        return JsonResponse({'resposta': f"Erro ao processar mensagem: {str(e)}"}, status=500)
+
+
+# ==============================================================================
+# 13. CAIXA, DRE & FINANCEIRO AVANÇADO
+# ==============================================================================
+
+class CaixaDiarioView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Controle de abertura, sangria, suprimento e fechamento do caixa."""
+    def test_func(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return False
+        if user.is_superuser or user.is_staff:
+            return True
+        perfil = getattr(user, 'perfil', None)
+        return bool(perfil and perfil.tipo_usuario.lower() in ['administrador', 'recepcionista', 'gerente', 'financeiro'])
+
+    def handle_no_permission(self):
+        messages.error(self.request, 'Acesso restrito à operação de caixa.')
+        return redirect('dashboard' if self.request.user.is_staff else 'pagina_inicial')
+
+    def get(self, request):
+        caixa_aberto = CaixaDiario.objects.filter(operador=request.user, status=CaixaDiario.Status.ABERTO).first()
+        historico_caixas = CaixaDiario.objects.filter(operador=request.user).order_by('-data_abertura')[:10]
+        return render(request, 'website/admin/caixa.html', {
+            'caixa_aberto': caixa_aberto,
+            'historico_caixas': historico_caixas,
+            'form_abertura': CaixaDiarioAberturaForm(),
+            'form_fechamento': CaixaDiarioFechamentoForm()
+        })
+
+    def post(self, request):
+        acao = request.POST.get('acao')
+        if acao == 'abrir':
+            saldo_ini = Decimal(request.POST.get('saldo_inicial', '100.00'))
+            FinanceService.abrir_caixa(operador=request.user, saldo_inicial=saldo_ini)
+            messages.success(request, "Caixa diário aberto com sucesso!")
+        elif acao == 'fechar':
+            caixa_id = request.POST.get('caixa_id')
+            saldo_inf = Decimal(request.POST.get('saldo_informado', '0.00'))
+            obs = request.POST.get('observacoes', '')
+            caixa = get_object_or_404(CaixaDiario, pk=caixa_id, operador=request.user)
+            FinanceService.fechar_caixa(caixa, saldo_informado=saldo_inf, observacoes=obs)
+            messages.success(request, f"Caixa fechado com sucesso! Diferença apurada: R$ {caixa.diferenca_quebra}")
+        elif acao in ['sangria', 'suprimento']:
+            caixa_id = request.POST.get('caixa_id')
+            valor = Decimal(request.POST.get('valor', '0.00'))
+            motivo = request.POST.get('motivo', '')
+            caixa = get_object_or_404(CaixaDiario, pk=caixa_id, operador=request.user)
+            FinanceService.registrar_movimentacao_caixa(caixa, tipo=acao, valor=valor, motivo=motivo)
+            messages.success(request, f"{acao.capitalize()} de R$ {valor} registrada no caixa com sucesso!")
+
+        return redirect('admin_caixa')
+
+
+class DREAdminView(AdminStaffRequiredMixin, TemplateView):
+    """Demonstrativo de Resultado do Exercício (DRE) com receitas, custos e despesas."""
+    template_name = 'website/admin/dre.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        hoje = timezone.localtime().date()
+        mes = int(self.request.GET.get('mes', hoje.month))
+        ano = int(self.request.GET.get('ano', hoje.year))
+
+        context['dre'] = FinanceService.gerar_dre_simplificado(mes=mes, ano=ano)
+        context['rentabilidade_servicos'] = FinanceService.calcular_rentabilidade_servicos()
+        context['mes_selecionado'] = mes
+        context['ano_selecionado'] = ano
+        return context
+
+
+class CRMAdminView(AdminStaffRequiredMixin, TemplateView):
+    """Central CRM: Segmentos (VIP, Novos, Inativos, Em Risco), Churn, LTV e Funil."""
+    template_name = 'website/admin/crm.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['segmentos'] = CRMService.obter_segmentos_clientes()
+        context['funil'] = CRMService.calcular_funil_conversao()
+        return context
+
+
+class Perfil360AdminView(AdminStaffRequiredMixin, DetailView):
+    """Visão 360º consolidada do cliente para a administração e barbeiros."""
+    model = Cliente
+    template_name = 'website/admin/perfil_360.html'
+    context_object_name = 'cliente'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['p360'] = CRMService.obter_perfil_360(self.object)
+        return context
+
+
+class CentralAutomacoesAdminView(AdminStaffRequiredMixin, TemplateView):
+    """Central de Réguas de Automação: Ativar/desativar réguas e disparar manualmente."""
+    template_name = 'website/admin/automacoes.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['regras'] = RegraAutomacao.objects.all().order_by('tipo')
+        context['alertas'] = AutomationService.obter_resumo_executivo_dia()
+        return context
+
+    def post(self, request):
+        if 'executar_todas' in request.POST:
+            res = AutomationService.executar_reguas_automacao()
+            messages.success(request, f"Automações executadas! {res['notificacoes_geradas']} notificações geradas.")
+        elif 'toggle_regra' in request.POST:
+            regra_id = request.POST.get('regra_id')
+            regra = get_object_or_404(RegraAutomacao, pk=regra_id)
+            regra.ativo = not regra.ativo
+            regra.save()
+            messages.info(request, f"Régua '{regra.titulo}' {'ativada' if regra.ativo else 'desativada'}.")
+        return redirect('admin_automacoes')
+
+
+class AgendaVisualAdminView(AdminStaffRequiredMixin, TemplateView):
+    """Agenda Visual com Grade Horária, Barbeiros e Drag & Drop."""
+    template_name = 'website/admin/agenda_visual.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data_str = self.request.GET.get('data')
+        data_sel = datetime.strptime(data_str, '%Y-%m-%d').date() if data_str else timezone.localtime().date()
+        barb_id = self.request.GET.get('barbeiro')
+
+        barbeiros = Barbeiro.objects.filter(ativo=True)
+        if barb_id:
+            barbeiros = barbeiros.filter(pk=barb_id)
+
+        agendamentos = Agendamento.objects.filter(
+            data=data_sel
+        ).exclude(status=Agendamento.Status.CANCELADO).select_related('cliente', 'servico', 'barbeiro')
+
+        context['data_selecionada'] = data_sel
+        context['barbeiros'] = barbeiros
+        context['all_barbeiros'] = Barbeiro.objects.filter(ativo=True)
+        context['agendamentos'] = agendamentos
+        return context
+
+
+def reagendar_drag_drop_api(request):
+    """Valida e executa reagendamento visual via drag & drop com verificação de permissão e conflitos."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'sucesso': False, 'mensagem': 'Autenticação necessária.'}, status=401)
+
+    if request.method != 'POST':
+        return JsonResponse({'erro': 'Método não permitido'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        agendamento_id = data.get('agendamento_id')
+        nova_data_str = data.get('nova_data')
+        novo_horario_str = data.get('novo_horario')
+        novo_barbeiro_id = data.get('novo_barbeiro_id')
+
+        ag = get_object_or_404(Agendamento, pk=agendamento_id)
+
+        user = request.user
+        is_admin_or_staff = user.is_superuser or user.is_staff or (getattr(user, 'perfil', None) and user.perfil.tipo_usuario in ['administrador', 'recepcionista'])
+        is_assigned_barber = bool(ag.barbeiro and ag.barbeiro.usuario == user)
+        if not (is_admin_or_staff or is_assigned_barber):
+            return JsonResponse({'sucesso': False, 'mensagem': 'Permissão negada para reagendar este atendimento.'}, status=403)
+
+        nova_data = datetime.strptime(nova_data_str, '%Y-%m-%d').date()
+        novo_horario = datetime.strptime(novo_horario_str, '%H:%M').time()
+        novo_barb = get_object_or_404(Barbeiro, pk=novo_barbeiro_id) if novo_barbeiro_id else ag.barbeiro
+
+        # Valida conflito
+        conflito = Agendamento.objects.filter(
+            barbeiro=novo_barb,
+            data=nova_data,
+            horario=novo_horario
+        ).exclude(pk=ag.pk).exclude(status=Agendamento.Status.CANCELADO).exists()
+
+        if conflito:
+            return JsonResponse({'sucesso': False, 'mensagem': 'Horário já ocupado para este barbeiro!'}, status=400)
+
+        ag.data = nova_data
+        ag.horario = novo_horario
+        ag.barbeiro = novo_barb
+        ag.save(update_fields=['data', 'horario', 'barbeiro', 'atualizado_em'])
+
+        AuditService.registrar(
+            usuario=request.user,
+            acao='reagendamento_drag_drop',
+            tabela='Agendamento',
+            registro_id=str(ag.id),
+            valor_anterior=f"{ag.data} {ag.horario}",
+            valor_novo=f"{nova_data} {novo_horario} com {novo_barb.nome}"
+        )
+
+        return JsonResponse({'sucesso': True, 'mensagem': 'Agendamento remarcado com sucesso!'})
+    except Exception as e:
+        return JsonResponse({'sucesso': False, 'mensagem': str(e)}, status=500)
+
+
+# ==============================================================================
+# 14. OPERAÇÃO MOBILE DO BARBEIRO EXPANDIDA
+# ==============================================================================
+
+class IniciarAtendimentoBarbeiroView(BarbeiroRequiredMixin, View):
+    """Barbeiro clica em 'Iniciar Atendimento' no celular."""
+    def post(self, request, pk):
+        agendamento = get_object_or_404(Agendamento, pk=pk)
+        barbeiro = Barbeiro.objects.filter(usuario=request.user).first()
+        if not (request.user.is_superuser or request.user.is_staff) and agendamento.barbeiro != barbeiro:
+            messages.error(request, 'Permissão negada para iniciar este atendimento.')
+            return redirect('area_barbeiro')
+        AgendamentoService.iniciar_atendimento(agendamento, usuario_responsavel=request.user)
+        messages.success(request, f"Atendimento de {agendamento.cliente.nome} iniciado!")
+        return redirect('area_barbeiro')
+
+
+class PausaRapidaBarbeiroView(BarbeiroRequiredMixin, View):
+    """Barbeiro insere pausa rápida (5, 10, 15, 30 min)."""
+    def post(self, request):
+        minutos = int(request.POST.get('minutos', 15))
+        barbeiro = Barbeiro.objects.filter(usuario=request.user).first()
+        if not barbeiro:
+            barbeiro = Barbeiro.objects.first()
+
+        AgendaInteligenteService.registrar_pausa_rapida(barbeiro, minutos=minutos)
+        messages.info(request, f"Pausa rápida de {minutos} minutos ativada com sucesso.")
+        return redirect('area_barbeiro')
+
+
+class FecharComandaDivididaView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Fechamento de comanda com múltiplos métodos de pagamento e gorjeta opcional."""
+    def test_func(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return False
+        if user.is_superuser or user.is_staff:
+            return True
+        perfil = getattr(user, 'perfil', None)
+        if perfil and perfil.tipo_usuario.lower() in ['administrador', 'recepcionista', 'gerente', 'financeiro']:
+            return True
+        comanda = get_object_or_404(Comanda, pk=self.kwargs['pk'])
+        return bool(comanda.barbeiro and comanda.barbeiro.usuario == user)
+
+    def handle_no_permission(self):
+        messages.error(self.request, 'Acesso negado para fechar comanda.')
+        return redirect('dashboard' if self.request.user.is_staff else 'pagina_inicial')
+
+    def post(self, request, pk):
+        comanda = get_object_or_404(Comanda, pk=pk)
+        metodos = request.POST.getlist('metodo[]')
+        valores = request.POST.getlist('valor[]')
+        gorjeta = Decimal(request.POST.get('gorjeta', '0.00'))
+
+        pagamentos_info = []
+        for m, v in zip(metodos, valores):
+            if v and Decimal(v) > 0:
+                pagamentos_info.append({'metodo': m, 'valor': Decimal(v)})
+
+        if not pagamentos_info:
+            pagamentos_info.append({'metodo': 'pix', 'valor': comanda.valor_total})
+
+        try:
+            PaymentService.registrar_pagamento_dividido(
+                comanda=comanda,
+                pagamentos_info=pagamentos_info,
+                gorjeta_valor=gorjeta,
+                usuario=request.user
+            )
+            # Conclui o agendamento vinculado se houver
+            if comanda.agendamento and comanda.agendamento.status != Agendamento.Status.CONCLUIDO:
+                AgendamentoService.concluir_atendimento(comanda.agendamento, comanda=comanda, usuario_responsavel=request.user)
+
+            messages.success(request, f"Comanda #{comanda.id} fechada com sucesso com pagamento dividido!")
+        except Exception as e:
+            messages.error(request, f"Erro ao fechar comanda: {str(e)}")
+
+        if request.user.is_authenticated and (request.user.is_staff or getattr(request.user, 'perfil', None) and request.user.perfil.tipo_usuario == 'administrador'):
+            return redirect('dashboard')
+        return redirect('area_barbeiro')
+
+
+class FichaTecnicaCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Criação e edição de Ficha Técnica de Corte (Meu Corte)."""
+    def test_func(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return False
+        if user.is_superuser or user.is_staff:
+            return True
+        perfil = getattr(user, 'perfil', None)
+        if perfil and perfil.tipo_usuario.lower() in ['administrador', 'barbeiro', 'recepcionista', 'gerente']:
+            return True
+        return Barbeiro.objects.filter(usuario=user).exists()
+
+    def handle_no_permission(self):
+        messages.error(self.request, 'Acesso negado para criar ou alterar ficha técnica.')
+        return redirect('pagina_inicial')
+
+    def post(self, request, cliente_id):
+        cliente = get_object_or_404(Cliente, pk=cliente_id)
+        barbeiro = Barbeiro.objects.filter(usuario=request.user).first() or Barbeiro.objects.first()
+        agendamento_id = request.POST.get('agendamento_id')
+        agendamento = Agendamento.objects.filter(pk=agendamento_id).first() if agendamento_id else None
+
+        FichaTecnicaCorte.objects.create(
+            cliente=cliente,
+            barbeiro=barbeiro,
+            agendamento=agendamento,
+            maquina_lateral=request.POST.get('maquina_lateral', ''),
+            comprimento_topo=request.POST.get('comprimento_topo', ''),
+            tipo_fade=request.POST.get('tipo_fade', ''),
+            acabamento=request.POST.get('acabamento', ''),
+            configuracao_barba=request.POST.get('configuracao_barba', ''),
+            observacoes_tecnicas=request.POST.get('observacoes_tecnicas', ''),
+            notas_internas=request.POST.get('notas_internas', '')
+        )
+        messages.success(request, f"Ficha técnica de corte para {cliente.nome} registrada com sucesso!")
+        return redirect('perfil_360_admin', pk=cliente.id)
+
+
+def health_check_view(request):
+    """
+    Endpoint de monitoramento e verificação de saúde do sistema (Liveness & Readiness).
+    Valida conectividade com o banco de dados e estado geral da aplicação.
+    """
+    status_code = 200
+    db_status = "ok"
+    try:
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+        status_code = 503
+
+    payload = {
+        "status": "healthy" if status_code == 200 else "unhealthy",
+        "app": "Delacruz Barber",
+        "version": "2.0.0",
+        "database": db_status,
+        "timestamp": timezone.now().isoformat(),
+    }
+    return JsonResponse(payload, status=status_code)
+

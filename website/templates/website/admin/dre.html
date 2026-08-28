@@ -1,0 +1,166 @@
+{% extends 'website/modelo.html' %}
+{% load static %}
+
+{% block titulo %}DRE — Demonstrativo de Resultado{% endblock %}
+
+{% block conteudo %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <span class="badge bg-gold text-dark px-3 py-1 mb-1">Controladoria</span>
+      <h2 class="brand-font text-gold mb-0">DRE — Resultado do Exercício</h2>
+      <p class="text-secondary small mb-0">Competência: <strong>{{ dre.periodo }}</strong> • Lucratividade e Margem Real</p>
+    </div>
+    <!-- Filtro de Competência -->
+    <form method="get" class="d-flex gap-2 align-items-center">
+      <select name="mes" class="form-select bg-dark text-light border-secondary form-select-sm">
+        {% for m in "1 2 3 4 5 6 7 8 9 10 11 12"|make_list %}
+          <option value="{{ forloop.counter }}" {% if forloop.counter == mes_selecionado %}selected{% endif %}>Mês {{ forloop.counter }}</option>
+        {% endfor %}
+      </select>
+      <input type="number" name="ano" value="{{ ano_selecionado }}" class="form-control bg-dark text-light border-secondary form-control-sm" style="width: 90px;">
+      <button type="submit" class="btn btn-outline-gold btn-sm">Filtrar</button>
+    </form>
+  </div>
+
+  <!-- Cards Resumo Topo -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card card-delacruz p-3">
+        <small class="text-secondary">Receita Bruta Total</small>
+        <h4 class="text-light brand-font mb-0 mt-1">R$ {{ dre.receita_bruta }}</h4>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-delacruz p-3">
+        <small class="text-secondary">Comissões & Deduções</small>
+        <h4 class="text-danger brand-font mb-0 mt-1">- R$ {{ dre.total_deducoes }}</h4>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-delacruz p-3">
+        <small class="text-secondary">Despesas Operacionais</small>
+        <h4 class="text-warning brand-font mb-0 mt-1">- R$ {{ dre.total_despesas }}</h4>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-delacruz p-3 border-{% if dre.is_positivo %}success{% else %}danger{% endif %} border-opacity-50">
+        <small class="text-secondary">Lucro Líquido do Mês</small>
+        <h4 class="text-{% if dre.is_positivo %}success{% else %}danger{% endif %} brand-font mb-0 mt-1">
+          R$ {{ dre.lucro_liquido }} ({{ dre.margem_lucro_percentual }}%)
+        </h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estrutura DRE Detalhada -->
+  <div class="row g-4 mb-5">
+    <div class="col-lg-7">
+      <div class="card card-delacruz">
+        <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 py-3">
+          <h5 class="text-gold brand-font mb-0 fs-6"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Estrutura Contábil DRE</h5>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-dark table-striped mb-0 align-middle">
+            <tbody>
+              <tr class="table-active fw-bold text-light">
+                <td>(+) RECEITA OPERACIONAL BRUTA</td>
+                <td class="text-end text-gold">R$ {{ dre.receita_bruta }}</td>
+              </tr>
+              <tr class="small text-secondary">
+                <td class="ps-4">• Receita de Serviços</td>
+                <td class="text-end text-light">R$ {{ dre.receita_servicos }}</td>
+              </tr>
+              <tr class="small text-secondary">
+                <td class="ps-4">• Venda de Produtos</td>
+                <td class="text-end text-light">R$ {{ dre.receita_produtos }}</td>
+              </tr>
+              <tr class="small text-secondary">
+                <td class="ps-4">• Assinaturas Barber Club</td>
+                <td class="text-end text-light">R$ {{ dre.receita_assinaturas }}</td>
+              </tr>
+
+              <tr class="table-active fw-bold text-light">
+                <td>(-) DEDUÇÕES DA RECEITA & CUSTOS DIRETOS</td>
+                <td class="text-end text-danger">- R$ {{ dre.total_deducoes }}</td>
+              </tr>
+              <tr class="small text-secondary">
+                <td class="ps-4">• Comissões Pagas à Equipe</td>
+                <td class="text-end text-danger">- R$ {{ dre.deducoes_comissoes }}</td>
+              </tr>
+              <tr class="small text-secondary">
+                <td class="ps-4">• Taxas de Cartão & Gateways</td>
+                <td class="text-end text-danger">- R$ {{ dre.deducoes_taxas }}</td>
+              </tr>
+              <tr class="small text-secondary">
+                <td class="ps-4">• Custo de Mercadorias Vendidas (CMV)</td>
+                <td class="text-end text-danger">- R$ {{ dre.deducoes_cmv }}</td>
+              </tr>
+
+              <tr class="fw-bold" style="background-color: rgba(197, 168, 128, 0.1);">
+                <td class="text-gold">(=) MARGEM DE CONTRIBUIÇÃO</td>
+                <td class="text-end text-gold">R$ {{ dre.margem_contribuicao }}</td>
+              </tr>
+
+              <tr class="table-active fw-bold text-light">
+                <td>(-) DESPESAS OPERACIONAIS FIXAS & VARIÁVEIS</td>
+                <td class="text-end text-warning">- R$ {{ dre.total_despesas }}</td>
+              </tr>
+              {% for cat, val in dre.despesas_por_categoria.items %}
+                <tr class="small text-secondary">
+                  <td class="ps-4">• {{ cat }}</td>
+                  <td class="text-end text-warning">- R$ {{ val }}</td>
+                </tr>
+              {% empty %}
+                <tr class="small text-muted">
+                  <td class="ps-4" colspan="2">Nenhuma despesa lançada nesta competência.</td>
+                </tr>
+              {% endfor %}
+
+              <tr class="fw-bold fs-6" style="background-color: rgba(34, 197, 94, 0.15);">
+                <td class="text-{% if dre.is_positivo %}success{% else %}danger{% endif %}">(=) RESULTADO LÍQUIDO DO EXERCÍCIO</td>
+                <td class="text-end text-{% if dre.is_positivo %}success{% else %}danger{% endif %}">
+                  R$ {{ dre.lucro_liquido }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rentabilidade por Serviço -->
+    <div class="col-lg-5">
+      <div class="card card-delacruz">
+        <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 py-3">
+          <h5 class="text-gold brand-font mb-0 fs-6"><i class="bi bi-graph-up-arrow me-2"></i> Rentabilidade por Serviço / Hora</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0 align-middle">
+              <thead>
+                <tr class="text-secondary small">
+                  <th class="ps-3">Serviço</th>
+                  <th>Preço</th>
+                  <th>Margem Unit.</th>
+                  <th class="pe-3 text-end">Margem / Hora</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in rentabilidade_servicos %}
+                  <tr>
+                    <td class="ps-3 fw-semibold small text-light">{{ r.servico.nome }}</td>
+                    <td class="small">R$ {{ r.preco }}</td>
+                    <td class="small text-success">R$ {{ r.margem_unitaria }} ({{ r.margem_percentual }}%)</td>
+                    <td class="pe-3 text-end fw-bold text-gold small">R$ {{ r.margem_por_hora }} /h</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

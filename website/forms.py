@@ -1,3 +1,5 @@
+from decimal import Decimal
+import uuid
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
@@ -436,3 +438,187 @@ class HistoricoVisualClienteForm(forms.ModelForm):
             'consentimento': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
+
+
+class FichaTecnicaCorteForm(forms.ModelForm):
+    class Meta:
+        from .models import FichaTecnicaCorte
+        model = FichaTecnicaCorte
+        fields = ['cliente', 'barbeiro', 'agendamento', 'maquina_lateral', 'comprimento_topo', 'tipo_fade', 'acabamento', 'configuracao_barba', 'observacoes_tecnicas', 'notas_internas']
+        widgets = {
+            'cliente': forms.Select(attrs={'class': 'form-control'}),
+            'barbeiro': forms.Select(attrs={'class': 'form-control'}),
+            'agendamento': forms.Select(attrs={'class': 'form-control'}),
+            'maquina_lateral': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 0.5 baixa na nuca, 1.5 nas laterais'}),
+            'comprimento_topo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 2 dedos na tesoura, desfiado'}),
+            'tipo_fade': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Low Fade, Mid Fade, High Taper'}),
+            'acabamento': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Pezinho quadrado navalhado'}),
+            'configuracao_barba': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Degradê na costeleta, linha reta na bochecha'}),
+            'observacoes_tecnicas': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'notas_internas': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+
+
+class PerfilDependenteForm(forms.ModelForm):
+    class Meta:
+        from .models import PerfilDependente
+        model = PerfilDependente
+        fields = ['nome', 'parentesco', 'data_nascimento', 'observacoes']
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'parentesco': forms.TextInput(attrs={'class': 'form-control'}),
+            'data_nascimento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+
+
+class EscalaBarbeiroForm(forms.ModelForm):
+    class Meta:
+        from .models import EscalaBarbeiro
+        model = EscalaBarbeiro
+        fields = ['barbeiro', 'dia_semana', 'horario_inicio_1', 'horario_fim_1', 'horario_inicio_2', 'horario_fim_2', 'folga', 'ativo']
+        widgets = {
+            'barbeiro': forms.Select(attrs={'class': 'form-control'}),
+            'dia_semana': forms.Select(attrs={'class': 'form-control'}),
+            'horario_inicio_1': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'horario_fim_1': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'horario_inicio_2': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'horario_fim_2': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'folga': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class BloqueioAgendaForm(forms.ModelForm):
+    class Meta:
+        from .models import BloqueioAgenda
+        model = BloqueioAgenda
+        fields = ['barbeiro', 'tipo', 'data_inicio', 'data_fim', 'horario_inicio', 'horario_fim', 'motivo']
+        widgets = {
+            'barbeiro': forms.Select(attrs={'class': 'form-control'}),
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'data_inicio': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'data_fim': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'horario_inicio': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'horario_fim': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'motivo': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+class DespesaForm(forms.ModelForm):
+    class Meta:
+        from .models import Despesa
+        model = Despesa
+        fields = ['categoria', 'descricao', 'valor', 'data_vencimento', 'data_pagamento', 'status', 'observacoes']
+        widgets = {
+            'categoria': forms.Select(attrs={'class': 'form-control'}),
+            'descricao': forms.TextInput(attrs={'class': 'form-control'}),
+            'valor': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'data_vencimento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'data_pagamento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+
+
+class TarefaRecepcaoForm(forms.ModelForm):
+    class Meta:
+        from .models import TarefaRecepcao
+        model = TarefaRecepcao
+        fields = ['titulo', 'tipo', 'descricao', 'data_limite', 'responsavel']
+        widgets = {
+            'titulo': forms.TextInput(attrs={'class': 'form-control'}),
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'data_limite': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'responsavel': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+
+class OcorrenciaOperacionalForm(forms.ModelForm):
+    class Meta:
+        from .models import OcorrenciaOperacional
+        model = OcorrenciaOperacional
+        fields = ['tipo', 'titulo', 'descricao', 'resolvida']
+        widgets = {
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'titulo': forms.TextInput(attrs={'class': 'form-control'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'resolvida': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class ConsentimentoClienteForm(forms.ModelForm):
+    class Meta:
+        from .models import ConsentimentoCliente
+        model = ConsentimentoCliente
+        fields = ['fotos_privadas', 'fotos_portfolio', 'ia_visagismo', 'whatsapp_notificacoes', 'whatsapp_marketing', 'email_marketing']
+        widgets = {
+            'fotos_privadas': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'fotos_portfolio': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'ia_visagismo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'whatsapp_notificacoes': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'whatsapp_marketing': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'email_marketing': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class PacoteServicoForm(forms.ModelForm):
+    class Meta:
+        from .models import PacoteServico
+        model = PacoteServico
+        fields = ['nome', 'descricao', 'servicos', 'preco_original', 'preco_promocional', 'ativo', 'destaque']
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'servicos': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'preco_original': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'preco_promocional': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'destaque': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class FornecedorForm(forms.ModelForm):
+    class Meta:
+        from .models import Fornecedor
+        model = Fornecedor
+        fields = ['nome_empresa', 'contato_nome', 'telefone', 'email', 'cnpj', 'prazo_entrega_dias', 'observacoes', 'ativo']
+        widgets = {
+            'nome_empresa': forms.TextInput(attrs={'class': 'form-control'}),
+            'contato_nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'telefone': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'cnpj': forms.TextInput(attrs={'class': 'form-control'}),
+            'prazo_entrega_dias': forms.NumberInput(attrs={'class': 'form-control'}),
+            'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class CaixaDiarioAberturaForm(forms.Form):
+    saldo_inicial = forms.DecimalField(
+        label='Fundo de Troco (R$)',
+        initial=Decimal('100.00'),
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'})
+    )
+    observacoes = forms.CharField(
+        label='Observações',
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+
+class CaixaDiarioFechamentoForm(forms.Form):
+    saldo_informado = forms.DecimalField(
+        label='Total de Dinheiro Contado em Caixa (R$)',
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'})
+    )
+    observacoes = forms.CharField(
+        label='Observações do Fechamento',
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2})
+    )
+

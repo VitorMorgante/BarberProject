@@ -1,0 +1,138 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="refresh" content="30">
+  <title>Delacruz Barber — Painel de Atendimento</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    body {
+      background-color: #020617;
+      color: #f8fafc;
+      font-family: 'Montserrat', sans-serif;
+      overflow-x: hidden;
+      user-select: none;
+    }
+    .brand-font { font-family: 'Playfair Display', serif; }
+    .text-gold { color: #c5a880 !important; }
+    .bg-card { background-color: #0b1120; border: 1px solid rgba(197, 168, 128, 0.2); }
+    .pulse-dot {
+      width: 12px;
+      height: 12px;
+      background-color: #22c55e;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      animation: pulse 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+    @keyframes pulse {
+      to { box-shadow: 0 0 0 16px rgba(34, 197, 94, 0); }
+    }
+  </style>
+</head>
+<body class="p-4 p-md-5">
+  <!-- Top Bar -->
+  <div class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom border-secondary border-opacity-25">
+    <div class="d-flex align-items-center gap-3">
+      <i class="bi bi-scissors text-gold fs-1"></i>
+      <div>
+        <h1 class="brand-font text-gold mb-0 fs-2">DELACRUZ BARBER</h1>
+        <p class="text-secondary small mb-0">Painel Operacional • Sala de Espera</p>
+      </div>
+    </div>
+    <div class="text-end">
+      <div class="d-flex align-items-center gap-2 text-success fs-5 fw-semibold mb-1">
+        <span class="pulse-dot"></span> AO VIVO
+      </div>
+      <div class="text-secondary small" id="liveClock">{{ agora|date:"H:i:s" }}</div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Coluna 1: Cadeiras / Em Atendimento -->
+    <div class="col-lg-6">
+      <div class="bg-card p-4 rounded-4 shadow-lg h-100">
+        <h3 class="text-gold brand-font mb-4 fs-4 d-flex align-items-center gap-2">
+          <i class="bi bi-person-badge"></i> Na Cadeira Agora
+        </h3>
+
+        {% if fila.em_atendimento %}
+          <div class="d-flex flex-column gap-3">
+            {% for ag in fila.em_atendimento %}
+              <div class="p-4 rounded-3 bg-dark border border-warning border-opacity-50 d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-secondary small text-uppercase fw-bold letter-spacing-1">Barbeiro</div>
+                  <h4 class="text-gold brand-font mb-2">{{ ag.barbeiro.nome }}</h4>
+                  <div class="badge bg-secondary text-light px-3 py-2 fs-6">{{ ag.servico.nome }}</div>
+                </div>
+                <div class="text-end">
+                  <div class="text-secondary small">Cliente</div>
+                  <h4 class="text-light mb-0">{{ ag.cliente.nome }}</h4>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5 text-secondary">
+            <i class="bi bi-cup-hot fs-1 mb-2 d-block text-gold opacity-50"></i>
+            <p class="fs-5">Cadeiras disponíveis para os próximos agendados.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Coluna 2: Fila de Espera -->
+    <div class="col-lg-6">
+      <div class="bg-card p-4 rounded-4 shadow-lg h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="text-gold brand-font mb-0 fs-4 d-flex align-items-center gap-2">
+            <i class="bi bi-hourglass-split"></i> Fila de Espera
+          </h3>
+          <span class="badge bg-warning text-dark fs-6 px-3 py-2">{{ fila.total_fila }} aguardando</span>
+        </div>
+
+        {% if fila.aguardando %}
+          <div class="d-flex flex-column gap-3">
+            {% for item in fila.aguardando %}
+              <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="fs-4 fw-bold text-gold">#{{ forloop.counter }}</span>
+                  <div>
+                    <h5 class="text-light mb-0">{{ item.nome }}</h5>
+                    <small class="text-secondary">{{ item.barbeiro }} • {{ item.servico }}</small>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-black border border-warning text-warning fs-6 px-3 py-2">
+                    ~{{ item.tempo_estimado_espera }} min
+                  </span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5 text-secondary">
+            <i class="bi bi-check2-all fs-1 mb-2 d-block text-success opacity-75"></i>
+            <p class="fs-5">Sem espera no momento! Faça seu check-in na recepção.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('liveClock').innerText = now.toLocaleTimeString('pt-BR');
+    }, 1000);
+  </script>
+</body>
+</html>

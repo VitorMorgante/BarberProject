@@ -1,0 +1,245 @@
+{% extends 'website/modelo.html' %}
+{% load static %}
+
+{% block titulo %}Modo Recepção{% endblock %}
+
+{% block conteudo %}
+<div class="container-fluid py-4 px-md-4">
+  <!-- Header Recepção -->
+  <div class="row align-items-center mb-4">
+    <div class="col-md-6">
+      <div class="d-flex align-items-center gap-3">
+        <div class="p-3 bg-dark rounded-3 border border-secondary border-opacity-25">
+          <i class="bi bi-person-workspace text-gold fs-2"></i>
+        </div>
+        <div>
+          <h2 class="brand-font text-gold mb-0">Recepção & Check-in</h2>
+          <p class="text-secondary small mb-0">{{ hoje|date:"l, d \d\e F \d\e Y" }} • Operação em Tempo Real</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+      <div class="d-flex gap-2 justify-content-md-end flex-wrap">
+        <a href="{% url 'modo_tv' %}" target="_blank" class="btn btn-outline-gold btn-sm">
+          <i class="bi bi-tv me-1"></i> Abrir Modo TV
+        </a>
+        <a href="{% url 'cardapio_digital' %}" target="_blank" class="btn btn-outline-secondary text-light btn-sm">
+          <i class="bi bi-qr-code-scan me-1"></i> Cardápio Digital
+        </a>
+        <button type="button" class="btn btn-delacruz btn-sm" data-bs-toggle="modal" data-bs-target="#modalWalkin">
+          <i class="bi bi-person-plus-fill me-1"></i> + Cliente Sem Agendamento (Walk-in)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status do Caixa do Dia -->
+  {% if caixa_aberto %}
+    <div class="alert bg-dark border border-success border-opacity-50 text-light d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-3 shadow-sm">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Caixa Aberto</span>
+        <span class="small text-secondary">Operador: <strong class="text-light">{{ caixa_aberto.operador.username }}</strong></span>
+        <span class="small text-secondary">| Saldo Atual Esperado: <strong class="text-gold">R$ {{ caixa_aberto.saldo_esperado }}</strong></span>
+      </div>
+      <a href="{% url 'admin_caixa' %}" class="btn btn-outline-light btn-sm py-0 px-2" style="font-size: 0.8rem;">Gerenciar Caixa</a>
+    </div>
+  {% else %}
+    <div class="alert bg-dark border border-warning border-opacity-50 text-light d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-3 shadow-sm">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i> Caixa Fechado</span>
+        <span class="small text-secondary">Abra o caixa diário para registrar movimentações em dinheiro.</span>
+      </div>
+      <a href="{% url 'admin_caixa' %}" class="btn btn-delacruz btn-sm py-0 px-2" style="font-size: 0.8rem;">Abrir Caixa</a>
+    </div>
+  {% endif %}
+
+  <!-- Grid Principal -->
+  <div class="row g-4">
+    <!-- Coluna da Esquerda: Fila Operacional & Na Cadeira -->
+    <div class="col-lg-5">
+      <!-- Em Atendimento Agora -->
+      <div class="card card-delacruz mb-4 shadow-sm">
+        <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 py-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-gold fs-6"><i class="bi bi-scissors me-2"></i> Em Atendimento na Cadeira</h5>
+            <span class="badge bg-primary">{{ fila.em_atendimento|length }}</span>
+          </div>
+        </div>
+        <div class="card-body p-3">
+          {% if fila.em_atendimento %}
+            <div class="d-flex flex-column gap-2">
+              {% for ag in fila.em_atendimento %}
+                <div class="p-3 rounded-3 bg-dark border border-primary border-opacity-50 d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1 text-light">{{ ag.cliente.nome }}</h6>
+                    <div class="small text-secondary">
+                      <span class="text-gold"><i class="bi bi-person me-1"></i>{{ ag.barbeiro.nome }}</span> • 
+                      <span>{{ ag.servico.nome }}</span>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <span class="badge bg-primary mb-1">Na Cadeira</span>
+                    <div class="small text-muted">{{ ag.horario|time:"H:i" }}</div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-secondary small mb-0 text-center py-3">Nenhum barbeiro em atendimento no momento.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Fila de Espera com Check-in -->
+      <div class="card card-delacruz shadow-sm">
+        <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 py-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-gold fs-6"><i class="bi bi-clock-history me-2"></i> Clientes na Recepção (Check-in Feito)</h5>
+            <span class="badge bg-warning text-dark">{{ fila.total_fila }} na espera</span>
+          </div>
+        </div>
+        <div class="card-body p-3">
+          {% if fila.aguardando %}
+            <div class="d-flex flex-column gap-2">
+              {% for item in fila.aguardando %}
+                <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <span class="badge bg-secondary">#{{ forloop.counter }}</span>
+                      <h6 class="mb-0 text-light">{{ item.nome }}</h6>
+                      {% if item.agendamento.is_walkin %}
+                        <span class="badge bg-info text-dark" style="font-size: 0.7rem;">Walk-in</span>
+                      {% endif %}
+                    </div>
+                    <div class="small text-secondary">
+                      <span class="text-gold">{{ item.barbeiro }}</span> • {{ item.servico }}
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <span class="badge bg-dark border border-warning text-warning mb-1">~{{ item.tempo_estimado_espera }} min</span>
+                    <div class="small text-muted">Chegada: {{ item.checkin_hora }}</div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-secondary small mb-0 text-center py-4">Fila de espera vazia no momento.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Coluna da Direita: Agenda do Dia e Ações Rápidas -->
+    <div class="col-lg-7">
+      <div class="card card-delacruz shadow-sm">
+        <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 py-3 d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 text-gold fs-6"><i class="bi bi-calendar-event me-2"></i> Agendamentos do Dia</h5>
+          <span class="badge bg-secondary">{{ agendamentos_hoje|length }} agendados</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0 align-middle">
+              <thead>
+                <tr class="text-secondary small">
+                  <th class="ps-3">Horário</th>
+                  <th>Cliente</th>
+                  <th>Barbeiro</th>
+                  <th>Serviço</th>
+                  <th>Status</th>
+                  <th class="text-end pe-3">Ações de Recepção</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ag in agendamentos_hoje %}
+                  <tr>
+                    <td class="ps-3 fw-bold text-gold">{{ ag.horario|time:"H:i" }}</td>
+                    <td>
+                      <div class="text-light fw-semibold">{{ ag.cliente.nome }}</div>
+                      <div class="text-secondary small">{{ ag.cliente.telefone }}</div>
+                    </td>
+                    <td><span class="badge bg-dark border border-secondary">{{ ag.barbeiro.nome }}</span></td>
+                    <td class="small">{{ ag.servico.nome }}</td>
+                    <td>
+                      {% if ag.status == 'Concluído' %}
+                        <span class="badge bg-success">Concluído</span>
+                      {% elif ag.status == 'Em Atendimento' %}
+                        <span class="badge bg-primary">Na Cadeira</span>
+                      {% elif ag.status == 'Aguardando' %}
+                        <span class="badge bg-warning text-dark">Aguardando</span>
+                      {% elif ag.status == 'Confirmado' %}
+                        <span class="badge bg-info text-dark">Confirmado</span>
+                      {% else %}
+                        <span class="badge bg-secondary">{{ ag.status }}</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-end pe-3">
+                      {% if ag.status != 'Concluído' and ag.status != 'Aguardando' and ag.status != 'Em Atendimento' %}
+                        <a href="{% url 'checkin_pk' ag.id %}" class="btn btn-outline-success btn-sm py-1 px-2" title="Confirmar Check-in">
+                          <i class="bi bi-check2-circle me-1"></i> Check-in
+                        </a>
+                      {% endif %}
+                      <a href="{% url 'perfil_360_admin' ag.cliente.id %}" class="btn btn-outline-secondary btn-sm py-1 px-2" title="Ver Perfil 360">
+                        <i class="bi bi-person-lines-fill"></i>
+                      </a>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center py-4 text-secondary">Nenhum agendamento cadastrado para hoje.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cliente Walk-in -->
+<div class="modal fade" id="modalWalkin" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark border border-secondary text-light">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title brand-font text-gold"><i class="bi bi-person-plus-fill me-2"></i> Novo Atendimento Walk-in</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="{% url 'walkin_create' %}" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small text-secondary">Nome do Cliente</label>
+            <input type="text" name="nome" class="form-control bg-black text-light border-secondary" required placeholder="Ex: Carlos Eduardo">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-secondary">Telefone / WhatsApp (Opcional)</label>
+            <input type="text" name="telefone" class="form-control bg-black text-light border-secondary" placeholder="(44) 99999-9999">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-secondary">Serviço Desejado</label>
+            <select name="servico_id" class="form-select bg-black text-light border-secondary" required>
+              {% for s in servicos %}
+                <option value="{{ s.id }}">{{ s.nome }} — R$ {{ s.preco }} ({{ s.duracao_minutos }} min)</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-secondary">Barbeiro Preferido</label>
+            <select name="barbeiro_id" class="form-select bg-black text-light border-secondary">
+              <option value="">Qualquer Barbeiro Disponível</option>
+              {% for b in barbeiros %}
+                <option value="{{ b.id }}">{{ b.nome }} ({{ b.get_nivel_display }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-delacruz btn-sm">Colocar na Fila Agora</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

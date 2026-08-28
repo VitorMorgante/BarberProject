@@ -15,19 +15,56 @@ from website.services.whatsapp_service import WhatsAppService
 class AgendamentoService:
     @staticmethod
     @transaction.atomic
+    def iniciar_atendimento(agendamento: Agendamento, usuario_responsavel=None) -> Agendamento:
+        """
+        Marca o início do atendimento em cadeira e registra o timestamp real de início.
+        """
+        agendamento = Agendamento.objects.select_for_update().get(pk=agendamento.pk)
+        agendamento.status = Agendamento.Status.EM_ATENDIMENTO
+        agendamento.inicio_real = timezone.now()
+        agendamento.save(update_fields=['status', 'inicio_real', 'atualizado_em'])
+
+        # Garante comanda aberta
+        Comanda.objects.get_or_create(
+            agendamento=agendamento,
+            defaults={
+                'cliente': agendamento.cliente,
+                'barbeiro': agendamento.barbeiro,
+                'subtotal': agendamento.servico.preco,
+                'valor_total': agendamento.servico.preco,
+                'status': Comanda.Status.ABERTA,
+            }
+        )
+        return agendamento
+
+    @staticmethod
+    @transaction.atomic
     def concluir_atendimento(agendamento: Agendamento, comanda: Comanda = None, usuario_responsavel=None) -> Agendamento:
         """
         Executa atomicamente todas as ações de conclusão de atendimento:
-        1. Atualiza o status do agendamento para 'Concluído'
+        1. Atualiza o status do agendamento para 'Concluído' e calcula duração real
         2. Consome créditos do Barber Club caso o cliente tenha assinatura compatível
         3. Contabiliza pontos no programa de Fidelidade Digital (+1 corte / gera recompensa)
         4. Cria/Fecha a Comanda correspondente com os serviços e produtos consumidos
-        5. Atualiza o estoque de cada produto vendido
+        5. Atualiza o estoque de cada produto vendido e baixa insumos do serviço (Kit de Consumo)
         6. Calcula e registra a comissão do barbeiro com snapshot do percentual do momento
+        7. Processa bônus do programa de indicação caso aplicável
         """
         agendamento = Agendamento.objects.select_for_update().get(pk=agendamento.pk)
+        if agendamento.status == Agendamento.Status.CONCLUIDO:
+            return agendamento
+
+        agora = timezone.now()
         agendamento.status = Agendamento.Status.CONCLUIDO
-        agendamento.save(update_fields=['status', 'atualizado_em'])
+        agendamento.fim_real = agora
+
+        if agendamento.inicio_real:
+            delta_segundos = (agendamento.fim_real - agendamento.inicio_real).total_seconds()
+            agendamento.duracao_real_minutos = max(5, int(round(delta_segundos / 60)))
+        else:
+            agendamento.duracao_real_minutos = agendamento.servico.duracao_minutos
+
+        agendamento.save(update_fields=['status', 'fim_real', 'duracao_real_minutos', 'atualizado_em'])
 
         # 1. Barber Club: tenta consumir crédito se elegível
         credito_consumido = SubscriptionService.consumir_credito(
@@ -64,7 +101,7 @@ class AgendamentoService:
                 total=agendamento.servico.preco,
             )
 
-        # Se usou crédito de assinatura, aplica desconto integral no serviço
+        # Se usou crédito de assinatura, aplica abatimento integral no serviço
         if credito_consumido:
             comanda.creditos_abatidos = agendamento.servico.preco
 
@@ -79,12 +116,14 @@ class AgendamentoService:
                     usuario=usuario_responsavel
                 )
 
+        # Baixa automática dos insumos internos (lâminas, shampoos, etc.) configurados no Kit de Consumo
+        InventoryService.baixar_insumos_do_servico(agendamento.servico, usuario=usuario_responsavel)
+
         comanda.status = Comanda.Status.FECHADA
-        comanda.fechada_em = timezone.now()
+        comanda.fechada_em = agora
         comanda.recalcular()
 
         # 4. Comissões do Barbeiro
-        # A. Comissão do serviço
         valor_base_servico = agendamento.servico.preco
         ComissaoService.registrar_comissao_servico(
             barbeiro=agendamento.barbeiro,
@@ -92,13 +131,19 @@ class AgendamentoService:
             valor_base=valor_base_servico
         )
 
-        # B. Comissão dos produtos da comanda
         for item in comanda.itens.filter(tipo=ItemComanda.Tipo.PRODUTO):
             ComissaoService.registrar_comissao_produto(
                 barbeiro=agendamento.barbeiro,
                 comanda=comanda,
                 item=item
             )
+
+        # 5. Programa de Indicação
+        try:
+            from website.services.crm_service import CRMService
+            CRMService.processar_recompensa_indicacao(agendamento)
+        except Exception:
+            pass
 
         return agendamento
 
@@ -138,6 +183,7 @@ class AgendamentoService:
         Identifica clientes na Lista de Espera que desejam a mesma data e faixa de horário,
         e gera notificações para oportunidade de encaixe.
         """
+        from django.db.models import Q
         candidatos = ListaEspera.objects.filter(
             data_desejada=data,
             status=ListaEspera.Status.AGUARDANDO,
@@ -145,9 +191,9 @@ class AgendamentoService:
             horario_fim__gte=horario
         )
         if barbeiro:
-            candidatos = candidatos.filter(models_q_barbeiro(barbeiro))
+            candidatos = candidatos.filter(Q(barbeiro=barbeiro) | Q(barbeiro__isnull=True))
 
-        for item in candidatos[:3]:  # Notifica os primeiros da fila
+        for item in candidatos[:3]:
             item.status = ListaEspera.Status.NOTIFICADO
             item.notificado_em = timezone.now()
             item.save(update_fields=['status', 'notificado_em'])
@@ -161,8 +207,3 @@ class AgendamentoService:
                 status=Notificacao.Status.PENDENTE,
                 data_prevista=timezone.now()
             )
-
-
-def models_q_barbeiro(barbeiro):
-    from django.db.models import Q
-    return Q(barbeiro=barbeiro) | Q(barbeiro__isnull=True)

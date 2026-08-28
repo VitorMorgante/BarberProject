@@ -465,3 +465,250 @@ class TestAreaBarbeiroView(TestCase):
         self.assertIsNotNone(response.context['atendimento_atual'])
         self.assertEqual(response.context['atendimento_atual'].status, Agendamento.Status.EM_ATENDIMENTO)
         self.assertEqual(len(response.context['proximos']), 10)
+
+
+class TestAgendaInteligenteService(TestCase):
+    """Testes do motor de agendamento inteligente, scoring de slots, check-in e fila."""
+
+    def setUp(self):
+        self.barbeiro = Barbeiro.objects.create(nome='Danilo Delacruz', cargo='Master', ativo=True)
+        self.servico = Servico.objects.create(nome='Corte Premium', preco=Decimal('50.00'), duracao_minutos=30, ativo=True)
+        self.cliente = Cliente.objects.create(nome='Lucas Silva', telefone='4499887766')
+
+    def test_calcular_score_no_show_novo_cliente(self):
+        from website.services.agenda_inteligente_service import AgendaInteligenteService
+        score = AgendaInteligenteService.calcular_score_no_show(self.cliente)
+        self.assertEqual(score, 30)  # Risco moderado padrão para novos clientes
+
+    def test_calcular_score_no_show_cliente_com_falta(self):
+        from website.services.agenda_inteligente_service import AgendaInteligenteService
+        Agendamento.objects.create(
+            cliente=self.cliente, barbeiro=self.barbeiro, servico=self.servico,
+            data=date.today() - timedelta(days=5), horario=time(10, 0),
+            status=Agendamento.Status.NAO_COMPARECEU
+        )
+        score = AgendaInteligenteService.calcular_score_no_show(self.cliente)
+        self.assertEqual(score, 95)
+
+    def test_obter_horarios_com_score_e_checkin(self):
+        from website.services.agenda_inteligente_service import AgendaInteligenteService
+        amanha = date.today() + timedelta(days=1)
+        slots = AgendaInteligenteService.obter_horarios_com_score(amanha, self.servico, self.barbeiro, self.cliente)
+        self.assertTrue(len(slots) > 0)
+        self.assertIn('score', slots[0])
+        self.assertIn('horario', slots[0])
+
+        # Teste de Check-in
+        ag = Agendamento.objects.create(
+            cliente=self.cliente, barbeiro=self.barbeiro, servico=self.servico,
+            data=date.today(), horario=time(14, 0), status=Agendamento.Status.CONFIRMADO
+        )
+        sucesso = AgendaInteligenteService.registrar_checkin(ag)
+        self.assertTrue(sucesso)
+        ag.refresh_from_db()
+        self.assertEqual(ag.status, Agendamento.Status.AGUARDANDO)
+        self.assertIsNotNone(ag.checkin_em)
+
+    def test_obter_fila_tempo_real(self):
+        from website.services.agenda_inteligente_service import AgendaInteligenteService
+        hoje = date.today()
+        ag1 = Agendamento.objects.create(
+            cliente=self.cliente, barbeiro=self.barbeiro, servico=self.servico,
+            data=hoje, horario=time(14, 0), status=Agendamento.Status.EM_ATENDIMENTO
+        )
+        cliente2 = Cliente.objects.create(nome='Marcos Paulo', telefone='449112233')
+        ag2 = Agendamento.objects.create(
+            cliente=cliente2, barbeiro=self.barbeiro, servico=self.servico,
+            data=hoje, horario=time(14, 30), status=Agendamento.Status.AGUARDANDO,
+            checkin_em=timezone.now()
+        )
+        fila = AgendaInteligenteService.obter_fila_tempo_real()
+        self.assertEqual(len(fila['em_atendimento']), 1)
+        self.assertEqual(fila['total_fila'], 1)
+
+
+class TestCRMService(TestCase):
+    """Testes do CRM 360, cálculo de LTV, previsão de retorno e bônus de indicação."""
+
+    def setUp(self):
+        self.barbeiro = Barbeiro.objects.create(nome='Danilo Delacruz', cargo='Master', ativo=True)
+        self.servico = Servico.objects.create(nome='Corte Tradicional', preco=Decimal('45.00'), duracao_minutos=30, ativo=True)
+        self.indicador = Cliente.objects.create(nome='Pedro Indicador', telefone='44988112233')
+        self.cliente = Cliente.objects.create(nome='Thiago Novo', telefone='44988445566', indicado_por=self.indicador)
+
+    def test_metricas_cliente_e_ltv(self):
+        from website.services.crm_service import CRMService
+        # Conclui 2 cortes para o cliente
+        ag1 = Agendamento.objects.create(
+            cliente=self.cliente, barbeiro=self.barbeiro, servico=self.servico,
+            data=date.today() - timedelta(days=20), horario=time(10, 0),
+            status=Agendamento.Status.CONCLUIDO
+        )
+        ag2 = Agendamento.objects.create(
+            cliente=self.cliente, barbeiro=self.barbeiro, servico=self.servico,
+            data=date.today(), horario=time(10, 0),
+            status=Agendamento.Status.CONCLUIDO
+        )
+        Comanda.objects.create(
+            cliente=self.cliente, barbeiro=self.barbeiro, agendamento=ag1,
+            subtotal=Decimal('45.00'), valor_total=Decimal('45.00'), status=Comanda.Status.FECHADA
+        )
+        Comanda.objects.create(
+            cliente=self.cliente, barbeiro=self.barbeiro, agendamento=ag2,
+            subtotal=Decimal('45.00'), valor_total=Decimal('45.00'), status=Comanda.Status.FECHADA
+        )
+
+        metricas = CRMService.calcular_metricas_cliente(self.cliente)
+        self.assertEqual(metricas['total_cortes'], 2)
+        self.assertEqual(metricas['ltv_realizado'], Decimal('90.00'))
+        self.assertEqual(metricas['freq_media_dias'], 20)
+        self.assertFalse(metricas['is_em_risco'])
+
+    def test_recompensa_indicacao_idempotente(self):
+        from website.services.crm_service import CRMService
+        from website.models import ContaCorrenteCliente
+        ag = Agendamento.objects.create(
+            cliente=self.cliente, barbeiro=self.barbeiro, servico=self.servico,
+            data=date.today(), horario=time(11, 0),
+            status=Agendamento.Status.CONCLUIDO
+        )
+        # Primeiro disparo: concede R$ 15,00 ao indicador
+        concedido = CRMService.processar_recompensa_indicacao(ag)
+        self.assertTrue(concedido)
+        conta = ContaCorrenteCliente.objects.get(cliente=self.indicador)
+        self.assertEqual(conta.saldo, Decimal('15.00'))
+
+        # Segundo disparo idêntico: garante idempotência sem duplicar saldo
+        concedido_segundo = CRMService.processar_recompensa_indicacao(ag)
+        self.assertFalse(concedido_segundo)
+        conta.refresh_from_db()
+        self.assertEqual(conta.saldo, Decimal('15.00'))
+
+
+class TestFinanceService(TestCase):
+    """Testes do Caixa Diário, DRE e Simuladores Financeiros."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='gerente', password='123')
+        self.barbeiro = Barbeiro.objects.create(nome='Danilo Delacruz', cargo='Master', ativo=True)
+        self.servico = Servico.objects.create(nome='Corte', preco=Decimal('50.00'), duracao_minutos=30, ativo=True)
+
+    def test_ciclo_caixa_diario(self):
+        from website.services.finance_service import FinanceService
+        from website.models import CaixaDiario, MovimentacaoCaixa
+        caixa = FinanceService.abrir_caixa(operador=self.user, saldo_inicial=Decimal('150.00'))
+        self.assertEqual(caixa.status, CaixaDiario.Status.ABERTO)
+        self.assertEqual(caixa.saldo_esperado, Decimal('150.00'))
+
+        # Sangria de R$ 30,00
+        FinanceService.registrar_movimentacao_caixa(caixa, tipo=MovimentacaoCaixa.Tipo.SANGRIA, valor=Decimal('30.00'), motivo='Água mineral')
+        caixa.refresh_from_db()
+        self.assertEqual(caixa.saldo_esperado, Decimal('120.00'))
+
+        # Fechamento com R$ 120,00 (diferença zero)
+        caixa_fechado = FinanceService.fechar_caixa(caixa, saldo_informado=Decimal('120.00'))
+        self.assertEqual(caixa_fechado.status, CaixaDiario.Status.FECHADO)
+        self.assertEqual(caixa_fechado.diferenca_quebra, Decimal('0.00'))
+
+    def test_simulador_preco(self):
+        from website.services.finance_service import FinanceService
+        sim = FinanceService.simular_reajuste_preco(self.servico.id, novo_preco=Decimal('60.00'))
+        self.assertEqual(sim['novo_preco'], Decimal('60.00'))
+        self.assertTrue(sim['impacto_faturamento'] > 0)
+
+
+class TestAIAssistantService(TestCase):
+    """Testes do assistente virtual de agendamento em linguagem natural conectado ao banco real."""
+
+    def setUp(self):
+        self.barbeiro = Barbeiro.objects.create(nome='Danilo Delacruz', cargo='Master', ativo=True)
+        self.servico = Servico.objects.create(nome='Corte Degradê', preco=Decimal('45.00'), duracao_minutos=30, ativo=True)
+
+    def test_interpretador_mensagem_agendamento(self):
+        from website.services.ai_assistant_service import AIAssistantService
+        res = AIAssistantService.processar_mensagem_agendamento("Quero cortar amanhã depois das 14h com o Danilo")
+        self.assertIn('resposta', res)
+        self.assertEqual(res['servico_nome'], 'Corte Degradê')
+        self.assertEqual(res['barbeiro_nome'], 'Danilo Delacruz')
+        self.assertTrue(len(res['horarios_disponiveis']) > 0)
+
+    def test_consulta_gestao_real(self):
+        from website.services.ai_assistant_service import AIAssistantService
+        resposta = AIAssistantService.responder_consulta_gestao("Quanto faturamos esta semana?")
+        self.assertIn("Faturamento desta semana", resposta)
+
+
+class TestSplitPaymentsAndConsumableKits(TestCase):
+    """Testes de pagamento dividido (PIX + Dinheiro) e baixa de insumos (Kit de Consumo)."""
+
+    def setUp(self):
+        self.barbeiro = Barbeiro.objects.create(nome='Danilo Delacruz', cargo='Master', ativo=True)
+        self.servico = Servico.objects.create(nome='Barba Completa', preco=Decimal('40.00'), duracao_minutos=30, ativo=True)
+        self.cliente = Cliente.objects.create(nome='Renato Souza', telefone='449776655')
+        self.insumo = Produto.objects.create(
+            nome='Lâmina Descartável', preco=Decimal('0.00'), custo=Decimal('0.80'),
+            estoque_atual=20, estoque_minimo=5, is_insumo_interno=True, ativo=True
+        )
+        from website.models import KitConsumoServico, ItemKitConsumo
+        kit = KitConsumoServico.objects.create(servico=self.servico, ativo=True)
+        ItemKitConsumo.objects.create(kit=kit, produto_insumo=self.insumo, quantidade_unitaria=Decimal('1.00'))
+
+    def test_conclusao_atendimento_baixa_insumo(self):
+        ag = Agendamento.objects.create(
+            cliente=self.cliente, barbeiro=self.barbeiro, servico=self.servico,
+            data=date.today(), horario=time(15, 0), status=Agendamento.Status.CONFIRMADO
+        )
+        AgendamentoService.iniciar_atendimento(ag)
+        ag.refresh_from_db()
+        self.assertEqual(ag.status, Agendamento.Status.EM_ATENDIMENTO)
+        self.assertIsNotNone(ag.inicio_real)
+
+        AgendamentoService.concluir_atendimento(ag)
+        ag.refresh_from_db()
+        self.assertEqual(ag.status, Agendamento.Status.CONCLUIDO)
+        self.assertIsNotNone(ag.fim_real)
+
+        self.insumo.refresh_from_db()
+        self.assertEqual(self.insumo.estoque_atual, 19)  # 20 - 1 lâmina consumida
+
+    def test_pagamento_dividido_comanda(self):
+        from website.models import PagamentoDividido
+        comanda = Comanda.objects.create(
+            cliente=self.cliente, barbeiro=self.barbeiro,
+            subtotal=Decimal('60.00'), valor_total=Decimal('60.00'), status=Comanda.Status.ABERTA
+        )
+        pagamentos_info = [
+            {'metodo': 'pix', 'valor': Decimal('30.00')},
+            {'metodo': 'dinheiro', 'valor': Decimal('30.00')}
+        ]
+        PaymentService.registrar_pagamento_dividido(comanda, pagamentos_info, gorjeta_valor=Decimal('5.00'))
+        comanda.refresh_from_db()
+        self.assertEqual(comanda.status, Comanda.Status.FECHADA)
+        self.assertEqual(comanda.pagamentos_divididos.count(), 2)
+        self.assertEqual(comanda.gorjetas.count(), 1)
+        self.assertEqual(comanda.gorjetas.first().valor, Decimal('5.00'))
+
+
+class TestLGPDAndViews(TestCase):
+    """Testes de endpoints LGPD, Modo Recepção, Modo TV e Cardápio Digital."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='cliente_teste', password='password123')
+        self.cliente = Cliente.objects.create(usuario=self.user, nome='Cliente LGPD', telefone='4491234567')
+
+    def test_cardapio_digital_view(self):
+        response = self.client.get(reverse('cardapio_digital'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_modo_tv_view(self):
+        response = self.client.get(reverse('modo_tv'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_central_lgpd_export_json(self):
+        self.client.login(username='cliente_teste', password='password123')
+        response = self.client.get(reverse('exportar_lgpd'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
+        data = response.json()
+        self.assertEqual(data['titular']['nome'], 'Cliente LGPD')
+

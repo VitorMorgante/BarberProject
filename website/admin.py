@@ -1,15 +1,28 @@
 from django.contrib import admin
 from .models import (
-    Servico, Barbeiro, Cliente, HorarioDisponivel, Agendamento,
-    MensagemContato, PerfilUsuario, Feedback, FotoTrabalho,
-    PlanoAssinatura, AssinaturaCliente, MovimentacaoCredito,
-    ProgramaFidelidade, ProgressoFidelidade, RecompensaFidelidade,
-    Produto, MovimentacaoEstoque, Comanda, ItemComanda,
-    RegraComissao, Comissao, RepasseComissao, MetaBarbeiro,
-    ConfiguracaoEstabelecimento, Pagamento, EventoWebhookPagamento,
-    ListaEspera, Notificacao, EstiloCorte, AnaliseEstilo,
-    HistoricoVisualCliente, PushSubscription, CupomDesconto
+    UnidadeBarbearia, Servico, Barbeiro, BarbeiroServico, EscalaBarbeiro, BloqueioAgenda,
+    Cliente, PerfilDependente, ContaCorrenteCliente, MovimentacaoContaCorrente,
+    HorarioDisponivel, Agendamento, MensagemContato, PerfilUsuario, Feedback, AvaliacaoDetalhada,
+    FotoTrabalho, PlanoAssinatura, AssinaturaCliente, MovimentacaoCredito, PacoteServico,
+    ProgramaFidelidade, ProgressoFidelidade, RecompensaFidelidade, LocalEstoque,
+    Produto, SaldoEstoqueLocal, TransferenciaEstoque, PerdaEstoque, KitConsumoServico,
+    ItemKitConsumo, Fornecedor, PedidoCompra, ItemPedidoCompra, InventarioEstoque,
+    ItemInventarioEstoque, LoteValidade, MovimentacaoEstoque, Comanda, ItemComanda,
+    PagamentoDividido, Gorjeta, RegraComissao, Comissao, RepasseComissao, MetaBarbeiro,
+    MetaGlobal, RegistroPontoBarbeiro, CaixaDiario, MovimentacaoCaixa, CategoriaDespesa,
+    Despesa, TaxaMetodoPagamento, ConfiguracaoEstabelecimento, Pagamento, EventoWebhookPagamento,
+    ListaEspera, Notificacao, RegraAutomacao, EstiloCorte, AnaliseEstilo, HistoricoVisualCliente,
+    FichaTecnicaCorte, TarefaRecepcao, HandoffTurno, OcorrenciaOperacional, ChecklistOperacional,
+    ItemChecklistOperacional, RegistroHigienizacao, Equipamento, ManutencaoEquipamento,
+    RegistroAuditoria, AprovacaoAcaoSensivel, ConsentimentoCliente, DadosFiscaisEmpresa,
+    PushSubscription, CupomDesconto
 )
+
+
+@admin.register(UnidadeBarbearia)
+class UnidadeBarbeariaAdmin(admin.ModelAdmin):
+    list_display = ['nome', 'cidade', 'estado', 'telefone', 'is_matriz', 'ativo']
+    list_filter = ['is_matriz', 'ativo']
 
 
 @admin.register(Servico)
@@ -21,14 +34,50 @@ class ServicoAdmin(admin.ModelAdmin):
 
 @admin.register(Barbeiro)
 class BarbeiroAdmin(admin.ModelAdmin):
-    list_display = ['nome', 'cargo', 'especialidade', 'ativo']
-    list_filter = ['ativo', 'cargo']
+    list_display = ['nome', 'cargo', 'nivel', 'tempo_buffer_depois', 'ativo']
+    list_filter = ['ativo', 'nivel', 'cargo']
+
+
+@admin.register(BarbeiroServico)
+class BarbeiroServicoAdmin(admin.ModelAdmin):
+    list_display = ['barbeiro', 'servico', 'duracao_minutos', 'preco_customizado', 'comissao_customizada', 'ativo']
+    list_filter = ['barbeiro', 'servico', 'ativo']
+
+
+@admin.register(EscalaBarbeiro)
+class EscalaBarbeiroAdmin(admin.ModelAdmin):
+    list_display = ['barbeiro', 'dia_semana', 'horario_inicio_1', 'horario_fim_1', 'horario_inicio_2', 'horario_fim_2', 'folga', 'ativo']
+    list_filter = ['barbeiro', 'dia_semana', 'folga', 'ativo']
+
+
+@admin.register(BloqueioAgenda)
+class BloqueioAgendaAdmin(admin.ModelAdmin):
+    list_display = ['barbeiro', 'tipo', 'data_inicio', 'data_fim', 'horario_inicio', 'horario_fim', 'ativo']
+    list_filter = ['tipo', 'ativo', 'barbeiro']
 
 
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
-    list_display = ['nome', 'telefone', 'email', 'cadastrado_em']
-    search_fields = ['nome', 'telefone', 'email']
+    list_display = ['nome', 'telefone', 'email', 'codigo_indicacao', 'canal_origem', 'cadastrado_em']
+    search_fields = ['nome', 'telefone', 'email', 'codigo_indicacao']
+
+
+@admin.register(PerfilDependente)
+class PerfilDependenteAdmin(admin.ModelAdmin):
+    list_display = ['nome', 'cliente_titular', 'parentesco', 'data_nascimento']
+    search_fields = ['nome', 'cliente_titular__nome']
+
+
+@admin.register(ContaCorrenteCliente)
+class ContaCorrenteClienteAdmin(admin.ModelAdmin):
+    list_display = ['cliente', 'saldo', 'atualizado_em']
+    search_fields = ['cliente__nome']
+
+
+@admin.register(MovimentacaoContaCorrente)
+class MovimentacaoContaCorrenteAdmin(admin.ModelAdmin):
+    list_display = ['conta_corrente', 'tipo', 'valor', 'saldo_anterior', 'saldo_posterior', 'criado_em']
+    list_filter = ['tipo']
 
 
 @admin.register(HorarioDisponivel)
@@ -39,9 +88,9 @@ class HorarioDisponivelAdmin(admin.ModelAdmin):
 
 @admin.register(Agendamento)
 class AgendamentoAdmin(admin.ModelAdmin):
-    list_display = ['cliente', 'servico', 'barbeiro', 'data', 'horario', 'status', 'criado_em']
-    list_filter = ['status', 'barbeiro', 'data']
-    search_fields = ['cliente__nome']
+    list_display = ['cliente', 'dependente', 'servico', 'barbeiro', 'data', 'horario', 'status', 'is_walkin', 'criado_em']
+    list_filter = ['status', 'barbeiro', 'data', 'is_walkin']
+    search_fields = ['cliente__nome', 'dependente__nome']
 
 
 @admin.register(MensagemContato)
@@ -52,14 +101,19 @@ class MensagemContatoAdmin(admin.ModelAdmin):
 
 @admin.register(PerfilUsuario)
 class PerfilUsuarioAdmin(admin.ModelAdmin):
-    list_display = ['usuario', 'tipo_usuario', 'telefone', 'criado_em']
-    list_filter = ['tipo_usuario']
+    list_display = ['usuario', 'tipo_usuario', 'telefone', 'pode_aplicar_desconto', 'pode_estornar', 'pode_ver_financeiro', 'criado_em']
+    list_filter = ['tipo_usuario', 'pode_aplicar_desconto', 'pode_ver_financeiro']
 
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
     list_display = ['cliente', 'barbeiro', 'nota', 'criado_em', 'aprovado']
     list_filter = ['nota', 'aprovado', 'barbeiro']
+
+
+@admin.register(AvaliacaoDetalhada)
+class AvaliacaoDetalhadaAdmin(admin.ModelAdmin):
+    list_display = ['feedback', 'nota_atendimento', 'nota_pontualidade', 'nota_resultado', 'nota_ambiente']
 
 
 @admin.register(FotoTrabalho)
@@ -87,6 +141,12 @@ class MovimentacaoCreditoAdmin(admin.ModelAdmin):
     list_filter = ['tipo']
 
 
+@admin.register(PacoteServico)
+class PacoteServicoAdmin(admin.ModelAdmin):
+    list_display = ['nome', 'preco_original', 'preco_promocional', 'ativo', 'destaque']
+    list_filter = ['ativo', 'destaque']
+
+
 @admin.register(ProgramaFidelidade)
 class ProgramaFidelidadeAdmin(admin.ModelAdmin):
     list_display = ['nome', 'servicos_necessarios', 'tipo_recompensa', 'valor_desconto', 'ativo']
@@ -103,11 +163,82 @@ class RecompensaFidelidadeAdmin(admin.ModelAdmin):
     list_filter = ['status']
 
 
+@admin.register(LocalEstoque)
+class LocalEstoqueAdmin(admin.ModelAdmin):
+    list_display = ['nome', 'tipo', 'barbeiro_responsavel', 'ativo']
+    list_filter = ['tipo', 'ativo']
+
+
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
-    list_display = ['nome', 'sku', 'categoria', 'custo', 'preco', 'estoque_atual', 'estoque_minimo', 'ativo']
-    list_filter = ['categoria', 'ativo']
+    list_display = ['nome', 'sku', 'categoria', 'custo', 'preco', 'estoque_atual', 'estoque_minimo', 'is_insumo_interno', 'ativo']
+    list_filter = ['categoria', 'is_insumo_interno', 'ativo']
     search_fields = ['nome', 'sku']
+
+
+@admin.register(SaldoEstoqueLocal)
+class SaldoEstoqueLocalAdmin(admin.ModelAdmin):
+    list_display = ['produto', 'local', 'quantidade']
+    list_filter = ['local']
+
+
+@admin.register(TransferenciaEstoque)
+class TransferenciaEstoqueAdmin(admin.ModelAdmin):
+    list_display = ['produto', 'origem', 'destino', 'quantidade', 'criada_em']
+    list_filter = ['origem', 'destino']
+
+
+@admin.register(PerdaEstoque)
+class PerdaEstoqueAdmin(admin.ModelAdmin):
+    list_display = ['produto', 'local', 'quantidade', 'motivo', 'usuario', 'criada_em']
+    list_filter = ['motivo', 'local']
+
+
+class ItemKitConsumoInline(admin.TabularInline):
+    model = ItemKitConsumo
+    extra = 1
+
+
+@admin.register(KitConsumoServico)
+class KitConsumoServicoAdmin(admin.ModelAdmin):
+    list_display = ['servico', 'ativo']
+    inlines = [ItemKitConsumoInline]
+
+
+@admin.register(Fornecedor)
+class FornecedorAdmin(admin.ModelAdmin):
+    list_display = ['nome_empresa', 'contato_nome', 'telefone', 'email', 'prazo_entrega_dias', 'ativo']
+    search_fields = ['nome_empresa', 'cnpj']
+
+
+class ItemPedidoCompraInline(admin.TabularInline):
+    model = ItemPedidoCompra
+    extra = 1
+
+
+@admin.register(PedidoCompra)
+class PedidoCompraAdmin(admin.ModelAdmin):
+    list_display = ['id', 'fornecedor', 'status', 'data_pedido', 'data_entrega_prevista', 'valor_total']
+    list_filter = ['status', 'fornecedor']
+    inlines = [ItemPedidoCompraInline]
+
+
+class ItemInventarioEstoqueInline(admin.TabularInline):
+    model = ItemInventarioEstoque
+    extra = 1
+
+
+@admin.register(InventarioEstoque)
+class InventarioEstoqueAdmin(admin.ModelAdmin):
+    list_display = ['id', 'local', 'data_inventario', 'status', 'usuario_responsavel']
+    list_filter = ['status', 'local']
+    inlines = [ItemInventarioEstoqueInline]
+
+
+@admin.register(LoteValidade)
+class LoteValidadeAdmin(admin.ModelAdmin):
+    list_display = ['produto', 'numero_lote', 'data_validade', 'quantidade', 'ativo']
+    list_filter = ['ativo', 'data_validade']
 
 
 @admin.register(MovimentacaoEstoque)
@@ -121,11 +252,22 @@ class ItemComandaInline(admin.TabularInline):
     extra = 1
 
 
+class PagamentoDivididoInline(admin.TabularInline):
+    model = PagamentoDividido
+    extra = 1
+
+
 @admin.register(Comanda)
 class ComandaAdmin(admin.ModelAdmin):
-    list_display = ['id', 'cliente', 'barbeiro', 'status', 'subtotal', 'desconto', 'valor_total', 'criada_em']
+    list_display = ['id', 'cliente', 'barbeiro', 'status', 'subtotal', 'desconto', 'valor_total', 'metodo_pagamento', 'criada_em']
     list_filter = ['status', 'barbeiro']
-    inlines = [ItemComandaInline]
+    inlines = [ItemComandaInline, PagamentoDivididoInline]
+
+
+@admin.register(Gorjeta)
+class GorjetaAdmin(admin.ModelAdmin):
+    list_display = ['barbeiro', 'comanda', 'valor', 'repassada', 'data_repasse', 'criada_em']
+    list_filter = ['repassada', 'barbeiro']
 
 
 @admin.register(RegraComissao)
@@ -150,9 +292,50 @@ class MetaBarbeiroAdmin(admin.ModelAdmin):
     list_filter = ['ano', 'mes', 'barbeiro']
 
 
+@admin.register(MetaGlobal)
+class MetaGlobalAdmin(admin.ModelAdmin):
+    list_display = ['mes', 'ano', 'meta_faturamento', 'meta_atendimentos', 'meta_produtos', 'meta_ocupacao_percentual']
+    list_filter = ['ano', 'mes']
+
+
+@admin.register(RegistroPontoBarbeiro)
+class RegistroPontoBarbeiroAdmin(admin.ModelAdmin):
+    list_display = ['barbeiro', 'data', 'hora_entrada', 'hora_saida', 'total_horas']
+    list_filter = ['barbeiro', 'data']
+
+
+@admin.register(CaixaDiario)
+class CaixaDiarioAdmin(admin.ModelAdmin):
+    list_display = ['id', 'operador', 'data_abertura', 'saldo_inicial', 'saldo_esperado', 'saldo_dinheiro_informado', 'diferenca_quebra', 'status']
+    list_filter = ['status', 'operador']
+
+
+@admin.register(MovimentacaoCaixa)
+class MovimentacaoCaixaAdmin(admin.ModelAdmin):
+    list_display = ['caixa', 'tipo', 'valor', 'motivo', 'criada_em']
+    list_filter = ['tipo']
+
+
+@admin.register(CategoriaDespesa)
+class CategoriaDespesaAdmin(admin.ModelAdmin):
+    list_display = ['nome', 'tipo', 'ativo']
+    list_filter = ['tipo', 'ativo']
+
+
+@admin.register(Despesa)
+class DespesaAdmin(admin.ModelAdmin):
+    list_display = ['descricao', 'categoria', 'valor', 'data_vencimento', 'status']
+    list_filter = ['status', 'categoria']
+
+
+@admin.register(TaxaMetodoPagamento)
+class TaxaMetodoPagamentoAdmin(admin.ModelAdmin):
+    list_display = ['metodo', 'taxa_percentual', 'taxa_fixa_reais', 'ativo']
+
+
 @admin.register(ConfiguracaoEstabelecimento)
 class ConfiguracaoEstabelecimentoAdmin(admin.ModelAdmin):
-    list_display = ['tipo_sinal', 'valor_sinal', 'minutos_expiracao_pix', 'chave_pix', 'titular_pix']
+    list_display = ['tipo_sinal', 'valor_sinal', 'antecedencia_minima_minutos', 'janela_maxima_dias', 'meta_ocupacao_percentual']
 
 
 @admin.register(Pagamento)
@@ -179,6 +362,12 @@ class NotificacaoAdmin(admin.ModelAdmin):
     list_filter = ['status', 'canal', 'tipo']
 
 
+@admin.register(RegraAutomacao)
+class RegraAutomacaoAdmin(admin.ModelAdmin):
+    list_display = ['titulo', 'tipo', 'ativo', 'dias_disparo', 'atualizado_em']
+    list_filter = ['tipo', 'ativo']
+
+
 @admin.register(EstiloCorte)
 class EstiloCorteAdmin(admin.ModelAdmin):
     list_display = ['nome', 'tipo_cabelo', 'formato_rosto', 'manutencao', 'ativo']
@@ -196,6 +385,76 @@ class HistoricoVisualClienteAdmin(admin.ModelAdmin):
     list_display = ['cliente', 'barbeiro', 'agendamento', 'consentimento', 'data']
     list_filter = ['barbeiro', 'data']
     search_fields = ['cliente__nome']
+
+
+@admin.register(FichaTecnicaCorte)
+class FichaTecnicaCorteAdmin(admin.ModelAdmin):
+    list_display = ['cliente', 'barbeiro', 'tipo_fade', 'acabamento', 'data', 'criada_em']
+    list_filter = ['barbeiro', 'data']
+    search_fields = ['cliente__nome']
+
+
+@admin.register(TarefaRecepcao)
+class TarefaRecepcaoAdmin(admin.ModelAdmin):
+    list_display = ['titulo', 'tipo', 'data_limite', 'concluida', 'responsavel']
+    list_filter = ['tipo', 'concluida']
+
+
+@admin.register(HandoffTurno)
+class HandoffTurnoAdmin(admin.ModelAdmin):
+    list_display = ['turno_origem', 'turno_destino', 'usuario_emissor', 'criado_em']
+
+
+@admin.register(OcorrenciaOperacional)
+class OcorrenciaOperacionalAdmin(admin.ModelAdmin):
+    list_display = ['titulo', 'tipo', 'resolvida', 'usuario', 'criada_em']
+    list_filter = ['tipo', 'resolvida']
+
+
+@admin.register(ChecklistOperacional)
+class ChecklistOperacionalAdmin(admin.ModelAdmin):
+    list_display = ['tipo', 'data', 'usuario', 'concluido']
+    list_filter = ['tipo', 'concluido']
+
+
+@admin.register(RegistroHigienizacao)
+class RegistroHigienizacaoAdmin(admin.ModelAdmin):
+    list_display = ['tipo_procedimento', 'responsavel', 'data_hora']
+    list_filter = ['tipo_procedimento']
+
+
+@admin.register(Equipamento)
+class EquipamentoAdmin(admin.ModelAdmin):
+    list_display = ['nome', 'tipo', 'numero_serie', 'barbeiro_responsavel', 'proxima_manutencao', 'ativo']
+    list_filter = ['tipo', 'ativo']
+
+
+@admin.register(ManutencaoEquipamento)
+class ManutencaoEquipamentoAdmin(admin.ModelAdmin):
+    list_display = ['equipamento', 'tipo', 'data_realizada', 'custo', 'prestador_servico']
+    list_filter = ['tipo']
+
+
+@admin.register(RegistroAuditoria)
+class RegistroAuditoriaAdmin(admin.ModelAdmin):
+    list_display = ['usuario', 'acao', 'tabela_afetada', 'registro_id', 'ip', 'data_hora']
+    list_filter = ['acao', 'tabela_afetada']
+
+
+@admin.register(AprovacaoAcaoSensivel)
+class AprovacaoAcaoSensivelAdmin(admin.ModelAdmin):
+    list_display = ['solicitante', 'tipo', 'status', 'aprovador', 'criado_em']
+    list_filter = ['tipo', 'status']
+
+
+@admin.register(ConsentimentoCliente)
+class ConsentimentoClienteAdmin(admin.ModelAdmin):
+    list_display = ['cliente', 'fotos_privadas', 'fotos_portfolio', 'ia_visagismo', 'whatsapp_notificacoes', 'atualizado_em']
+
+
+@admin.register(DadosFiscaisEmpresa)
+class DadosFiscaisEmpresaAdmin(admin.ModelAdmin):
+    list_display = ['razao_social', 'cnpj', 'regime_tributario', 'aliquota_iss']
 
 
 @admin.register(PushSubscription)

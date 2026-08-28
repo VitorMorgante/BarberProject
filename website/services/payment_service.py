@@ -328,3 +328,119 @@ class PaymentService:
                 pag.agendamento.status = Agendamento.Status.CANCELADO
                 pag.agendamento.observacoes += " [Cancelado automaticamente por expiração de PIX do sinal]"
                 pag.agendamento.save(update_fields=['status', 'observacoes', 'atualizado_em'])
+
+    @staticmethod
+    def calcular_sinal_adaptativo(cliente, servico, config: ConfiguracaoEstabelecimento = None) -> Decimal:
+        """
+        Calcula o sinal adaptativo conforme o risco de no-show do cliente.
+        Se o cliente tiver risco elevado (no-shows recorrentes), exige sinal maior (ex: 50%).
+        """
+        from website.services.agenda_inteligente_service import AgendaInteligenteService
+        config = config or ConfiguracaoEstabelecimento.get_solo()
+        sinal_padrao = PaymentService.calcular_sinal_agendamento(servico, config)
+
+        if cliente:
+            score_risco = AgendaInteligenteService.calcular_score_no_show(cliente)
+            if score_risco >= 60:
+                sinal_reforcado = (Decimal(str(servico.preco)) * Decimal('50.00')) / Decimal('100.00')
+                return max(sinal_padrao, round(sinal_reforcado, 2))
+
+        return sinal_padrao
+
+    @staticmethod
+    @transaction.atomic
+    def registrar_pagamento_dividido(comanda: Comanda, pagamentos_info: list, gorjeta_valor: Decimal = Decimal('0.00'), barbeiro_gorjeta=None, usuario=None) -> Comanda:
+        """
+        Fecha a comanda dividindo o pagamento entre múltiplos métodos (PIX, Dinheiro, Cartão, Saldo Interno).
+        Registra gorjeta separada (se informada) e valida se a soma dos pagamentos fecha exatamente o valor_total.
+        """
+        from website.models import PagamentoDividido, Gorjeta, TaxaMetodoPagamento, ContaCorrenteCliente, MovimentacaoContaCorrente
+        comanda = Comanda.objects.select_for_update().get(pk=comanda.pk)
+        comanda.recalcular()
+
+        total_pago = sum(Decimal(str(p['valor'])) for p in pagamentos_info)
+        if total_pago < comanda.valor_total:
+            raise ValueError(f"Soma dos pagamentos (R$ {total_pago}) é inferior ao total da comanda (R$ {comanda.valor_total}).")
+
+        # Limpa pagamentos parciais antigos se houver
+        comanda.pagamentos_divididos.all().delete()
+
+        for p in pagamentos_info:
+            metodo = p['metodo']
+            val = Decimal(str(p['valor']))
+
+            # Busca taxa cadastrada
+            taxa_obj = TaxaMetodoPagamento.objects.filter(metodo=metodo, ativo=True).first()
+            taxa_pct = taxa_obj.taxa_percentual if taxa_obj else Decimal('0.00')
+            taxa_fixa = taxa_obj.taxa_fixa_reais if taxa_obj else Decimal('0.00')
+            valor_liq = val - ((val * taxa_pct) / Decimal('100.00')) - taxa_fixa
+
+            # Se o pagamento for via Saldo Interno, debita da ContaCorrenteCliente
+            if metodo == PagamentoDividido.Metodo.SALDO_INTERNO:
+                conta = ContaCorrenteCliente.objects.select_for_update().filter(cliente=comanda.cliente).first()
+                if not conta or conta.saldo < val:
+                    raise ValueError(f"Saldo insuficiente na conta corrente do cliente (Disponível: R$ {getattr(conta, 'saldo', 0)}).")
+                saldo_ant = conta.saldo
+                conta.saldo -= val
+                conta.save(update_fields=['saldo', 'atualizado_em'])
+                MovimentacaoContaCorrente.objects.create(
+                    conta_corrente=conta,
+                    tipo=MovimentacaoContaCorrente.Tipo.DEBITO,
+                    valor=val,
+                    saldo_anterior=saldo_ant,
+                    saldo_posterior=conta.saldo,
+                    descricao=f"Pagamento na Comanda #{comanda.id}",
+                    usuario=usuario
+                )
+
+            PagamentoDividido.objects.create(
+                comanda=comanda,
+                metodo=metodo,
+                valor=val,
+                taxa_percentual=taxa_pct,
+                valor_liquido=max(Decimal('0.00'), valor_liq)
+            )
+
+        # Registra Gorjeta separada se houver
+        if gorjeta_valor > Decimal('0.00'):
+            barb_alvo = barbeiro_gorjeta or comanda.barbeiro
+            Gorjeta.objects.create(
+                comanda=comanda,
+                barbeiro=barb_alvo,
+                valor=gorjeta_valor,
+                metodo_pagamento=pagamentos_info[0]['metodo'] if pagamentos_info else 'Pix',
+                repassada=False
+            )
+
+        comanda.status = Comanda.Status.FECHADA
+        comanda.fechada_em = timezone.now()
+        comanda.metodo_pagamento = " / ".join(dict.fromkeys(p['metodo'].upper() for p in pagamentos_info))
+        comanda.save()
+
+        return comanda
+
+    @staticmethod
+    @transaction.atomic
+    def estornar_pagamento_parcial(pagamento_id: int, valor_estorno: Decimal, motivo: str = '', usuario=None) -> Pagamento:
+        """
+        Executa estorno parcial ou total com registro de auditoria e ajuste financeiro.
+        """
+        from website.services.audit_service import AuditService
+        pagamento = Pagamento.objects.select_for_update().get(pk=pagamento_id)
+        if valor_estorno > pagamento.valor:
+            raise ValueError("Valor de estorno não pode ser maior que o valor do pagamento original.")
+
+        valor_antigo = pagamento.valor
+        pagamento.status = Pagamento.Status.REEMBOLSADO if valor_estorno == pagamento.valor else Pagamento.Status.PAGO
+        pagamento.valor = pagamento.valor - valor_estorno
+        pagamento.save()
+
+        AuditService.registrar(
+            usuario=usuario,
+            acao='estorno_realizado',
+            tabela='Pagamento',
+            registro_id=str(pagamento.id),
+            valor_anterior=f"R$ {valor_antigo}",
+            valor_novo=f"Estorno: R$ {valor_estorno} (Novo saldo: R$ {pagamento.valor}) - Motivo: {motivo}"
+        )
+        return pagamento

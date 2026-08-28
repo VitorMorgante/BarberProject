@@ -118,6 +118,8 @@ urlpatterns = [
     # Barber Area (Portal Profissional Expandido)
     path('barbeiro/area/', views.AreaBarbeiroView.as_view(), name='area_barbeiro'),
     path('barbeiro/agendamentos/', views.AgendamentosBarbeiroView.as_view(), name='agendamentos_barbeiro'),
+    path('barbeiro/atendimento/<int:pk>/iniciar/', views.IniciarAtendimentoBarbeiroView.as_view(), name='barbeiro_iniciar_atendimento'),
+    path('barbeiro/pausa-rapida/', views.PausaRapidaBarbeiroView.as_view(), name='barbeiro_pausa_rapida'),
     path('barbeiro/atendimento/<int:pk>/comanda/', views.BarbeiroComandaView.as_view(), name='barbeiro_comanda'),
     path('barbeiro/atendimento/<int:pk>/foto/', views.BarbeiroFotoResultadoView.as_view(), name='barbeiro_foto_resultado'),
     path('barbeiro/ganhos/', views.BarbeiroGanhosView.as_view(), name='barbeiro_ganhos'),
@@ -128,4 +130,33 @@ urlpatterns = [
     path('barbeiro/fotos/cadastrar/', views.FotoTrabalhoCreateView.as_view(), name='cadastrar_foto_barbeiro'),
     path('barbeiro/fotos/editar/<int:pk>/', views.FotoTrabalhoUpdateView.as_view(), name='editar_foto_barbeiro'),
     path('barbeiro/fotos/excluir/<int:pk>/', views.FotoTrabalhoDeleteView.as_view(), name='excluir_foto_barbeiro'),
+
+    # Recepção, Modo TV & Cardápio Digital
+    path('recepcao/', views.ModoRecepcaoView.as_view(), name='modo_recepcao'),
+    path('recepcao/walkin/', views.WalkinCreateView.as_view(), name='walkin_create'),
+    path('tv/', views.ModoTVView.as_view(), name='modo_tv'),
+    path('cardapio/', views.CardapioDigitalView.as_view(), name='cardapio_digital'),
+    path('checkin/<str:token>/', views.RealizarCheckinView.as_view(), name='checkin_token'),
+    path('checkin/id/<int:pk>/', views.RealizarCheckinView.as_view(), name='checkin_pk'),
+
+    # Central LGPD & Privacidade
+    path('cliente/privacidade/', views.CentralLGPDView.as_view(), name='central_lgpd'),
+    path('cliente/privacidade/exportar/', views.ExportarDadosLGPDView.as_view(), name='exportar_lgpd'),
+    path('cliente/privacidade/foto/excluir/<int:pk>/', views.ExcluirFotoClienteLGPDView.as_view(), name='excluir_foto_lgpd'),
+
+    # Chatbot & Inteligência Artificial API
+    path('api/assistente/chat/', views.ai_assistant_chat_api, name='api_assistente_chat'),
+
+    # Gestão Financeira Avançada, Caixa, DRE & CRM
+    path('dashboard/caixa/', views.CaixaDiarioView.as_view(), name='admin_caixa'),
+    path('dashboard/dre/', views.DREAdminView.as_view(), name='admin_dre'),
+    path('dashboard/crm/', views.CRMAdminView.as_view(), name='admin_crm'),
+    path('dashboard/cliente/<int:pk>/360/', views.Perfil360AdminView.as_view(), name='perfil_360_admin'),
+    path('dashboard/automacoes/', views.CentralAutomacoesAdminView.as_view(), name='admin_automacoes'),
+    path('dashboard/agenda-visual/', views.AgendaVisualAdminView.as_view(), name='admin_agenda_visual'),
+    path('api/agendamento/reagendar-dragdrop/', views.reagendar_drag_drop_api, name='api_reagendar_dragdrop'),
+    path('comanda/<int:pk>/fechar-dividido/', views.FecharComandaDivididaView.as_view(), name='fechar_comanda_dividida'),
+    path('cliente/<int:cliente_id>/ficha-tecnica/salvar/', views.FichaTecnicaCreateUpdateView.as_view(), name='salvar_ficha_tecnica'),
+    path('health/', views.health_check_view, name='health_check'),
+    path('api/health/', views.health_check_view, name='api_health_check'),
 ]
