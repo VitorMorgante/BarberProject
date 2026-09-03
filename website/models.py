@@ -11,7 +11,7 @@ from django.utils import timezone
 # ==============================================================================
 
 class UnidadeBarbearia(models.Model):
-    nome = models.CharField(max_length=200, default='Delacruz Barber - Matriz')
+    nome = models.CharField(max_length=200, default='Barber Heitor - Matriz')
     slug = models.SlugField(max_length=100, unique=True, default='matriz')
     cnpj = models.CharField(max_length=20, blank=True)
     endereco = models.CharField(max_length=255, default='Rua Terezinha Fortes Martins, 136')

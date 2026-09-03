@@ -7,15 +7,15 @@
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div>
-      <span class="badge bg-gold text-dark px-3 py-1 mb-1">Inteligência de Clientes</span>
-      <h2 class="brand-font text-gold mb-0">CRM 360 & Retenção</h2>
+      <span class="badge bg-brand text-dark px-3 py-1 mb-1">Inteligência de Clientes</span>
+      <h2 class="brand-font text-brand mb-0">CRM 360 & Retenção</h2>
       <p class="text-secondary small mb-0">Segmentação automática, prevenção de Churn, LTV e Funil de Conversão</p>
     </div>
   </div>
 
   <!-- Funil de Conversão -->
-  <div class="card card-delacruz p-4 mb-4">
-    <h5 class="text-gold brand-font mb-3 fs-6"><i class="bi bi-funnel me-2"></i> Funil de Conversão & Fidelização</h5>
+  <div class="card surface-card p-4 mb-4">
+    <h5 class="text-brand brand-font mb-3 fs-6"><i class="bi bi-funnel me-2"></i> Funil de Conversão & Fidelização</h5>
     <div class="row text-center g-3">
       <div class="col-md-3">
         <div class="p-3 bg-dark rounded-3 border border-secondary border-opacity-25">
@@ -50,9 +50,9 @@
   <div class="row g-4 mb-4">
     <!-- VIPs -->
     <div class="col-md-6 col-lg-3">
-      <div class="card card-delacruz h-100 p-3 border-gold border-opacity-50">
+      <div class="card surface-card h-100 p-3 border-gold border-opacity-50">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="badge bg-gold text-dark">VIPs</span>
+          <span class="badge bg-brand text-dark">VIPs</span>
           <span class="badge bg-dark border border-secondary">{{ segmentos.vips|length }}</span>
         </div>
         <small class="text-secondary mb-3 d-block">LTV acima de R$ 300 ou 8+ atendimentos</small>
@@ -60,7 +60,7 @@
           {% for c in segmentos.vips %}
             <a href="{% url 'perfil_360_admin' c.id %}" class="small text-light text-decoration-none py-1 border-bottom border-secondary border-opacity-25 d-flex justify-content-between">
               <span>{{ c.nome|truncatechars:20 }}</span>
-              <span class="text-gold">R$ {{ c.metricas.ltv_realizado }}</span>
+              <span class="text-brand">R$ {{ c.metricas.ltv_realizado }}</span>
             </a>
           {% empty %}
             <span class="text-muted small">Nenhum cliente VIP.</span>
@@ -71,7 +71,7 @@
 
     <!-- Em Risco / Churn -->
     <div class="col-md-6 col-lg-3">
-      <div class="card card-delacruz h-100 p-3 border-danger border-opacity-50">
+      <div class="card surface-card h-100 p-3 border-danger border-opacity-50">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="badge bg-danger">Risco de Churn</span>
           <span class="badge bg-dark border border-secondary">{{ segmentos.em_risco|length }}</span>
@@ -92,7 +92,7 @@
 
     <!-- Inativos (45+ dias) -->
     <div class="col-md-6 col-lg-3">
-      <div class="card card-delacruz h-100 p-3 border-secondary border-opacity-50">
+      <div class="card surface-card h-100 p-3 border-secondary border-opacity-50">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="badge bg-secondary">Inativos (45d+)</span>
           <span class="badge bg-dark border border-secondary">{{ segmentos.inativos|length }}</span>
@@ -113,7 +113,7 @@
 
     <!-- Aniversariantes do Mês -->
     <div class="col-md-6 col-lg-3">
-      <div class="card card-delacruz h-100 p-3 border-info border-opacity-50">
+      <div class="card surface-card h-100 p-3 border-info border-opacity-50">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="badge bg-info text-dark">Aniversariantes</span>
           <span class="badge bg-dark border border-secondary">{{ segmentos.aniversariantes|length }}</span>

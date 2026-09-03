@@ -1,5 +1,5 @@
 {% extends 'website/modelo.html' %}
-{% block titulo %}Lista de Espera Global | Delacruz Barber{% endblock %}
+{% block titulo %}Lista de Espera Global | Barber Heitor{% endblock %}
 
 {% block conteudo %}
 <section class="py-5">
@@ -8,13 +8,13 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 pb-3 border-bottom border-secondary border-opacity-25">
       <div>
-        <span class="text-gold text-uppercase fw-bold small">Gestão de Vagas</span>
+        <span class="text-brand text-uppercase fw-bold small">Gestão de Vagas</span>
         <h2 class="brand-font text-uppercase fw-bold text-light mb-0">Fila de Espera & Encaixes</h2>
       </div>
     </div>
 
     <!-- Tabela Global da Waitlist -->
-    <div class="card card-delacruz p-4">
+    <div class="card surface-card p-4">
       <div class="table-responsive">
         <table class="table table-dark table-hover align-middle mb-0">
           <thead>
@@ -32,7 +32,7 @@
           <tbody>
             {% for w in waitlist %}
               <tr>
-                <td class="fw-bold text-gold">{{ w.data_desejada|date:"d/m/Y" }}</td>
+                <td class="fw-bold text-brand">{{ w.data_desejada|date:"d/m/Y" }}</td>
                 <td>{{ w.horario_inicio|time:"H:i" }} às {{ w.horario_fim|time:"H:i" }}</td>
                 <td class="text-white fw-semibold">{{ w.cliente.nome }}</td>
                 <td>{{ w.cliente.telefone }}</td>

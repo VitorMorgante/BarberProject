@@ -5,508 +5,507 @@
 
 {% block conteudo %}
 
-<!-- HERO SECTION WITH INTEGRATED HIGHLIGHT CARDS -->
-<header class="hero-section" id="inicio">
-  <div class="container h-100">
-    <div class="row align-items-center h-100">
-      <div class="col-lg-8 py-5">
-        <div class="hero-badge fade-in-slide">
-          <i class="bi bi-award-fill"></i> Experiência e Rigor Técnico
+<!-- ==============================================================================
+     1. HERO CINEMATOGRÁFICO EDITORIAL
+     ============================================================================== -->
+<section class="hero-luxury" id="inicio">
+  <div class="container position-relative">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7 text-start">
+        
+        <!-- Live Status Pill -->
+        <div class="hero-badge">
+          <span class="d-inline-block rounded-circle bg-success me-1" style="width: 8px; height: 8px;"></span>
+          Grade Aberta • Paranavaí - PR
         </div>
-        <h1 class="hero-title fw-bold fade-in-slide">
-          Seu estilo começa na<br/>
-          <span class="hero-bold-name">Delacruz Barber</span>
-        </h1>
-        <p class="hero-description fade-in-slide">
-          Corte preciso, barba alinhada e uma experiência única de cuidado masculino feita para elevar sua presença e autoconfiança.
-        </p>
-        <div class="d-flex flex-wrap gap-3 fade-in-slide mb-5">
-          <a href="{% url 'agendamento' %}" class="btn btn-gold-solid px-4 py-3">Agendar Horário</a>
-          <a href="{% url 'servicos' %}" class="btn btn-outline-beige px-4 py-3">Ver Serviços</a>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Highlight Cards Row -->
-    <div class="row g-4 mt-2 fade-in-slide">
-      <div class="col-md-6 col-lg-3">
-        <div class="highlight-card">
-          <div class="highlight-icon">
-            <i class="bi bi-person-fill-check"></i>
-          </div>
-          <h4>Atendimento</h4>
-          <p>Mestres da tesoura e navalha refinada dedicados a você.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3">
-        <div class="highlight-card">
-          <div class="highlight-icon">
-            <i class="bi bi-cup-hot"></i>
-          </div>
-          <h4>Ambiente Moderno</h4>
-          <p>Climatizado, música selecionada, café premium e cerveja gelada.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3">
-        <div class="highlight-card">
-          <div class="highlight-icon">
-            <i class="bi bi-calendar-check"></i>
-          </div>
-          <h4>Horários Práticos</h4>
-          <p>Agendamento rápido 100% online em poucos segundos.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3">
-        <div class="highlight-card">
-          <div class="highlight-icon">
-            <i class="bi bi-stars"></i>
-          </div>
-          <h4>Experiência Premium</h4>
-          <p>Toalha quente, massagem facial e produtos masculinos importados.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
 
-<!-- SERVICES SECTION -->
-<section class="py-5 bg-dark-custom" id="servicos">
+        <!-- Headline Oversized -->
+        <h1 class="hero-title">
+          <span class="d-block text-white">BARBER</span>
+          <span class="brand-gradient">HEITOR</span>
+        </h1>
+
+        <!-- Slogan / Subheadline -->
+        <p class="hero-description">
+          {{ BARBER_SLOGAN }}<br>
+          Corte cirúrgico, barba alinhada à navalha e uma experiência de cuidado masculino elevada ao mais alto rigor técnico contemporâneo.
+        </p>
+
+        <!-- CTAs -->
+        <div class="d-flex flex-wrap gap-3 mb-4">
+          <a href="{% url 'agendamento' %}" class="btn btn-brand btn-lg px-4 py-3">
+            <i class="bi bi-calendar-plus me-2"></i> Agendar Horário
+          </a>
+          <a href="#experiencia" class="btn btn-surface btn-lg px-4 py-3">
+            Conhecer Experiência
+          </a>
+        </div>
+
+        <!-- Trust Signals -->
+        <div class="d-flex align-items-center gap-4 pt-3 border-top border-secondary border-opacity-10 text-muted-custom small">
+          <div>
+            <span class="text-brand fw-bold fs-5 d-block">4.9 ★</span>
+            <span>Avaliação Média</span>
+          </div>
+          <div class="border-start border-secondary border-opacity-25 ps-4">
+            <span class="text-white fw-bold fs-5 d-block">+5.000</span>
+            <span>Atendimentos</span>
+          </div>
+          <div class="border-start border-secondary border-opacity-25 ps-4">
+            <span class="text-brand fw-bold fs-5 d-block">100%</span>
+            <span>Biossegurança</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Hero Visual Composition Card -->
+      <div class="col-lg-5">
+        <div class="position-relative">
+          <div class="surface-card p-4 shadow-lg border-brand">
+            <div class="position-relative overflow-hidden rounded-3 mb-3" style="height: 340px;">
+              <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800" 
+                   alt="Ambiente {{ BARBER_NAME }}" 
+                   class="w-100 h-100 object-fit-cover">
+              <div class="position-absolute bottom-0 start-0 end-0 p-3 bg-gradient-to-t" style="background: linear-gradient(to top, rgba(6,8,13,0.95), transparent);">
+                <span class="badge bg-dark border border-warning text-brand px-3 py-2 text-uppercase fw-bold" style="font-size: 0.75rem;">
+                  Lounge Exclusivo
+                </span>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="text-white mb-1">Cadeiras Vintage & Acabamento Navalha</h5>
+                <p class="text-muted-custom small mb-0">Café especial, cerveja gelada e climatização premium.</p>
+              </div>
+              <a href="{% url 'cardapio_digital' %}" class="btn btn-outline-brand btn-sm" title="Ver Cardápio de Serviços">
+                <i class="bi bi-qr-code"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Feature Highlights Grid -->
+    <div class="row g-4 mt-4 text-start">
+      <div class="col-sm-6 col-lg-3">
+        <div class="highlight-card">
+          <div class="highlight-icon">
+            <i class="bi bi-scissors"></i>
+          </div>
+          <h5 class="text-white mb-2">Corte Cirúrgico</h5>
+          <p class="text-muted-custom small mb-0">Visagismo e proporção facial aplicados a cada formato de crânio e textura de fio.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="highlight-card">
+          <div class="highlight-icon">
+            <i class="bi bi-fire"></i>
+          </div>
+          <h5 class="text-white mb-2">Barboterapia</h5>
+          <p class="text-muted-custom small mb-0">Toalha quente com óleos essenciais, massagem facial e lâmina descartável de precisão.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="highlight-card">
+          <div class="highlight-icon">
+            <i class="bi bi-phone"></i>
+          </div>
+          <h5 class="text-white mb-2">Agendamento Ágil</h5>
+          <p class="text-muted-custom small mb-0">Escolha serviço, barbeiro e horário em segundos. Sem esperas desnecessárias.</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="highlight-card">
+          <div class="highlight-icon">
+            <i class="bi bi-gem"></i>
+          </div>
+          <h5 class="text-white mb-2">Barber Club Prime</h5>
+          <p class="text-muted-custom small mb-0">Assinatura mensal para manter o visual sempre impecável com economia real.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ==============================================================================
+     2. SERVIÇOS EM DESTAQUE (CARDÁPIO COMERCIAL)
+     ============================================================================== -->
+<section class="py-5" id="servicos" style="background-color: var(--color-surface-sunken);">
   <div class="container py-5">
+    
     <div class="text-center mb-5">
-      <span class="section-subtitle">Exclusividade em cada detalhe</span>
-      <h2 class="section-title-center">Nossos Serviços</h2>
-      <p class="text-muted-custom max-width-600 mx-auto">
-        Oferecemos uma carta variada de serviços de alto padrão, combinando técnicas clássicas e contemporâneas para o seu estilo individual.
+      <span class="section-subtitle">Alta Precisão & Acabamento</span>
+      <h2 class="display-3 text-white mb-3">Nossos Serviços</h2>
+      <p class="text-muted-custom max-width-600 mx-auto" style="max-width: 600px;">
+        Combinamos a tradição da barbearia clássica com as técnicas contemporâneas de visagismo masculino.
       </p>
     </div>
 
     <div class="row g-4">
       {% for servico in all_servicos %}
-      <div class="col-md-6 col-lg-4">
-        <div class="service-card text-start">
+      <div class="col-md-6 col-lg-4 text-start">
+        <div class="service-card">
           <div>
-            <div class="service-meta">
-              <div class="service-icon-wrapper">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="highlight-icon mb-0" style="width: 40px; height: 40px; font-size: 1.2rem;">
                 <i class="bi bi-{{ servico.icone|default:'scissors' }}"></i>
               </div>
-              <span class="service-duration">{{ servico.duracao_minutos }} min</span>
+              <span class="badge bg-dark border border-secondary border-opacity-50 text-muted-custom">
+                <i class="bi bi-clock me-1"></i> {{ servico.duracao_minutos }} min
+              </span>
             </div>
-            <h3 class="service-title">{{ servico.nome }}</h3>
-            <p class="service-desc">{{ servico.descricao }}</p>
+            <h4 class="text-white mb-2">{{ servico.nome }}</h4>
+            <p class="text-muted-custom small mb-4">{{ servico.descricao|default:"Atendimento de precisão com acabamento refinado e produtos de alto padrão." }}</p>
           </div>
+
           <div class="d-flex align-items-center justify-content-between pt-3 border-top border-secondary border-opacity-10">
-            <div class="service-price-block">
-              <span class="service-currency">R$</span>
-              <span class="service-price">{{ servico.preco|floatformat:0 }}</span>
-              <span class="service-currency">,00</span>
-            </div>
-            <a href="{% url 'agendamento' %}?servico={{ servico.pk }}" class="btn btn-gold-outline py-2 px-3 service-btn">Agendar</a>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div class="col-12 text-center">
-        <p class="text-muted-custom">Nenhum serviço cadastrado no momento.</p>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<!-- CUSTOM ABOUT/DIFFERENCES TEASER (Why Us?) -->
-<section class="py-5 bg-card-custom">
-  <div class="container py-4">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6">
-        <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800" alt="Ambiente Delacruz Barber" class="img-fluid rounded shadow-lg border border-secondary border-opacity-10">
-      </div>
-      <div class="col-lg-6 text-start">
-        <span class="section-subtitle">A Diferença</span>
-        <h2 class="section-title">Tradição & Modernidade</h2>
-        <p class="text-muted-custom mb-4">
-          Diferente de outras barbearias convencionais, na <strong>Delacruz Barber</strong> nós tratamos o seu visual como uma expressão integral da sua autoconfiança. Cuidar de si é um compromisso, e estamos aqui para torná-lo um momento memorável.
-        </p>
-        <div class="feature-row">
-          <div class="feature-number">01</div>
-          <div class="feature-text">
-            <h5>Compromisso com Higiene</h5>
-            <p>Nossas ferramentas são sterilizadas de forma clínica a cada uso. Lâminas descartáveis de padrão cirúrgico de uso estrito por cliente.</p>
-          </div>
-        </div>
-        <div class="feature-row">
-          <div class="feature-number">02</div>
-          <div class="feature-text">
-            <h5>Produtos de Alta Gama</h5>
-            <p>Nós utilizamos cremes, pomadas, tônicos e óleos nacionais e importados de altíssimo padrão com selos dermatológicos.</p>
-          </div>
-        </div>
-        <div class="feature-row">
-          <div class="feature-number">03</div>
-          <div class="feature-text">
-            <h5>Espaço de Conexão</h5>
-            <p>Nossa bancada e cadeiras de couro vintage oferecem o máximo de conforto para você trocar ideias, relaxar e renovar sua imagem.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- BARBERS SECTION -->
-<section class="py-5 bg-dark-custom" id="barbeiros">
-  <div class="container py-5">
-    <div class="text-center mb-5">
-      <span class="section-subtitle">Profissionais Altamente Qualificados</span>
-      <h2 class="section-title-center">Nossos Barbeiros</h2>
-      <p class="text-muted-custom max-width-600 mx-auto">
-        A Delacruz Barber conta com profissionais referências do estilo masculino. Especialistas dedicados a extrair o seu melhor potencial.
-      </p>
-    </div>
-
-    <div class="row justify-content-center g-4">
-      {% for barbeiro in barbeiros %}
-      <div class="col-md-6 col-lg-4">
-        <div class="barber-card text-start">
-          <div class="barber-img-container">
-            {% if barbeiro.imagem_url %}
-            <img src="{{ barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="barber-img">
-            {% else %}
-            <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=600" alt="{{ barbeiro.nome }}" class="barber-img">
-            {% endif %}
-            <div class="barber-overlay"></div>
-            <div class="barber-badge-standard">{{ barbeiro.cargo }}</div>
-          </div>
-          <div class="barber-info">
-            <h3 class="barber-name">{{ barbeiro.nome }}</h3>
-            <div class="barber-role">{{ barbeiro.cargo }}</div>
             <div>
-              <span class="barber-specialty-badge">{{ barbeiro.especialidade }}</span>
+              <span class="text-muted-custom small d-block">Valor</span>
+              <span class="fs-4 fw-bold text-brand">R$ {{ servico.preco|floatformat:2 }}</span>
             </div>
-            <p class="barber-description">
-              {{ barbeiro.descricao_curta }}
-            </p>
-            <a href="{% url 'agendamento' %}?barbeiro={{ barbeiro.pk }}" class="btn btn-gold-solid w-100">Agendar com {{ barbeiro.nome|truncatewords:1 }}</a>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div class="col-12 text-center">
-        <p class="text-muted-custom">Nenhum barbeiro cadastrado no momento.</p>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<!-- INSPIRATIONAL GALLERY SECTION -->
-<section class="py-5 bg-dark-custom" id="galeria">
-  <div class="container py-5">
-    <div class="text-center mb-5">
-      <span class="section-subtitle">Galeria de Inspirações</span>
-      <h2 class="section-title-center">Nossos Cortes & Barbados</h2>
-      <p class="text-muted-custom max-width-600 mx-auto">
-        Fique por dentro das últimas tendências. Selecione as categorias para navegar em alguns trabalhos recentes.
-      </p>
-    </div>
-
-    <!-- Filter Buttons -->
-    <div class="d-flex flex-wrap justify-content-center gap-2 mb-5">
-      <button class="btn gallery-filter-btn active" data-filter="all">Todos</button>
-      <button class="btn gallery-filter-btn" data-filter="cortes">Cortes</button>
-      <button class="btn gallery-filter-btn" data-filter="barbas">Barbas</button>
-      <button class="btn gallery-filter-btn" data-filter="degrades">Degradês</button>
-      <button class="btn gallery-filter-btn" data-filter="infantil">Infantil</button>
-    </div>
-
-    <!-- Gallery Grid -->
-    <div class="row g-4 gallery-row">
-      {% for foto in fotos_trabalho %}
-      <div class="col-sm-6 col-lg-4 gallery-col" data-category="{% if 'degrad' in foto.titulo.lower or 'degrad' in foto.descricao.lower or 'fade' in foto.titulo.lower or 'fade' in foto.descricao.lower %}degrades {% endif %}{% if foto.categoria == 'Corte' %}cortes{% elif foto.categoria == 'Barba' %}barbas{% elif foto.categoria == 'Corte + Barba' %}cortes barbas{% elif foto.categoria == 'Infantil' %}infantil{% else %}degrades{% endif %}">
-        <div class="gallery-item">
-          {% if foto.imagem %}
-            <img src="{{ foto.imagem.url }}" alt="{{ foto.titulo }}" class="gallery-item-img">
-          {% else %}
-            <div class="d-flex align-items-center justify-content-center bg-dark text-muted gallery-item-img" style="height: 300px;">
-              <i class="bi bi-scissors fs-1"></i>
-            </div>
-          {% endif %}
-          <div class="gallery-item-overlay text-start">
-            <span class="gallery-item-badge">{{ foto.categoria }}</span>
-            <h4 class="gallery-item-title mb-1">{{ foto.titulo }}</h4>
-            <span class="text-gold" style="font-size: 0.8rem;"><i class="bi bi-person-fill me-1"></i>{{ foto.barbeiro.nome }}</span>
+            <a href="{% url 'agendamento' %}?servico={{ servico.pk }}" class="btn btn-outline-brand btn-sm">
+              Agendar Vaga
+            </a>
           </div>
         </div>
       </div>
       {% empty %}
       <div class="col-12 text-center py-5">
-        <div class="my-4">
-          <i class="bi bi-images text-muted" style="font-size: 3.5rem;"></i>
-        </div>
-        <p class="text-muted-custom fs-5">Em breve novos cortes estarão disponíveis por aqui.</p>
+        <p class="text-muted-custom">Nenhum serviço cadastrado no momento.</p>
       </div>
       {% endfor %}
     </div>
+
+    <div class="text-center mt-5">
+      <a href="{% url 'cardapio_digital' %}" class="btn btn-surface px-4 py-2">
+        <i class="bi bi-list-ul me-2"></i> Consultar Cardápio Digital Completo
+      </a>
+    </div>
+
   </div>
 </section>
 
-<!-- ABOUT SECTION -->
-<section class="py-5 bg-card-custom" id="sobre">
+<!-- ==============================================================================
+     3. A EXPERIÊNCIA BARBER HEITOR (FILOSOFIA & AMBIENTE)
+     ============================================================================== -->
+<section class="py-5" id="experiencia">
   <div class="container py-5 text-start">
-    <div class="row justify-content-center">
-      <div class="col-lg-10">
-        <span class="section-subtitle">Nossa filosofia</span>
-        <h2 class="section-title">Sobre a Delacruz Barber</h2>
-        <p class="text-primary mb-4" style="font-size: 1.25rem; font-weight: 500; font-family: var(--font-serif); line-height: 1.7;">
-          "Na Delacruz Barber, cada corte é pensado para valorizar sua identidade. Nosso atendimento une técnica, cuidado e estilo em um ambiente moderno, confortável e profissional."
-        </p>
-        <p class="text-muted-custom mb-3" style="font-size: 1.05rem; line-height: 1.8;">
-          A Delacruz Barber nasceu com a proposta de oferecer mais do que um corte: uma experiência completa de cuidado, confiança e estilo. Cada cliente é atendido com atenção aos detalhes, respeitando seu visual, sua personalidade e o resultado que deseja alcançar.
-        </p>
-        <p class="text-muted-custom mb-4" style="font-size: 1.05rem; line-height: 1.8;">
-          Nosso foco é entregar um atendimento profissional, com cortes bem executados, barba alinhada e um ambiente pensado para que cada pessoa saia se sentindo renovada.
-        </p>
-        <div class="d-flex align-items-center gap-3">
-          <div class="border-start border-3 border-warning ps-3">
-            <h5 class="mb-1 text-gold">Danilo Delacruz</h5>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.85rem;">Barbeiro</p>
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <div class="position-relative">
+          <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800" 
+               alt="A Experiência {{ BARBER_NAME }}" 
+               class="rounded-3 shadow-lg border border-secondary border-opacity-20 w-100" 
+               style="height: 480px; object-fit: cover;">
+          <div class="position-absolute -bottom-4 -end-4 bg-dark p-4 rounded-3 border border-brand shadow-lg d-none d-md-block" style="max-width: 240px; bottom: 20px; right: 20px;">
+            <span class="brand-font fs-1 text-brand fw-bold d-block">100%</span>
+            <span class="text-white small">Compromisso com o seu estilo individual e pontualidade.</span>
           </div>
         </div>
+      </div>
+
+      <div class="col-lg-6">
+        <span class="section-subtitle">Nossa Filosofia</span>
+        <h2 class="display-3 text-white mb-4">Mais Que Um Corte.<br>Sua Assinatura Pessoal.</h2>
+        
+        <p class="body-text mb-4">
+          Na <strong>{{ BARBER_NAME }}</strong>, entendemos que o cabelo e a barba de um homem comunicam autoridade, confiança e respeito antes mesmo de qualquer palavra ser dita.
+        </p>
+        <p class="text-muted-custom mb-4" style="font-size: 0.95rem; line-height: 1.8;">
+          Combinamos a atmosfera clássica das cadeiras de couro com a conveniência da tecnologia digital: agendamento sem atrito, pagamento transparente via PIX dinâmico, clube de assinaturas e acompanhamento do seu histórico capilar.
+        </p>
+
+        <div class="d-flex flex-column gap-3 mb-4">
+          <div class="d-flex align-items-start gap-3">
+            <div class="highlight-icon flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <div>
+              <h6 class="text-white mb-1">Higiene Clínica Rigorosa</h6>
+              <p class="text-muted-custom small mb-0">Esterilização hospitalar e navalhas 100% descartáveis por cliente.</p>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-start gap-3">
+            <div class="highlight-icon flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">
+              <i class="bi bi-cup-hot"></i>
+            </div>
+            <div>
+              <h6 class="text-white mb-1">Lounge & Conforto</h6>
+              <p class="text-muted-custom small mb-0">Espaço climatizado com Wi-Fi de alta velocidade, café expresso e recepção ágil.</p>
+            </div>
+          </div>
+        </div>
+
+        <a href="{% url 'sobre' %}" class="btn btn-outline-brand">
+          Conhecer Nossa História Completa
+        </a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- FAQ SECTION WITH ACCORDION -->
-<section class="py-5 bg-dark-custom">
+<!-- ==============================================================================
+     4. EQUIPE DE BARBEIROS PROFISSIONAIS
+     ============================================================================== -->
+<section class="py-5" id="barbeiros" style="background-color: var(--color-surface-sunken);">
   <div class="container py-5">
+    
     <div class="text-center mb-5">
-      <span class="section-subtitle">Dúvidas Frequentes</span>
-      <h2 class="section-title-center">FAQ</h2>
-      <p class="text-muted-custom max-width-600 mx-auto">
-        Tem alguma dúvida sobre nosso atendimento, horários ou produtos? Esclarecemos os pontos mais comuns aqui.
+      <span class="section-subtitle">Especialistas Dedicados</span>
+      <h2 class="display-3 text-white mb-3">Nossos Profissionais</h2>
+      <p class="text-muted-custom max-width-600 mx-auto" style="max-width: 600px;">
+        Mestres dedicados a extrair sua melhor imagem através da técnica e da precisão.
       </p>
     </div>
 
+    <div class="row justify-content-center g-4 text-start">
+      {% for barbeiro in barbeiros %}
+      <div class="col-md-6 col-lg-4">
+        <div class="barber-card">
+          <div class="barber-img-container">
+            {% if barbeiro.imagem_url %}
+              <img src="{{ barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="barber-img">
+            {% else %}
+              <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=600" alt="{{ barbeiro.nome }}" class="barber-img">
+            {% endif %}
+            <div class="position-absolute top-0 end-0 m-3">
+              <span class="badge bg-dark border border-warning text-brand px-3 py-1 text-uppercase fw-bold" style="font-size: 0.75rem;">
+                {{ barbeiro.cargo|default:"Barbeiro Especialista" }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="p-4">
+            <h4 class="text-white mb-1">{{ barbeiro.nome }}</h4>
+            <div class="text-brand small fw-semibold mb-2">{{ barbeiro.especialidade|default:"Cortes Clássicos, Degradê & Barba" }}</div>
+            <p class="text-muted-custom small mb-4" style="min-height: 48px;">
+              {{ barbeiro.descricao_curta|default:"Especialista em visagismo masculino e acabamentos de alta definição." }}
+            </p>
+            <a href="{% url 'agendamento' %}?barbeiro={{ barbeiro.pk }}" class="btn btn-brand w-100">
+              Agendar com {{ barbeiro.nome|truncatewords:1 }}
+            </a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-5">
+        <p class="text-muted-custom">Nenhum barbeiro ativo no momento.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+<!-- ==============================================================================
+     5. BARBER CLUB PRIME (ASSINATURA RECORRENTE)
+     ============================================================================== -->
+{% if planos_club %}
+<section class="py-5" id="club">
+  <div class="container py-5 text-start">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-5">
+        <span class="section-subtitle">Exclusividade Contínua</span>
+        <h2 class="display-3 text-white mb-3">Barber Club Prime</h2>
+        <p class="body-text mb-4">
+          Mantenha sua presença impecável durante todo o mês com nossa assinatura inteligente. Economia real, prioridade de atendimento e vantagens exclusivas na bancada.
+        </p>
+        <div class="d-flex flex-column gap-2 mb-4 text-muted-custom small">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-check2-circle text-brand fs-5"></i> Cortes mensais garantidos
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-check2-circle text-brand fs-5"></i> Desconto progressivo em produtos home care
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-check2-circle text-brand fs-5"></i> Cartão de fidelidade com acúmulo dobrado
+          </div>
+        </div>
+        <a href="{% url 'cadastro' %}" class="btn btn-brand">
+          Fazer Parte do Club
+        </a>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="row g-3">
+          {% for plano in planos_club %}
+          <div class="col-md-6">
+            <div class="surface-card p-4 h-100 border-brand position-relative d-flex flex-column justify-content-between">
+              <div>
+                <span class="badge bg-brand text-dark text-uppercase fw-bold px-2 py-1 mb-2" style="font-size: 0.72rem;">Plano Prime</span>
+                <h4 class="text-white mb-2">{{ plano.nome }}</h4>
+                <div class="mb-3">
+                  <span class="fs-2 fw-bold text-brand">R$ {{ plano.preco_mensal|floatformat:0 }}</span>
+                  <span class="text-muted-custom small">/mês</span>
+                </div>
+                <p class="text-muted-custom small mb-3">{{ plano.descricao|default:"Benefícios exclusivos para o cuidado contínuo do seu estilo." }}</p>
+                <div class="small text-white mb-3">
+                  <i class="bi bi-check-lg text-brand me-1"></i> Até <strong>{{ plano.cortes_inclusos }} cortes/mês</strong>
+                </div>
+              </div>
+              <a href="{% url 'agendamento' %}" class="btn btn-outline-brand btn-sm w-100">
+                Assinar Plano
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ==============================================================================
+     6. GALERIA DE CORTES & TRANSFORMAÇÕES
+     ============================================================================== -->
+<section class="py-5" id="galeria" style="background-color: var(--color-surface-sunken);">
+  <div class="container py-5">
+    
+    <div class="text-center mb-5">
+      <span class="section-subtitle">Portfólio de Trabalhos</span>
+      <h2 class="display-3 text-white mb-3">Galeria de Inspirações</h2>
+      <p class="text-muted-custom max-width-600 mx-auto" style="max-width: 600px;">
+        Navegue pelos cortes e finalizações mais recentes realizados por nossa equipe.
+      </p>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-5">
+      <button class="btn btn-surface btn-sm gallery-filter-btn active" data-filter="all">Todos</button>
+      <button class="btn btn-surface btn-sm gallery-filter-btn" data-filter="cortes">Cortes</button>
+      <button class="btn btn-surface btn-sm gallery-filter-btn" data-filter="barbas">Barbas</button>
+      <button class="btn btn-surface btn-sm gallery-filter-btn" data-filter="degrades">Degradês</button>
+    </div>
+
+    <!-- Gallery Grid -->
+    <div class="row g-4 gallery-row text-start">
+      {% for foto in fotos_trabalho %}
+      <div class="col-sm-6 col-lg-3 gallery-col" data-category="{% if 'degrad' in foto.titulo.lower or 'fade' in foto.titulo.lower %}degrades {% endif %}{% if foto.categoria == 'Corte' %}cortes{% elif foto.categoria == 'Barba' %}barbas{% else %}cortes{% endif %}">
+        <div class="surface-card overflow-hidden h-100">
+          <div class="position-relative" style="height: 240px;">
+            {% if foto.imagem %}
+              <img src="{{ foto.imagem.url }}" alt="{{ foto.titulo }}" class="w-100 h-100 object-fit-cover">
+            {% else %}
+              <div class="w-100 h-100 bg-dark d-flex align-items-center justify-content-center text-muted">
+                <i class="bi bi-scissors fs-1"></i>
+              </div>
+            {% endif %}
+            <div class="position-absolute bottom-0 start-0 end-0 p-3" style="background: linear-gradient(to top, rgba(6,8,13,0.95), transparent);">
+              <span class="badge bg-dark border border-secondary text-brand" style="font-size: 0.72rem;">{{ foto.categoria }}</span>
+              <h6 class="text-white mb-0 mt-1">{{ foto.titulo }}</h6>
+              <small class="text-muted-custom d-block"><i class="bi bi-person me-1"></i>{{ foto.barbeiro.nome }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-5">
+        <i class="bi bi-images fs-1 text-muted-custom d-block mb-3"></i>
+        <p class="text-muted-custom">Novas fotos de trabalhos serão adicionadas em breve.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+<!-- ==============================================================================
+     7. DÚVIDAS FREQUENTES (FAQ ACCORDION)
+     ============================================================================== -->
+<section class="py-5" id="faq">
+  <div class="container py-5 text-start">
     <div class="row justify-content-center">
-      <div class="col-lg-8 text-start">
+      <div class="col-lg-8">
+        
+        <div class="text-center mb-5">
+          <span class="section-subtitle">Tire Suas Dúvidas</span>
+          <h2 class="display-3 text-white mb-3">Perguntas Frequentes</h2>
+          <p class="text-muted-custom">Esclarecemos os principais detalhes sobre nossos agendamentos, sinal e funcionamento.</p>
+        </div>
+
         <div class="accordion accordion-custom" id="faqAccordion">
           
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                Preciso agendar horário?
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="false" aria-controls="faq1">
+                Como funciona o agendamento online na {{ BARBER_NAME }}?
               </button>
             </h2>
-            <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
               <div class="accordion-body">
-                Sim! Priorizamos o modelo de agendamento online para podermos dispensar a você a atenção exclusiva necessária. Sem salas de espera cheias, sem atrasos. Agende diretamente em nossa aba acima.
+                Você escolhe o serviço desejado, o barbeiro de sua preferência, a data e o horário livre na grade em tempo real. Se o serviço exigir sinal de reserva, você realiza o pagamento instantâneo via PIX para garantir sua vaga sem atrasos ou filas.
               </div>
             </div>
           </div>
 
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                Posso escolher o barbeiro?
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+                Posso remarcar ou cancelar meu horário?
               </button>
             </h2>
-            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
               <div class="accordion-body">
-                Com certeza! Você seleciona entre os nossos profissionais livremente no Passo 2 do nosso formulário de agendamento rápido online.
+                Sim. Através da sua Área do Cliente, você pode gerenciar seus agendamentos ativos, solicitar remarcação ou cancelamento com antecedência mínima configurada pela barbearia.
               </div>
             </div>
           </div>
 
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                Quais serviços a Delacruz Barber oferece?
-              </button>
-            </h2>
-            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-              <div class="accordion-body">
-                Oferecemos corte clássico masculino, corte degradê sombreado, barba terapêutica com toalha quente, design de sobrancelha e nosso pacote Premium de cuidados exclusivos.
-              </div>
-            </div>
-          </div>
-
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                Quanto tempo dura um corte?
-              </button>
-            </h2>
-            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-              <div class="accordion-body">
-                O corte de cabelo dura em média de 40 a 45 minutos. Atendemos com foco na perfeição técnica e no seu conforto físico.
-              </div>
-            </div>
-          </div>
-
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
-                Fazem barba completa?
-              </button>
-            </h2>
-            <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-              <div class="accordion-body">
-                Sim, fazemos! Nosso serviço de barba é uma terapia: inclui desenho preciso do bigode e barba na navalha, massagem facial relaxante, creme espumante aquecido à toalha quente relaxante, óleos aromáticos e bálsamo refrescante pós-barba.
-              </div>
-            </div>
-          </div>
-
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
-                Posso remarcar meu horário?
-              </button>
-            </h2>
-            <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-              <div class="accordion-body">
-                Sim. Pedimos por cortesia e respeito ao profissional que realize cancelamentos ou remarque o horário via WhatsApp ou telefone com pelo menos 2 horas de avanço.
-              </div>
-            </div>
-          </div>
-
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
                 Quais formas de pagamento são aceitas?
               </button>
             </h2>
-            <div id="collapseSeven" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
               <div class="accordion-body">
-                Aceitamos cartões de débito e crédito de todas as bandeiras, transferências rápidas via Pix e dinheiro físico. O acerto é realizado diretamente na recepção no final do serviço.
+                Aceitamos PIX dinâmico diretamente pelo site, além de cartões de débito, crédito e dinheiro no fechamento da sua comanda na recepção.
               </div>
             </div>
           </div>
 
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight" aria-expanded="false" aria-controls="collapseEight">
-                Onde fica a Delacruz Barber?
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" aria-expanded="false" aria-controls="faq4">
+                Como funciona o Barber Club e o Cartão Fidelidade?
               </button>
             </h2>
-            <div id="collapseEight" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
               <div class="accordion-body">
-                Nossa barbearia está localizada na Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR.
+                O Barber Club é uma assinatura mensal com créditos automáticos de cortes e benefícios exclusivos. Paralelamente, todos os clientes cadastrados acumulam carimbos virtuais no Cartão Fidelidade Digital a cada atendimento concluído.
               </div>
             </div>
           </div>
 
         </div>
+
       </div>
     </div>
   </div>
 </section>
 
-<!-- CONTACT SECTION -->
-<section class="py-5 bg-card-custom" id="contato">
-  <div class="container py-5 text-start">
-    <div class="row g-5">
-      
-      <!-- Contact Detail / Office Info Column -->
-      <div class="col-lg-5">
-        <span class="section-subtitle">Localização & Contato</span>
-        <h2 class="section-title">Estamos à sua Espera</h2>
-        
-        <div class="d-flex align-items-center gap-3 mb-4 mt-4">
-          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
-            <i class="bi bi-geo-alt-fill"></i>
-          </div>
-          <div>
-            <h6 class="mb-1 text-gold fw-bold">Endereço</h6>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</p>
-          </div>
-        </div>
-
-        <div class="d-flex align-items-center gap-3 mb-4">
-          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
-            <i class="bi bi-clock-history"></i>
-          </div>
-          <div>
-            <h6 class="mb-1 text-gold fw-bold">Horário de Funcionamento</h6>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Segunda a sábado: 08:00 às 21:00</p>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Domingo: Fechado</p>
-          </div>
-        </div>
-
-        <div class="d-flex align-items-center gap-3 mb-4">
-          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
-            <i class="bi bi-whatsapp"></i>
-          </div>
-          <div>
-            <h6 class="mb-1 text-gold fw-bold">WhatsApp / Telefone</h6>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">Danilo: (44) 9919-0997 / Heitor: (44) 9102-2176</p>
-          </div>
-        </div>
-
-        <div class="d-flex align-items-center gap-3 mb-4">
-          <div class="highlight-icon" style="min-width: 45px; height: 45px; margin-bottom: 0;">
-            <i class="bi bi-instagram"></i>
-          </div>
-          <div>
-            <h6 class="mb-1 text-gold fw-bold">Instagram</h6>
-            <p class="mb-0 text-muted-custom" style="font-size: 0.9rem;">@delacruzbarber_oficial</p>
-          </div>
-        </div>
-
-        <!-- Map Placeholder -->
-        <div class="mt-4 rounded overflow-hidden border border-secondary border-opacity-10 shadow" 
-             style="height: 200px; background-color: #0d0d0d; background-image: radial-gradient(circle, rgba(212,175,55,0.06) 1px, transparent 1px); background-size: 20px 20px;">
-          <div class="d-flex flex-column align-items-center justify-content-center h-100 p-3 text-center">
-            <i class="bi bi-map-fill text-gold fs-1 mb-2"></i>
-            <span class="text-beige fw-bold">Mapa Delacruz Barber</span>
-            <span class="text-muted-custom mt-1 text-center" style="font-size: 0.78rem;">Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</span>
-            <span class="text-muted-custom mt-1 text-center" style="font-size: 0.72rem;">Navegue até a Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Contact Mailer Form Box (Right Side) -->
-      <div class="col-lg-7">
-        <div class="bg-dark-custom p-4 p-md-5 rounded border border-secondary border-opacity-10 shadow">
-          <h4 class="brand-font text-uppercase fw-bold text-beige mb-2">Envie uma mensagem</h4>
-          <p class="text-muted-custom mb-4" style="font-size: 0.88rem;">
-            Tem alguma dúvida, sugestão, elogio ou reclamação? Envie sua mensagem e a Delacruz Barber entrará em contato em breve.
-          </p>
-
-          <form method="post" action="{% url 'contato' %}">
-            {% csrf_token %}
-            <div class="row g-3">
-              <div class="col-md-12">
-                <div class="form-floating-custom">
-                  <label for="id_nome">Nome Completo</label>
-                  <input type="text" class="form-control" id="id_nome" name="nome" placeholder="Digite seu nome completo" required>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-floating-custom">
-                  <label for="id_email">Endereço de E-mail</label>
-                  <input type="email" class="form-control" id="id_email" name="email" placeholder="nome@exemplo.com" required>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-floating-custom">
-                  <label for="id_telefone">Número de Telefone</label>
-                  <input type="tel" class="form-control" id="id_telefone" name="telefone" placeholder="(XX) XXXXX-XXXX" required>
-                </div>
-              </div>
-              <div class="col-md-12">
-                <div class="form-floating-custom">
-                  <label for="id_mensagem">Mensagem ou Dúvida</label>
-                  <textarea class="form-control" id="id_mensagem" name="mensagem" rows="5" placeholder="Como podemos te ajudar hoje?" required></textarea>
-                </div>
-              </div>
-              <div class="col-md-12 pt-2">
-                <button type="submit" class="btn btn-gold-solid w-100 py-3">Enviar Mensagem</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-
+<!-- ==============================================================================
+     8. CTA FINAL BANNER
+     ============================================================================== -->
+<section class="py-5" style="background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.12) 0%, var(--color-surface-sunken) 80%);">
+  <div class="container py-5 text-center">
+    <span class="section-subtitle justify-content-center">Eleve Seu Padrão</span>
+    <h2 class="display-2 text-white mb-3">Pronto Para Alinhar Seu Estilo?</h2>
+    <p class="text-muted-custom max-width-600 mx-auto mb-4" style="max-width: 540px;">
+      Garanta seu horário com nossos profissionais e viva a autêntica experiência {{ BARBER_NAME }}.
+    </p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <a href="{% url 'agendamento' %}" class="btn btn-brand btn-lg px-5 py-3">
+        <i class="bi bi-calendar-check me-2"></i> Agendar Agora
+      </a>
+      <a href="https://wa.me/{{ BARBER_PHONE_RAW }}" target="_blank" rel="noopener noreferrer" class="btn btn-surface btn-lg px-4 py-3">
+        <i class="bi bi-whatsapp text-success me-2"></i> Falar no WhatsApp
+      </a>
     </div>
   </div>
 </section>

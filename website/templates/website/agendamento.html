@@ -4,23 +4,25 @@
 {% block titulo %}Agendamento Online{% endblock %}
 
 {% block conteudo %}
-<!-- INTERACTIVE APPOINTMENT SCHEDULER SECTION -->
-<section class="py-5 bg-card-custom">
-  <div class="container py-5 text-start">
+<section class="py-5" style="background-color: var(--color-surface-sunken);">
+  <div class="container py-4 text-start">
+    
     <div class="text-center mb-5">
-      <span class="section-subtitle">Conveniência Garantida</span>
-      <h2 class="section-title-center text-uppercase fw-bold text-gold">Agendamento Online</h2>
-      <p class="text-muted-custom max-width-600 mx-auto">
-        Escolha seu serviço, barbeiro, data e horário preferidos em poucos cliques. Tudo de maneira rápida e visual.
+      <span class="section-subtitle">Conveniência em Poucos Cliques</span>
+      <h1 class="display-3 text-white mb-2">Agendamento Online</h1>
+      <p class="text-muted-custom max-width-600 mx-auto" style="max-width: 600px;">
+        Selecione o serviço, profissional, data e horário ideal na grade em tempo real.
       </p>
     </div>
 
     {% if not request.user.is_authenticated %}
     <div class="row justify-content-center mb-4 text-start">
       <div class="col-lg-12">
-        <div class="alert alert-info border-0 shadow animate-fade-in" style="background-color: rgba(13,202,240,0.15); color: #f5f5f5; border-left: 4px solid #0dcaf0 !important;">
-          <i class="bi bi-info-circle-fill text-info me-2"></i>
-          <strong>Dica:</strong> <a href="{% url 'login' %}" class="text-gold fw-bold text-decoration-none">Faça login</a> ou <a href="{% url 'cadastro' %}" class="text-gold fw-bold text-decoration-none">cadastre-se</a> para salvar seus dados, acompanhar seus agendamentos e ver seu histórico completo!
+        <div class="alert alert-info border-0 shadow-sm d-flex align-items-center gap-3 py-3" style="background-color: var(--color-info-dim); color: #f8fafc; border-left: 4px solid var(--color-info) !important;">
+          <i class="bi bi-info-circle-fill text-info fs-4 flex-shrink-0"></i>
+          <div>
+            <strong>Dica de Praticidade:</strong> <a href="{% url 'login' %}" class="text-brand fw-bold text-decoration-none">Faça login</a> ou <a href="{% url 'cadastro' %}" class="text-brand fw-bold text-decoration-none">crie sua conta</a> para salvar seus dados, acumular pontos no Cartão Fidelidade e gerenciar seus horários.
+          </div>
         </div>
       </div>
     </div>
@@ -29,8 +31,8 @@
     {% if form.errors %}
     <div class="row justify-content-center mb-4">
       <div class="col-lg-12">
-        <div class="alert alert-danger border-0 shadow" style="background-color: rgba(220,53,69,0.15); color: #f5f5f5; border-left: 4px solid #dc3545 !important;">
-          <h5 class="alert-heading fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Por favor, corrija os erros abaixo:</h5>
+        <div class="alert alert-danger border-0 shadow-sm" style="background-color: var(--color-danger-dim); color: #f8fafc; border-left: 4px solid var(--color-danger) !important;">
+          <h5 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Por favor, corrija os erros abaixo:</h5>
           <ul class="mb-0">
             {% for field, errors in form.errors.items %}
               {% for error in errors %}
@@ -46,206 +48,190 @@
     <form method="post" id="booking-form">
       {% csrf_token %}
       
-      <!-- Actual Hidden/Visible Form Controls for Django Form Integration -->
+      <!-- Hidden Controls Synchronized with JS State -->
       <input type="hidden" name="servico" id="id_servico" value="{{ form.servico.value|default:'' }}">
       <input type="hidden" name="barbeiro" id="id_barbeiro" value="{{ form.barbeiro.value|default:'' }}">
       <input type="hidden" name="horario" id="id_horario" value="{{ form.horario.value|default:'' }}">
 
       <div class="row g-4">
-        <!-- Wizard Steps Column (Left Side) -->
+        <!-- Wizard Left Column -->
         <div class="col-lg-7">
-          <div class="appointment-container p-4 p-md-5">
-            
-            <!-- STEP 1: CHOOSE SERVICE -->
-            <div class="step-card mb-4" id="service-step-card">
-              <div class="step-header">
-                <div class="step-number">1</div>
-                <h3 class="step-title">Escolha o Serviço</h3>
-              </div>
-              <div class="step-content">
-                <div class="service-select-list">
-                  {% for s in servicos %}
-                  <div class="service-select-item" 
-                       data-service-id="{{ s.pk }}" 
-                       data-service-name="{{ s.nome }}" 
-                       data-service-price="{{ s.preco }}" 
-                       data-service-duration="{{ s.duracao_minutos }} min">
-                    <div class="service-select-info">
-                      <span class="service-select-name">{{ s.nome }}</span>
-                      <div class="service-select-meta">
-                        <span><i class="bi bi-clock me-1"></i> {{ s.duracao_minutos }} min</span>
-                        <span class="service-select-price">R$ {{ s.preco|floatformat:2 }}</span>
-                      </div>
-                    </div>
-                    <div class="service-select-checkbox">
-                      <i class="bi bi-check-lg"></i>
-                    </div>
-                  </div>
-                  {% empty %}
-                  <p class="text-muted-custom">Nenhum serviço disponível no momento.</p>
-                  {% endfor %}
-                </div>
-              </div>
+          
+          <!-- STEP 1: CHOOSE SERVICE -->
+          <div class="step-card" id="service-step-card">
+            <div class="step-header">
+              <div class="step-number">1</div>
+              <h4 class="text-white mb-0">Escolha o Serviço</h4>
             </div>
-
-            <!-- STEP 2: CHOOSE BARBER -->
-            <div class="step-card mb-4" id="barber-step-card">
-              <div class="step-header">
-                <div class="step-number">2</div>
-                <h3 class="step-title">Escolha o Barbeiro</h3>
-              </div>
-              <div class="step-content">
-                <div class="barber-select-grid">
-                  {% for b in barbeiros %}
-                  <div class="barber-select-item" data-barber-id="{{ b.pk }}" data-barber-name="{{ b.nome }}">
-                    {% if b.imagem_url %}
-                    <img src="{{ b.imagem_url }}" alt="{{ b.nome }}" class="barber-select-avatar">
-                    {% else %}
-                    <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=150" alt="{{ b.nome }}" class="barber-select-avatar">
-                    {% endif %}
-                    <div class="barber-select-name">{{ b.nome }}</div>
-                    <div class="barber-select-role">{{ b.cargo }}</div>
-                    <div class="barber-select-status">
-                      <i class="bi bi-check-lg"></i>
-                    </div>
+            <div class="service-select-list">
+              {% for s in servicos %}
+              <div class="service-select-item" 
+                   data-service-id="{{ s.pk }}" 
+                   data-service-name="{{ s.nome }}" 
+                   data-service-price="{{ s.preco }}" 
+                   data-service-duration="{{ s.duracao_minutos }} min">
+                <div>
+                  <h6 class="text-white mb-1">{{ s.nome }}</h6>
+                  <div class="d-flex align-items-center gap-3 text-muted-custom small">
+                    <span><i class="bi bi-clock me-1 text-brand"></i> {{ s.duracao_minutos }} min</span>
+                    <span class="text-brand fw-bold">R$ {{ s.preco|floatformat:2 }}</span>
                   </div>
-                  {% empty %}
-                  <p class="text-muted-custom">Nenhum barbeiro disponível no momento.</p>
-                  {% endfor %}
+                </div>
+                <div class="service-check-indicator">
+                  <i class="bi bi-check-circle-fill text-brand fs-4"></i>
                 </div>
               </div>
+              {% empty %}
+              <p class="text-muted-custom">Nenhum serviço disponível no momento.</p>
+              {% endfor %}
             </div>
-
-            <!-- STEP 3: CHOOSE DATE -->
-            <div class="step-card mb-4" id="date-step-card">
-              <div class="step-header">
-                <div class="step-number">3</div>
-                <h3 class="step-title">Escolha a Data</h3>
-              </div>
-              <div class="step-content">
-                <div class="date-input-wrapper">
-                  <input type="date" name="data" class="form-control custom-date-input" id="id_data" value="{{ form.data.value|default:'' }}" required>
-                </div>
-              </div>
-            </div>
-
-            <!-- STEP 4: CHOOSE TIME SLOT -->
-            <div class="step-card mb-4 d-none" id="time-step-card">
-              <div class="step-header">
-                <div class="step-number">4</div>
-                <h3 class="step-title">Escolha o Horário</h3>
-              </div>
-              <div class="step-content">
-                <div class="time-slot-grid" id="time-slots-container">
-                  <!-- Loaded via AJAX -->
-                </div>
-                <div class="d-flex gap-3 mt-3 justify-content-center flex-wrap">
-                  <span class="d-flex align-items-center gap-1 text-muted-custom" style="font-size: 0.78rem;">
-                    <span class="d-inline-block rounded-circle bg-gold" style="width: 8px; height: 8px;"></span> Disponível
-                  </span>
-                  <span class="d-flex align-items-center gap-1 text-muted-custom" style="font-size: 0.78rem;">
-                    <span class="d-inline-block rounded-circle" style="width: 8px; height: 8px; background-color: rgba(255,255,255,0.15);"></span> Ocupado / Indisponível
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- STEP 5: CUSTOMER DETAILS -->
-            <div class="step-card" id="customer-step-card">
-              <div class="step-header">
-                <div class="step-number">5</div>
-                <h3 class="step-title">Informações de Contato</h3>
-              </div>
-              <div class="step-content">
-                <div class="row g-3">
-                  <div class="col-md-12">
-                    <div class="form-floating-custom">
-                      <label for="id_nome">Nome Completo *</label>
-                      <input type="text" name="nome" class="form-control" id="id_nome" placeholder="Seu nome completo" value="{{ form.nome.value|default:'' }}" required>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-floating-custom">
-                      <label for="id_telefone">Telefone / WhatsApp *</label>
-                      <input type="tel" name="telefone" class="form-control" id="id_telefone" placeholder="(XX) XXXXX-XXXX" value="{{ form.telefone.value|default:'' }}" required>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-floating-custom">
-                      <label for="id_email">E-mail para Confirmação *</label>
-                      <input type="email" name="email" class="form-control" id="id_email" placeholder="nome@exemplo.com" value="{{ form.email.value|default:'' }}" required>
-                    </div>
-                  </div>
-                  <div class="col-md-12">
-                    <div class="form-floating-custom">
-                      <label for="id_observacoes">Observações adicionais (Opcional)</label>
-                      <textarea name="observacoes" class="form-control" id="id_observacoes" rows="3" placeholder="Ex: cicatriz no couro, barba baixa, etc.">{{ form.observacoes.value|default:'' }}</textarea>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
           </div>
+
+          <!-- STEP 2: CHOOSE BARBER -->
+          <div class="step-card" id="barber-step-card">
+            <div class="step-header">
+              <div class="step-number">2</div>
+              <h4 class="text-white mb-0">Escolha o Barbeiro</h4>
+            </div>
+            <div class="row g-3">
+              {% for b in barbeiros %}
+              <div class="col-sm-6">
+                <div class="barber-select-item surface-card p-3 d-flex align-items-center gap-3 cursor-pointer" 
+                     data-barber-id="{{ b.pk }}" 
+                     data-barber-name="{{ b.nome }}"
+                     style="cursor: pointer;">
+                  <div class="rounded-circle overflow-hidden flex-shrink-0" style="width: 52px; height: 52px;">
+                    {% if b.imagem_url %}
+                    <img src="{{ b.imagem_url }}" alt="{{ b.nome }}" class="w-100 h-100 object-fit-cover">
+                    {% else %}
+                    <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=150" alt="{{ b.nome }}" class="w-100 h-100 object-fit-cover">
+                    {% endif %}
+                  </div>
+                  <div>
+                    <h6 class="text-white mb-0">{{ b.nome }}</h6>
+                    <small class="text-brand d-block">{{ b.cargo|default:"Barbeiro" }}</small>
+                  </div>
+                </div>
+              </div>
+              {% empty %}
+              <p class="text-muted-custom">Nenhum profissional disponível.</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- STEP 3: CHOOSE DATE -->
+          <div class="step-card" id="date-step-card">
+            <div class="step-header">
+              <div class="step-number">3</div>
+              <h4 class="text-white mb-0">Escolha a Data</h4>
+            </div>
+            <div>
+              <input type="date" name="data" class="form-control" id="id_data" value="{{ form.data.value|default:'' }}" required>
+            </div>
+          </div>
+
+          <!-- STEP 4: CHOOSE TIME SLOT -->
+          <div class="step-card d-none" id="time-step-card">
+            <div class="step-header">
+              <div class="step-number">4</div>
+              <h4 class="text-white mb-0">Escolha o Horário Disponível</h4>
+            </div>
+            <div class="d-flex flex-wrap gap-2" id="time-slots-container">
+              <!-- Loaded via AJAX -->
+            </div>
+          </div>
+
+          <!-- STEP 5: CUSTOMER DETAILS -->
+          <div class="step-card" id="customer-step-card">
+            <div class="step-header">
+              <div class="step-number">5</div>
+              <h4 class="text-white mb-0">Seus Dados de Contato</h4>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-12">
+                <label for="id_nome">Nome Completo *</label>
+                <input type="text" name="nome" class="form-control" id="id_nome" placeholder="Seu nome completo" value="{{ form.nome.value|default:'' }}" required>
+              </div>
+              <div class="col-md-6">
+                <label for="id_telefone">Telefone / WhatsApp *</label>
+                <input type="tel" name="telefone" class="form-control" id="id_telefone" placeholder="(XX) XXXXX-XXXX" value="{{ form.telefone.value|default:'' }}" required>
+              </div>
+              <div class="col-md-6">
+                <label for="id_email">E-mail de Confirmação *</label>
+                <input type="email" name="email" class="form-control" id="id_email" placeholder="seuemail@exemplo.com" value="{{ form.email.value|default:'' }}" required>
+              </div>
+              <div class="col-md-12">
+                <label for="id_observacoes">Observações (Opcional)</label>
+                <textarea name="observacoes" class="form-control" id="id_observacoes" rows="2" placeholder="Ex: corte degradê navalhado, preferência por barba alinhada baixa, etc.">{{ form.observacoes.value|default:'' }}</textarea>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Appointment Summary Sticky Panel (Right Side) -->
+        <!-- Sticky Live Summary Column -->
         <div class="col-lg-5">
-          <div class="appointment-sidebar-sticky">
-            <h3 class="wizard-sidebar-title text-gold"><i class="bi bi-wallet2 me-2"></i> Resumo do Agendamento</h3>
-            
-            <div class="summary-card text-start">
-              <div class="summary-row">
-                <span class="summary-label">Serviço:</span>
-                <span class="summary-val" id="sum-service-val">Não selecionado</span>
-              </div>
-              
-              <div class="summary-row">
-                <span class="summary-label">Profissional:</span>
-                <span class="summary-val" id="sum-barber-val">Não selecionado</span>
-              </div>
+          <div class="sticky-top" style="top: 96px;">
+            <div class="surface-card p-4 border-brand shadow-lg">
+              <h4 class="text-brand mb-4 d-flex align-items-center gap-2">
+                <i class="bi bi-wallet2"></i> Resumo da Reserva
+              </h4>
 
-              <div class="summary-row">
-                <span class="summary-label">Data Escolhida:</span>
-                <span class="summary-val text-gold" id="sum-date-val">Não selecionada</span>
-              </div>
-
-              <div class="summary-row">
-                <span class="summary-label">Horário Reservado:</span>
-                <span class="summary-val text-gold" id="sum-time-val">Não selecionado</span>
-              </div>
-
-              <div class="summary-row">
-                <span class="summary-label">Duração Estimada:</span>
-                <span class="summary-val" id="sum-duration-val">Não selecionada</span>
-              </div>
-
-              <div class="summary-row border-secondary border-opacity-10 py-3 mt-2">
-                <span class="summary-label">Prezado(a):</span>
-                <span class="summary-val" id="sum-client-val">Não informado</span>
-              </div>
-              
-              <div class="summary-row">
-                <span class="summary-label">WhatsApp:</span>
-                <span class="summary-val" id="sum-phone-val">Não informado</span>
-              </div>
-
-              <div class="summary-total">
-                <span class="summary-total-label">Total Estimado</span>
-                <div class="text-end">
-                  <span class="summary-total-price" id="sum-total-price">R$ 0,00</span>
+              <div class="d-flex flex-column gap-3 pb-3 border-bottom border-secondary border-opacity-10 small">
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted-custom">Serviço:</span>
+                  <strong class="text-white" id="sum-service-val">Não selecionado</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted-custom">Profissional:</span>
+                  <strong class="text-white" id="sum-barber-val">Não selecionado</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted-custom">Data:</span>
+                  <strong class="text-brand" id="sum-date-val">Não selecionada</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted-custom">Horário:</span>
+                  <strong class="text-brand" id="sum-time-val">Não selecionado</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted-custom">Duração Estimada:</span>
+                  <strong class="text-white" id="sum-duration-val">--</strong>
                 </div>
               </div>
 
-              <div class="pt-4">
-                <button type="submit" class="btn btn-gold-solid w-100 py-3" id="btn-confirm-appointment" disabled>Confirmar Agendamento</button>
-                <p class="text-muted-custom text-center mt-3 mb-0" style="font-size: 0.75rem;">
-                  * O pagamento será realizado diretamente na barbearia após a conclusão do serviço.
+              <div class="d-flex flex-column gap-2 py-3 border-bottom border-secondary border-opacity-10 small">
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted-custom">Cliente:</span>
+                  <span class="text-white" id="sum-client-val">Não informado</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted-custom">WhatsApp:</span>
+                  <span class="text-white" id="sum-phone-val">Não informado</span>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center py-3">
+                <span class="fs-5 text-white fw-bold">Total Estimado</span>
+                <span class="fs-3 fw-bold text-brand" id="sum-total-price">R$ 0,00</span>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" class="btn btn-brand btn-lg w-100 py-3" id="btn-confirm-appointment" disabled>
+                  <i class="bi bi-calendar-check me-2"></i> Confirmar Agendamento
+                </button>
+                <p class="text-muted-custom text-center mt-3 mb-0" style="font-size: 0.78rem;">
+                  {% if config.tipo_sinal != 'nenhum' %}
+                    * Será gerada uma cobrança PIX para o sinal de agendamento na próxima tela para garantir sua vaga.
+                  {% else %}
+                    * O pagamento será realizado diretamente na barbearia após a conclusão do serviço.
+                  {% endif %}
                 </p>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </form>
   </div>

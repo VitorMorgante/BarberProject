@@ -63,8 +63,31 @@ def gerar_pix_copia_e_cola(chave: str, titular: str, cidade: str, valor: Decimal
     return raw_payload + crc
 
 
+def gerar_qr_code_base64(conteudo: str) -> str:
+    """Gera imagem PNG codificada em Base64 do QR Code localmente sem vazar dados para serviços terceiros."""
+    if not conteudo:
+        return ''
+    try:
+        import qrcode
+        from io import BytesIO
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_M,
+            box_size=8,
+            border=2,
+        )
+        qr.add_data(conteudo)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        return base64.b64encode(buffered.getvalue()).decode('utf-8')
+    except Exception:
+        return ''
+
+
 class PaymentProviderInterface:
-    def generate_pix(self, valor: Decimal, descricao: str, identificador_interno: str, expiracao_minutos: int) -> dict:
+    def generate_pix(self, valor: Decimal, descricao: str, identificador_interno: str, expiracao_minutos: int, agendamento=None) -> dict:
         raise NotImplementedError
 
     def get_payment_status(self, identificador_externo: str) -> dict:
@@ -75,10 +98,10 @@ class MockPixProvider(PaymentProviderInterface):
     """
     Provider para desenvolvimento e testes: gera payload PIX real e simulador de QR Code.
     """
-    def generate_pix(self, valor: Decimal, descricao: str, identificador_interno: str, expiracao_minutos: int) -> dict:
+    def generate_pix(self, valor: Decimal, descricao: str, identificador_interno: str, expiracao_minutos: int, agendamento=None) -> dict:
         config = ConfiguracaoEstabelecimento.get_solo()
-        chave = config.chave_pix or getattr(settings, 'PIX_CHAVE', 'delacruzbarber@email.com')
-        titular = config.titular_pix or getattr(settings, 'PIX_TITULAR', 'Delacruz Barber')
+        chave = config.chave_pix or getattr(settings, 'PIX_CHAVE', '') or 'contato@barberheitor.com.br'
+        titular = config.titular_pix or getattr(settings, 'PIX_TITULAR', 'Barber Heitor')
         cidade = config.cidade_pix or getattr(settings, 'PIX_CIDADE', 'Paranavai')
 
         pix_copia_cola = gerar_pix_copia_e_cola(
@@ -88,11 +111,12 @@ class MockPixProvider(PaymentProviderInterface):
             valor=valor,
             txid=identificador_interno[:25].replace('-', '')
         )
+        qr_code_base64 = gerar_qr_code_base64(pix_copia_cola)
 
         return {
             'identificador_externo': f"MOCK-PIX-{identificador_interno[:8].upper()}",
             'pix_copia_cola': pix_copia_cola,
-            'qr_code_base64': '',
+            'qr_code_base64': qr_code_base64,
             'status': 'Aguardando',
             'raw_response': json.dumps({'gateway': 'mock', 'identificador': identificador_interno})
         }
@@ -102,11 +126,13 @@ class MockPixProvider(PaymentProviderInterface):
 
 
 class MercadoPagoProvider(PaymentProviderInterface):
-    def generate_pix(self, valor: Decimal, descricao: str, identificador_interno: str, expiracao_minutos: int) -> dict:
+    def generate_pix(self, valor: Decimal, descricao: str, identificador_interno: str, expiracao_minutos: int, agendamento=None) -> dict:
         access_token = getattr(settings, 'PAYMENT_ACCESS_TOKEN', '')
         if not access_token:
-            # Fallback para Mock se credencial não existir
-            return MockPixProvider().generate_pix(valor, descricao, identificador_interno, expiracao_minutos)
+            if not settings.DEBUG:
+                from django.core.exceptions import ImproperlyConfigured
+                raise ImproperlyConfigured("PAYMENT_GATEWAY='mercadopago' configurado, mas PAYMENT_ACCESS_TOKEN não foi definido no ambiente de produção.")
+            return MockPixProvider().generate_pix(valor, descricao, identificador_interno, expiracao_minutos, agendamento=agendamento)
 
         import requests
         headers = {
@@ -115,30 +141,53 @@ class MercadoPagoProvider(PaymentProviderInterface):
             'X-Idempotency-Key': identificador_interno
         }
         expiracao = timezone.now() + timedelta(minutes=expiracao_minutos)
+        
+        # Payer data real e sanitizado
+        payer_email = 'contato@barberheitor.com.br'
+        payer_first = 'Cliente'
+        payer_last = 'Barber Heitor'
+        
+        if agendamento and getattr(agendamento, 'cliente', None):
+            cliente = agendamento.cliente
+            if cliente.email and '@' in cliente.email:
+                payer_email = cliente.email
+            if cliente.nome:
+                parts = cliente.nome.strip().split(' ', 1)
+                payer_first = parts[0]
+                payer_last = parts[1] if len(parts) > 1 else 'Cliente'
+
         payload = {
             'transaction_amount': float(valor),
             'description': descricao[:60],
             'payment_method_id': 'pix',
             'date_of_expiration': expiracao.strftime('%Y-%m-%dT%H:%M:%S.000-03:00'),
             'payer': {
-                'email': 'cliente@delacruzbarber.com.br',
-                'first_name': 'Cliente',
-                'last_name': 'Delacruz'
+                'email': payer_email,
+                'first_name': payer_first,
+                'last_name': payer_last
             }
         }
         try:
             resp = requests.post('https://api.mercadopago.com/v1/payments', json=payload, headers=headers, timeout=10)
             data = resp.json()
             point_of_interaction = data.get('point_of_interaction', {}).get('transaction_data', {})
+            pix_copia_cola = point_of_interaction.get('qr_code', '')
+            qr_code_base64 = point_of_interaction.get('qr_code_base64', '')
+            
+            if not qr_code_base64 and pix_copia_cola:
+                qr_code_base64 = gerar_qr_code_base64(pix_copia_cola)
+
             return {
                 'identificador_externo': str(data.get('id', '')),
-                'pix_copia_cola': point_of_interaction.get('qr_code', ''),
-                'qr_code_base64': point_of_interaction.get('qr_code_base64', ''),
+                'pix_copia_cola': pix_copia_cola,
+                'qr_code_base64': qr_code_base64,
                 'status': 'Aguardando',
                 'raw_response': json.dumps(data)
             }
         except Exception as e:
-            return MockPixProvider().generate_pix(valor, descricao, identificador_interno, expiracao_minutos)
+            if not settings.DEBUG:
+                raise RuntimeError(f"Erro na comunicação com a API do Mercado Pago: {e}")
+            return MockPixProvider().generate_pix(valor, descricao, identificador_interno, expiracao_minutos, agendamento=agendamento)
 
     def get_payment_status(self, identificador_externo: str) -> dict:
         access_token = getattr(settings, 'PAYMENT_ACCESS_TOKEN', '')
@@ -165,9 +214,15 @@ class MercadoPagoProvider(PaymentProviderInterface):
 
 def get_payment_provider() -> PaymentProviderInterface:
     gateway = getattr(settings, 'PAYMENT_GATEWAY', 'mock').lower()
-    if gateway == 'mercadopago' and getattr(settings, 'PAYMENT_ACCESS_TOKEN', ''):
+    if gateway == 'mercadopago':
+        if not getattr(settings, 'PAYMENT_ACCESS_TOKEN', ''):
+            if not settings.DEBUG:
+                from django.core.exceptions import ImproperlyConfigured
+                raise ImproperlyConfigured("Configuração inválida: PAYMENT_GATEWAY='mercadopago' sem PAYMENT_ACCESS_TOKEN em produção.")
+            return MockPixProvider()
         return MercadoPagoProvider()
     return MockPixProvider()
+
 
 
 class PaymentService:
@@ -207,7 +262,8 @@ class PaymentService:
             valor=valor_sinal,
             descricao=f"Sinal Agendamento #{agendamento.id} - {agendamento.servico.nome}",
             identificador_interno=identificador,
-            expiracao_minutos=expiracao_minutos
+            expiracao_minutos=expiracao_minutos,
+            agendamento=agendamento
         )
 
         pagamento = Pagamento.objects.create(
@@ -271,9 +327,10 @@ class PaymentService:
 
     @staticmethod
     @transaction.atomic
-    def processar_webhook(gateway: str, evento_id: str, payload_dict: dict) -> bool:
+    def processar_webhook(gateway: str, evento_id: str, payload_dict: dict, headers: dict = None) -> bool:
         """
-        Processa webhook com verificação de idempotência em EventoWebhookPagamento.
+        Processa webhook com verificação de idempotência em EventoWebhookPagamento,
+        validação de assinatura e consulta de confirmação ativa ao gateway.
         """
         evento_existente, created = EventoWebhookPagamento.objects.get_or_create(
             evento_id=str(evento_id),
@@ -286,6 +343,28 @@ class PaymentService:
 
         if not created and evento_existente.processado:
             return True  # Já processado anteriormente
+
+        # Validação de Assinatura HMAC-SHA256 para Mercado Pago se segredo configurado
+        webhook_secret = getattr(settings, 'PAYMENT_WEBHOOK_SECRET', '')
+        if gateway == 'mercadopago' and webhook_secret and headers:
+            x_signature = headers.get('x-signature') or headers.get('X-Signature', '')
+            if x_signature:
+                try:
+                    import hmac
+                    parts = dict(item.split('=', 1) for item in x_signature.split(',') if '=' in item)
+                    ts = parts.get('ts')
+                    v1 = parts.get('v1')
+                    data_id = str(payload_dict.get('data', {}).get('id') or payload_dict.get('id', ''))
+                    manifest = f"id:{data_id};request-id:{headers.get('x-request-id', '')};ts:{ts};"
+                    expected_signature = hmac.new(webhook_secret.encode('utf-8'), manifest.encode('utf-8'), hashlib.sha256).hexdigest()
+                    if v1 != expected_signature:
+                        evento_existente.erro = "Assinatura HMAC-SHA256 do webhook inválida."
+                        evento_existente.save()
+                        return False
+                except Exception as ex:
+                    evento_existente.erro = f"Falha na validação de assinatura: {ex}"
+                    evento_existente.save()
+                    return False
 
         # Identifica o pagamento via external_reference ou payment_id
         identificador = payload_dict.get('data', {}).get('id') or payload_dict.get('id') or evento_id
@@ -300,6 +379,33 @@ class PaymentService:
             ).first()
 
         if pagamento:
+            # Em produção, se Mercado Pago possuir token, consulta API para validar status aprovado e valor
+            access_token = getattr(settings, 'PAYMENT_ACCESS_TOKEN', '')
+            if gateway == 'mercadopago' and access_token:
+                try:
+                    import requests
+                    resp = requests.get(
+                        f"https://api.mercadopago.com/v1/payments/{pagamento.identificador_externo}",
+                        headers={'Authorization': f"Bearer {access_token}"},
+                        timeout=8
+                    )
+                    if resp.status_code == 200:
+                        mp_data = resp.json()
+                        if mp_data.get('status') != 'approved':
+                            evento_existente.erro = f"Status no Mercado Pago é '{mp_data.get('status')}', não 'approved'."
+                            evento_existente.save()
+                            return False
+                        
+                        tx_amount = Decimal(str(mp_data.get('transaction_amount', 0)))
+                        if tx_amount < pagamento.valor:
+                            evento_existente.erro = f"Valor pago (R$ {tx_amount}) é inferior ao esperado (R$ {pagamento.valor})."
+                            evento_existente.save()
+                            return False
+                except Exception as e:
+                    evento_existente.erro = f"Erro na consulta direta de confirmação ao gateway: {e}"
+                    evento_existente.save()
+                    return False
+
             PaymentService.confirmar_pagamento(pagamento, json.dumps(payload_dict))
             evento_existente.processado = True
             evento_existente.save()
@@ -308,6 +414,7 @@ class PaymentService:
         evento_existente.erro = "Pagamento não localizado no banco para este evento."
         evento_existente.save()
         return False
+
 
     @staticmethod
     @transaction.atomic

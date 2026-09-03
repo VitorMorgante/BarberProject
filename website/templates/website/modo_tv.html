@@ -5,54 +5,56 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="refresh" content="30">
-  <title>Delacruz Barber — Painel de Atendimento</title>
+  <title>{{ BARBER_NAME }} — Painel TV Sala de Espera</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="{% static 'website/css/tokens.css' %}">
 
   <style>
     body {
-      background-color: #020617;
+      background-color: #06080d;
+      background-image: radial-gradient(circle at 50% 0%, #101624 0%, #06080d 80%);
       color: #f8fafc;
       font-family: 'Montserrat', sans-serif;
       overflow-x: hidden;
       user-select: none;
     }
     .brand-font { font-family: 'Playfair Display', serif; }
-    .text-gold { color: #c5a880 !important; }
-    .bg-card { background-color: #0b1120; border: 1px solid rgba(197, 168, 128, 0.2); }
+    .text-brand { color: #d4af37 !important; }
+    .bg-card { background-color: #0d121c; border: 1px solid rgba(212, 175, 55, 0.25); }
     .pulse-dot {
       width: 12px;
       height: 12px;
-      background-color: #22c55e;
+      background-color: #10b981;
       border-radius: 50%;
       display: inline-block;
-      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
       animation: pulse 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
     }
     @keyframes pulse {
-      to { box-shadow: 0 0 0 16px rgba(34, 197, 94, 0); }
+      to { box-shadow: 0 0 0 16px rgba(16, 185, 129, 0); }
     }
   </style>
 </head>
 <body class="p-4 p-md-5">
   <!-- Top Bar -->
-  <div class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom border-secondary border-opacity-25">
+  <div class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom border-secondary border-opacity-15">
     <div class="d-flex align-items-center gap-3">
-      <i class="bi bi-scissors text-gold fs-1"></i>
+      <i class="bi bi-scissors text-brand fs-1"></i>
       <div>
-        <h1 class="brand-font text-gold mb-0 fs-2">DELACRUZ BARBER</h1>
-        <p class="text-secondary small mb-0">Painel Operacional • Sala de Espera</p>
+        <h1 class="brand-font text-white mb-0 fs-2 fw-bold">BARBER <span class="text-brand">HEITOR</span></h1>
+        <p class="text-secondary small mb-0">Painel Operacional em Tempo Real • Sala de Espera</p>
       </div>
     </div>
     <div class="text-end">
       <div class="d-flex align-items-center gap-2 text-success fs-5 fw-semibold mb-1">
         <span class="pulse-dot"></span> AO VIVO
       </div>
-      <div class="text-secondary small" id="liveClock">{{ agora|date:"H:i:s" }}</div>
+      <div class="text-secondary small font-monospace fs-6" id="liveClock">{{ agora|date:"H:i:s" }}</div>
     </div>
   </div>
 
@@ -60,17 +62,17 @@
     <!-- Coluna 1: Cadeiras / Em Atendimento -->
     <div class="col-lg-6">
       <div class="bg-card p-4 rounded-4 shadow-lg h-100">
-        <h3 class="text-gold brand-font mb-4 fs-4 d-flex align-items-center gap-2">
+        <h3 class="text-brand brand-font mb-4 fs-4 d-flex align-items-center gap-2">
           <i class="bi bi-person-badge"></i> Na Cadeira Agora
         </h3>
 
         {% if fila.em_atendimento %}
           <div class="d-flex flex-column gap-3">
             {% for ag in fila.em_atendimento %}
-              <div class="p-4 rounded-3 bg-dark border border-warning border-opacity-50 d-flex justify-content-between align-items-center">
+              <div class="p-4 rounded-3 bg-dark border border-warning border-opacity-40 d-flex justify-content-between align-items-center">
                 <div>
                   <div class="text-secondary small text-uppercase fw-bold letter-spacing-1">Barbeiro</div>
-                  <h4 class="text-gold brand-font mb-2">{{ ag.barbeiro.nome }}</h4>
+                  <h4 class="text-brand brand-font mb-2">{{ ag.barbeiro.nome }}</h4>
                   <div class="badge bg-secondary text-light px-3 py-2 fs-6">{{ ag.servico.nome }}</div>
                 </div>
                 <div class="text-end">
@@ -82,8 +84,8 @@
           </div>
         {% else %}
           <div class="text-center py-5 text-secondary">
-            <i class="bi bi-cup-hot fs-1 mb-2 d-block text-gold opacity-50"></i>
-            <p class="fs-5">Cadeiras disponíveis para os próximos agendados.</p>
+            <i class="bi bi-cup-hot fs-1 mb-2 d-block text-brand opacity-50"></i>
+            <p class="fs-5">Cadeiras disponíveis para os próximos agendamentos.</p>
           </div>
         {% endif %}
       </div>
@@ -93,8 +95,8 @@
     <div class="col-lg-6">
       <div class="bg-card p-4 rounded-4 shadow-lg h-100">
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h3 class="text-gold brand-font mb-0 fs-4 d-flex align-items-center gap-2">
-            <i class="bi bi-hourglass-split"></i> Fila de Espera
+          <h3 class="text-brand brand-font mb-0 fs-4 d-flex align-items-center gap-2">
+            <i class="bi bi-hourglass-split"></i> Fila de Espera (Check-in Realizado)
           </h3>
           <span class="badge bg-warning text-dark fs-6 px-3 py-2">{{ fila.total_fila }} aguardando</span>
         </div>
@@ -104,7 +106,7 @@
             {% for item in fila.aguardando %}
               <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-3">
-                  <span class="fs-4 fw-bold text-gold">#{{ forloop.counter }}</span>
+                  <span class="fs-4 fw-bold text-brand">#{{ forloop.counter }}</span>
                   <div>
                     <h5 class="text-light mb-0">{{ item.nome }}</h5>
                     <small class="text-secondary">{{ item.barbeiro }} • {{ item.servico }}</small>

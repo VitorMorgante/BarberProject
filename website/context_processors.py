@@ -30,3 +30,20 @@ def user_roles(request):
         'is_barbeiro': is_barbeiro,
         'is_admin': is_admin
     }
+
+
+def brand_context(request):
+    """Disponibiliza os dados centrais da marca Barber Heitor para todos os templates."""
+    from django.conf import settings
+    return {
+        'BARBER_NAME': getattr(settings, 'BARBER_NAME', 'Barber Heitor'),
+        'BARBER_SHORT_NAME': getattr(settings, 'BARBER_SHORT_NAME', 'Barber Heitor'),
+        'BARBER_SLOGAN': getattr(settings, 'BARBER_SLOGAN', 'Seu estilo. Sua assinatura.'),
+        'BARBER_PHONE': getattr(settings, 'BARBER_PHONE', '(44) 9102-2176'),
+        'BARBER_PHONE_RAW': getattr(settings, 'BARBER_PHONE_RAW', '554491022176'),
+        'BARBER_EMAIL': getattr(settings, 'BARBER_EMAIL', 'contato@barberheitor.com.br'),
+        'BARBER_INSTAGRAM': getattr(settings, 'BARBER_INSTAGRAM', 'barberheitor_oficial'),
+        'BARBER_ADDRESS': getattr(settings, 'BARBER_ADDRESS', 'Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí - PR'),
+        'BARBER_HOURS': getattr(settings, 'BARBER_HOURS', 'Seg a Sáb: 08:00 às 21:00'),
+    }
+

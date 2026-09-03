@@ -1,101 +1,90 @@
 {% extends "website/modelo.html" %}
 {% load crispy_forms_tags %}
 
-{% block titulo %}Contato{% endblock %}
+{% block titulo %}Fale Conosco{% endblock %}
 
 {% block conteudo %}
-<section class="py-5 bg-dark-custom">
-  <div class="container py-4 text-start">
+<section class="py-5" style="background-color: var(--color-surface-sunken);">
+  <div class="container py-5 text-start">
     <div class="text-center mb-5">
-      <span class="section-subtitle">Fale Conosco</span>
-      <h2 class="section-title-center text-uppercase fw-bold text-success">Contato</h2>
-      <p class="text-muted-custom max-width-600 mx-auto">
-        Tem dúvidas, sugestões ou críticas? Envie uma mensagem para nós ou nos visite.
+      <span class="section-subtitle">Canais Oficiais</span>
+      <h1 class="display-3 text-white mb-3">Fale Conosco</h1>
+      <p class="text-muted-custom max-width-600 mx-auto" style="max-width: 600px;">
+        Tem alguma dúvida sobre serviços, horários ou parcerias? Envie sua mensagem ou fale diretamente pelo WhatsApp.
       </p>
     </div>
 
     <div class="row g-4">
       <!-- Left Column: Information Cards -->
       <div class="col-lg-5 d-flex flex-column gap-4">
-        <!-- Contact Information Card -->
-        <div class="card p-4">
-          <div class="card-body">
-            <h4 class="brand-font text-success mb-3"><i class="bi bi-chat-dots-fill me-2"></i>Informações de Contato</h4>
-            <div class="d-flex align-items-center gap-3 mb-3">
-              <i class="bi bi-geo-alt-fill text-success fs-4"></i>
-              <div>
-                <h6 class="mb-0 text-white fw-bold">Endereço</h6>
-                <p class="mb-0 text-muted" style="font-size: 0.9rem;">Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</p>
-              </div>
+        <div class="surface-card p-4">
+          <h4 class="text-brand mb-4"><i class="bi bi-chat-dots-fill me-2"></i>Informações de Contato</h4>
+          
+          <div class="d-flex align-items-start gap-3 mb-3">
+            <i class="bi bi-geo-alt-fill text-brand fs-4 flex-shrink-0"></i>
+            <div>
+              <h6 class="mb-1 text-white fw-bold">Endereço</h6>
+              <p class="mb-0 text-muted-custom small">{{ BARBER_ADDRESS }}</p>
             </div>
-            <div class="d-flex align-items-center gap-3 mb-3">
-              <i class="bi bi-whatsapp text-success fs-4"></i>
-              <div>
-                <h6 class="mb-0 text-white fw-bold">WhatsApp</h6>
-                <p class="mb-0 text-muted" style="font-size: 0.9rem;">Danilo: (44) 9919-0997 / Heitor: (44) 9102-2176</p>
-              </div>
+          </div>
+
+          <div class="d-flex align-items-start gap-3 mb-3">
+            <i class="bi bi-whatsapp text-brand fs-4 flex-shrink-0"></i>
+            <div>
+              <h6 class="mb-1 text-white fw-bold">WhatsApp / Telefone</h6>
+              <p class="mb-0 text-muted-custom small">Atendimento Oficial: {{ BARBER_PHONE }}</p>
             </div>
-            <div class="d-flex align-items-center gap-3">
-              <i class="bi bi-envelope-fill text-success fs-4"></i>
-              <div>
-                <h6 class="mb-0 text-white fw-bold">E-mail</h6>
-                <p class="mb-0 text-muted" style="font-size: 0.9rem;">contato@delacruzbarber.com</p>
-              </div>
+          </div>
+
+          <div class="d-flex align-items-start gap-3">
+            <i class="bi bi-envelope-fill text-brand fs-4 flex-shrink-0"></i>
+            <div>
+              <h6 class="mb-1 text-white fw-bold">E-mail Comercial</h6>
+              <p class="mb-0 text-muted-custom small">{{ BARBER_EMAIL }}</p>
             </div>
           </div>
         </div>
 
-        <!-- Opening Hours Card -->
-        <div class="card p-4">
-          <div class="card-body">
-            <h4 class="brand-font text-success mb-3"><i class="bi bi-clock-fill me-2"></i>Horários de Funcionamento</h4>
-            <ul class="list-unstyled mb-0">
-              <li class="d-flex justify-content-between mb-2">
-                <span class="text-white">Segunda a Sábado</span>
-                <span class="text-muted">08:00 às 21:00</span>
-              </li>
-              <li class="d-flex justify-content-between">
-                <span class="text-white">Domingo</span>
-                <span class="text-danger">Fechado</span>
-              </li>
-            </ul>
-          </div>
+        <div class="surface-card p-4">
+          <h4 class="text-brand mb-3"><i class="bi bi-clock-fill me-2"></i>Horários de Atendimento</h4>
+          <ul class="list-unstyled mb-0 small">
+            <li class="d-flex justify-content-between mb-2">
+              <span class="text-white">Segunda a Sábado</span>
+              <span class="text-brand fw-semibold">{{ BARBER_HOURS }}</span>
+            </li>
+            <li class="d-flex justify-content-between">
+              <span class="text-white">Domingo</span>
+              <span class="text-muted-custom">Fechado</span>
+            </li>
+          </ul>
         </div>
 
-        <!-- Optional Map Placeholder Card -->
-        <div class="card p-4">
-          <div class="card-body text-center">
-            <h5 class="brand-font text-white mb-3"><i class="bi bi-map-fill text-success me-2"></i>Localização no Mapa</h5>
-            <div class="rounded overflow-hidden border border-secondary border-opacity-10 d-flex flex-column align-items-center justify-content-center p-3" 
-                 style="height: 180px; background-color: #0f172a; background-image: radial-gradient(circle, rgba(34,197,94,0.06) 1px, transparent 1px); background-size: 20px 20px;">
-              <i class="bi bi-geo-alt-fill text-success fs-2 mb-2"></i>
-              <span class="text-white fw-bold">Delacruz Barber</span>
-              <span class="text-muted mt-1 text-center" style="font-size: 0.78rem;">Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</span>
-              <span class="text-muted mt-1 text-center" style="font-size: 0.72rem;">Navegue até a Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí PR</span>
-            </div>
-          </div>
+        <div class="surface-card p-4 text-center">
+          <h5 class="text-white mb-2"><i class="bi bi-geo-alt text-brand me-2"></i>Localização</h5>
+          <p class="text-muted-custom small mb-3">{{ BARBER_ADDRESS }}</p>
+          <a href="https://maps.google.com/?q={{ BARBER_ADDRESS|urlencode }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-brand btn-sm w-100">
+            <i class="bi bi-map me-1"></i> Abrir no Google Maps
+          </a>
         </div>
       </div>
 
       <!-- Right Column: Contact Form Card -->
       <div class="col-lg-7">
-        <div class="card p-4 p-md-5 h-100">
-          <div class="card-body">
-            <h4 class="brand-font text-success mb-2">Envie uma mensagem</h4>
-            <p class="text-muted mb-4" style="font-size: 0.88rem;">
-              Tem alguma dúvida, sugestão, elogio ou reclamação? Envie sua mensagem e a Delacruz Barber entrará em contato em breve.
-            </p>
+        <div class="surface-card p-4 p-md-5 h-100">
+          <h4 class="text-white mb-2">Envie Sua Mensagem</h4>
+          <p class="text-muted-custom small mb-4">
+            Preencha os campos abaixo e nossa equipe responderá o mais breve possível.
+          </p>
 
-            <form method="post" class="needs-validation">
-              {% csrf_token %}
-              {{ form|crispy }}
-              <div class="pt-3">
-                <button type="submit" class="btn btn-delacruz w-100 py-3">
-                  <i class="bi bi-send-fill me-2"></i>Enviar Mensagem
-                </button>
-              </div>
-            </form>
-          </div>
+          <form method="post" class="needs-validation">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="pt-3">
+              <button type="submit" class="btn btn-brand w-100 py-3">
+                <i class="bi bi-send-fill me-2"></i> Enviar Mensagem
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

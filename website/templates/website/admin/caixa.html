@@ -7,13 +7,13 @@
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div>
-      <span class="badge bg-gold text-dark px-3 py-1 mb-1">Módulo Financeiro</span>
-      <h2 class="brand-font text-gold mb-0">Caixa Diário & Operações</h2>
+      <span class="badge bg-brand text-dark px-3 py-1 mb-1">Módulo Financeiro</span>
+      <h2 class="brand-font text-brand mb-0">Caixa Diário & Operações</h2>
       <p class="text-secondary small mb-0">Gestão de abertura, fechamento cego, sangrias e suprimentos</p>
     </div>
     <div class="d-flex gap-2">
       <a href="{% url 'admin_financeiro' %}" class="btn btn-outline-secondary btn-sm">Painel Geral</a>
-      <a href="{% url 'admin_dre' %}" class="btn btn-outline-gold btn-sm">Ver DRE</a>
+      <a href="{% url 'admin_dre' %}" class="btn btn-outline-brand btn-sm">Ver DRE</a>
     </div>
   </div>
 
@@ -21,7 +21,7 @@
     <!-- Status do Caixa Atual -->
     <div class="col-lg-5">
       {% if caixa_aberto %}
-        <div class="card card-delacruz p-4 border-success border-opacity-50">
+        <div class="card surface-card p-4 border-success border-opacity-50">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="badge bg-success"><i class="bi bi-circle-fill me-1"></i> Caixa Aberto</span>
             <small class="text-secondary">Aberto em: {{ caixa_aberto.data_abertura|date:"d/m/Y H:i" }}</small>
@@ -29,7 +29,7 @@
           
           <div class="mb-4">
             <div class="text-secondary small">Saldo Atual Esperado em Dinheiro</div>
-            <h2 class="text-gold brand-font mb-0">R$ {{ caixa_aberto.saldo_esperado }}</h2>
+            <h2 class="text-brand brand-font mb-0">R$ {{ caixa_aberto.saldo_esperado }}</h2>
             <small class="text-muted">Fundo Inicial: R$ {{ caixa_aberto.saldo_inicial }}</small>
           </div>
 
@@ -43,16 +43,16 @@
             </button>
           </div>
 
-          <button class="btn btn-delacruz w-100" data-bs-toggle="modal" data-bs-target="#modalFechamento">
+          <button class="btn btn-brand w-100" data-bs-toggle="modal" data-bs-target="#modalFechamento">
             <i class="bi bi-lock-fill me-1"></i> Fechar Caixa do Dia
           </button>
         </div>
       {% else %}
-        <div class="card card-delacruz p-4 border-warning border-opacity-50">
+        <div class="card surface-card p-4 border-warning border-opacity-50">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i> Caixa Fechado</span>
           </div>
-          <h4 class="text-gold brand-font mb-2">Abrir Sessão de Caixa</h4>
+          <h4 class="text-brand brand-font mb-2">Abrir Sessão de Caixa</h4>
           <p class="text-secondary small mb-4">Inicie o turno informando o fundo de troco disponível na gaveta.</p>
           
           <form method="post">
@@ -62,7 +62,7 @@
               <label class="form-label small text-secondary">Fundo de Troco Inicial (R$)</label>
               <input type="number" step="0.01" name="saldo_inicial" value="100.00" class="form-control bg-dark text-light border-secondary" required>
             </div>
-            <button type="submit" class="btn btn-delacruz w-100">Abrir Caixa Agora</button>
+            <button type="submit" class="btn btn-brand w-100">Abrir Caixa Agora</button>
           </form>
         </div>
       {% endif %}
@@ -70,9 +70,9 @@
 
     <!-- Histórico Recente de Caixas -->
     <div class="col-lg-7">
-      <div class="card card-delacruz">
+      <div class="card surface-card">
         <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 py-3">
-          <h5 class="text-gold brand-font mb-0 fs-6"><i class="bi bi-clock-history me-2"></i> Histórico de Sessões de Caixa</h5>
+          <h5 class="text-brand brand-font mb-0 fs-6"><i class="bi bi-clock-history me-2"></i> Histórico de Sessões de Caixa</h5>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
@@ -134,7 +134,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content bg-dark border border-secondary text-light">
       <div class="modal-header border-secondary">
-        <h5 class="modal-title brand-font text-gold">Registrar Sangria (Retirada)</h5>
+        <h5 class="modal-title brand-font text-brand">Registrar Sangria (Retirada)</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form method="post">
@@ -165,7 +165,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content bg-dark border border-secondary text-light">
       <div class="modal-header border-secondary">
-        <h5 class="modal-title brand-font text-gold">Registrar Suprimento (Entrada)</h5>
+        <h5 class="modal-title brand-font text-brand">Registrar Suprimento (Entrada)</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form method="post">
@@ -196,7 +196,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content bg-dark border border-secondary text-light">
       <div class="modal-header border-secondary">
-        <h5 class="modal-title brand-font text-gold">Fechamento Cego de Caixa</h5>
+        <h5 class="modal-title brand-font text-brand">Fechamento Cego de Caixa</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form method="post">
@@ -218,7 +218,7 @@
         </div>
         <div class="modal-footer border-secondary">
           <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-delacruz btn-sm">Finalizar e Fechar Caixa</button>
+          <button type="submit" class="btn btn-brand btn-sm">Finalizar e Fechar Caixa</button>
         </div>
       </form>
     </div>

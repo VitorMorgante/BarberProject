@@ -1,0 +1,23 @@
+{% extends 'website/modelo.html' %}
+
+{% block titulo %}Requisição Inválida (400) | {{ brand_name|default:'Barber Heitor' }}{% endblock %}
+
+{% block conteudo %}
+<div class="container py-5 my-5 text-center">
+    <div class="card-luxury p-5 mx-auto" style="max-width: 600px;">
+        <div class="display-1 text-gold mb-3" style="font-family: var(--font-heading); font-weight: 700;">400</div>
+        <h2 class="h3 mb-3 text-white">Requisição Inválida</h2>
+        <p class="text-secondary mb-4">
+            A solicitação enviada contém parâmetros inválidos ou não pôde ser processada pelo servidor da Barber Heitor.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'pagina_inicial' %}" class="btn-brand">
+                <i class="bi bi-house me-2"></i>Ir para Início
+            </a>
+            <a href="{% url 'contato' %}" class="btn-outline-brand">
+                <i class="bi bi-chat-dots me-2"></i>Suporte
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

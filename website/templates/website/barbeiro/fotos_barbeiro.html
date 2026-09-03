@@ -7,11 +7,11 @@
   <div class="container py-4 text-start">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
-        <h2 class="section-title text-gold mb-0"><i class="bi bi-images me-2"></i> Minhas Fotos Cadastradas</h2>
+        <h2 class="section-title text-brand mb-0"><i class="bi bi-images me-2"></i> Minhas Fotos Cadastradas</h2>
         <p class="text-muted-custom mb-0">Gerencie as fotos dos seus trabalhos publicadas na galeria.</p>
       </div>
       <div class="d-flex gap-2">
-        <a href="{% url 'cadastrar_foto_barbeiro' %}" class="btn btn-gold-solid"><i class="bi bi-upload me-1"></i> Nova Foto</a>
+        <a href="{% url 'cadastrar_foto_barbeiro' %}" class="btn btn-brand"><i class="bi bi-upload me-1"></i> Nova Foto</a>
         <a href="{% url 'area_barbeiro' %}" class="btn btn-outline-light"><i class="bi bi-arrow-left me-1"></i> Voltar</a>
       </div>
     </div>
@@ -23,7 +23,7 @@
             <img src="{{ f.imagem.url }}" alt="{{ f.titulo }}" class="card-img-top" style="height: 180px; object-fit: cover;">
             <div class="p-3">
               <h5 class="fw-bold text-white text-truncate mb-1">{{ f.titulo }}</h5>
-              <span class="badge bg-gold-badge text-dark mb-2">{{ f.categoria }}</span>
+              <span class="badge bg-brand-badge text-dark mb-2">{{ f.categoria }}</span>
               <p class="text-muted-custom text-truncate mb-3" style="font-size: 0.82rem;">{{ f.descricao|default:"Sem descrição." }}</p>
               <div class="d-flex justify-content-between align-items-center border-top border-secondary border-opacity-10 pt-2">
                 <span class="text-muted" style="font-size: 0.72rem;">

@@ -4,53 +4,40 @@
 {% block titulo %}Nossos Barbeiros{% endblock %}
 
 {% block conteudo %}
-<section class="py-5 bg-dark-custom">
-  <div class="container py-4 text-start">
+<section class="py-5" style="background-color: var(--color-surface-sunken);">
+  <div class="container py-5 text-start">
     <div class="text-center mb-5">
       <span class="section-subtitle">Mestres da Tesoura & Navalha</span>
-      <h2 class="section-title-center text-uppercase fw-bold text-success">Nossos Barbeiros</h2>
-      <p class="text-muted-custom max-width-600 mx-auto">
-        Conheça nossos profissionais referências no mercado. Especialistas dedicados a realçar seu estilo de forma única e personalizada.
+      <h1 class="display-3 text-white mb-3">Nossos Barbeiros</h1>
+      <p class="text-muted-custom max-width-600 mx-auto" style="max-width: 600px;">
+        Conheça nossos profissionais referências em Paranavaí. Especialistas dedicados a valorizar seu estilo com o mais alto padrão técnico.
       </p>
     </div>
 
     <div class="row justify-content-center g-4">
       {% for barbeiro in barbeiros %}
       <div class="col-md-6 col-lg-4">
-        <!-- Barber Card -->
-        <div class="card delacruz-card overflow-hidden h-100 d-flex flex-column justify-content-between">
-          <div>
-            <!-- Image section -->
-            <div class="position-relative" style="height: 280px; overflow: hidden;">
-              {% if barbeiro.imagem_url %}
-              <img src="{{ barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="w-100 h-100 object-fit-cover" style="transition: 0.5s;">
-              {% else %}
-              <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=600" alt="{{ barbeiro.nome }}" class="w-100 h-100 object-fit-cover" style="transition: 0.5s;">
-              {% endif %}
-              <!-- Role Badge -->
-              <span class="position-absolute top-0 start-0 m-3 badge bg-success px-3 py-2 text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.05em;">
-                {{ barbeiro.cargo }}
+        <div class="barber-card">
+          <div class="barber-img-container">
+            {% if barbeiro.imagem_url %}
+              <img src="{{ barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="barber-img">
+            {% else %}
+              <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=600" alt="{{ barbeiro.nome }}" class="barber-img">
+            {% endif %}
+            <div class="position-absolute top-0 end-0 m-3">
+              <span class="badge bg-dark border border-warning text-brand px-3 py-1 text-uppercase fw-bold" style="font-size: 0.75rem;">
+                {{ barbeiro.cargo|default:"Barbeiro Especialista" }}
               </span>
             </div>
-
-            <!-- Body info -->
-            <div class="p-4">
-              <h4 class="brand-font text-white mb-1">{{ barbeiro.nome }}</h4>
-              <div class="text-success mb-3" style="font-size: 0.85rem; font-weight: 500;">{{ barbeiro.cargo }}</div>
-              <div class="mb-3">
-                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-2 py-1" style="font-size: 0.8rem;">
-                  {{ barbeiro.especialidade }}
-                </span>
-              </div>
-              <p class="text-muted mb-0" style="font-size: 0.9rem;">
-                {{ barbeiro.descricao_curta }}
-              </p>
-            </div>
           </div>
-
-          <!-- Action block at bottom -->
-          <div class="p-4 pt-0">
-            <a href="{% url 'agendamento' %}?barbeiro={{ barbeiro.pk }}" class="btn btn-delacruz w-100 py-2.5">
+          
+          <div class="p-4">
+            <h4 class="text-white mb-1">{{ barbeiro.nome }}</h4>
+            <div class="text-brand small fw-semibold mb-2">{{ barbeiro.especialidade|default:"Cortes Clássicos, Degradê & Barba" }}</div>
+            <p class="text-muted-custom small mb-4" style="min-height: 48px;">
+              {{ barbeiro.descricao_curta|default:"Especialista em visagismo masculino e acabamentos de alta definição." }}
+            </p>
+            <a href="{% url 'agendamento' %}?barbeiro={{ barbeiro.pk }}" class="btn btn-brand w-100">
               Agendar com {{ barbeiro.nome|truncatewords:1 }}
             </a>
           </div>
@@ -58,13 +45,14 @@
       </div>
       {% empty %}
       <div class="col-12 text-center py-5">
-        <div class="card p-5">
-          <i class="bi bi-people text-muted fs-1 mb-3"></i>
-          <p class="text-muted mb-0">Nenhum barbeiro cadastrado no momento. Por favor, volte mais tarde.</p>
+        <div class="surface-card p-5">
+          <i class="bi bi-people text-muted-custom fs-1 mb-3"></i>
+          <p class="text-muted-custom mb-0">Nenhum barbeiro cadastrado no momento.</p>
         </div>
       </div>
       {% endfor %}
     </div>
+
   </div>
 </section>
 {% endblock %}

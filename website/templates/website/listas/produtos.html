@@ -1,5 +1,5 @@
 {% extends 'website/modelo.html' %}
-{% block titulo %}Produtos & PDV | Delacruz Barber{% endblock %}
+{% block titulo %}Produtos & PDV | Barber Heitor{% endblock %}
 
 {% block conteudo %}
 <section class="py-5">
@@ -8,17 +8,17 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 pb-3 border-bottom border-secondary border-opacity-25">
       <div>
-        <span class="text-gold text-uppercase fw-bold small">Catálogo & PDV</span>
+        <span class="text-brand text-uppercase fw-bold small">Catálogo & PDV</span>
         <h2 class="brand-font text-uppercase fw-bold text-light mb-0">Produtos Cadastrados</h2>
       </div>
       <div class="d-flex gap-2">
-        <a href="{% url 'cadastrar_produto' %}" class="btn btn-delacruz btn-sm"><i class="bi bi-plus-lg me-1"></i>Novo Produto</a>
-        <a href="{% url 'admin_estoque' %}" class="btn btn-outline-gold btn-sm"><i class="bi bi-arrow-left-right me-1"></i>Estoque</a>
+        <a href="{% url 'cadastrar_produto' %}" class="btn btn-brand btn-sm"><i class="bi bi-plus-lg me-1"></i>Novo Produto</a>
+        <a href="{% url 'admin_estoque' %}" class="btn btn-outline-brand btn-sm"><i class="bi bi-arrow-left-right me-1"></i>Estoque</a>
       </div>
     </div>
 
     <!-- Tabela de Produtos -->
-    <div class="card card-delacruz p-4">
+    <div class="card surface-card p-4">
       <div class="table-responsive">
         <table class="table table-dark table-hover align-middle mb-0">
           <thead>
@@ -38,8 +38,8 @@
               <tr>
                 <td class="fw-bold text-white">{{ p.nome }}</td>
                 <td class="small text-muted">{{ p.sku|default:"-" }}</td>
-                <td><span class="badge bg-dark border border-secondary text-gold">{{ p.categoria }}</span></td>
-                <td class="text-gold fw-bold">R$ {{ p.preco }}</td>
+                <td><span class="badge bg-dark border border-secondary text-brand">{{ p.categoria }}</span></td>
+                <td class="text-brand fw-bold">R$ {{ p.preco }}</td>
                 <td class="text-muted small">R$ {{ p.custo }}</td>
                 <td>
                   <strong class="{% if p.is_estoque_baixo %}text-warning{% else %}text-success{% endif %}">

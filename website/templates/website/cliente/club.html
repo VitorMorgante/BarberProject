@@ -1,5 +1,5 @@
 {% extends "website/modelo.html" %}
-{% block titulo %}Barber Club | Delacruz Prime{% endblock %}
+{% block titulo %}Barber Club | Barber Heitor Prime{% endblock %}
 
 {% block conteudo %}
 <section class="py-5">
@@ -7,14 +7,14 @@
     
     <!-- Header -->
     <div class="text-center max-w-700 mx-auto mb-5">
-      <span class="badge bg-gold text-dark text-uppercase fw-bold px-3 py-2 mb-2">Clube Exclusivo</span>
-      <h2 class="brand-font text-white fw-bold display-6">Delacruz <span class="text-gold">Prime Club</span></h2>
+      <span class="badge bg-brand text-dark text-uppercase fw-bold px-3 py-2 mb-2">Clube Exclusivo</span>
+      <h2 class="brand-font text-white fw-bold display-6">Barber Heitor <span class="text-brand">Prime Club</span></h2>
       <p class="text-muted">Assinatura mensal para clientes exigentes. Cortes garantidos, prioridade e benefícios exclusivos.</p>
     </div>
 
     <!-- Seção: Minha Assinatura Atual (se tiver) -->
     {% if club %}
-    <div class="card card-delacruz p-4 p-md-5 mb-5 border-warning border-opacity-50">
+    <div class="card surface-card p-4 p-md-5 mb-5 border-warning border-opacity-50">
       <div class="row align-items-center g-4">
         <div class="col-lg-7">
           <div class="d-flex align-items-center gap-3 mb-3">
@@ -27,7 +27,7 @@
             <div class="col-sm-6">
               <div class="bg-dark p-3 rounded border border-secondary border-opacity-25">
                 <span class="small text-muted d-block">Créditos Restantes:</span>
-                <span class="fs-3 fw-bold text-gold">{{ club.disponiveis }}</span>
+                <span class="fs-3 fw-bold text-brand">{{ club.disponiveis }}</span>
                 <span class="text-muted small"> de {{ club.total }} créditos/mês</span>
               </div>
             </div>
@@ -43,12 +43,12 @@
 
         <div class="col-lg-5 text-center border-start-lg border-secondary border-opacity-25 ps-lg-4">
           <div class="p-3 bg-dark rounded-3 border border-secondary border-opacity-25">
-            <h6 class="text-gold fw-bold mb-3">Benefícios Ativos da Sua Assinatura:</h6>
+            <h6 class="text-brand fw-bold mb-3">Benefícios Ativos da Sua Assinatura:</h6>
             <ul class="list-unstyled text-start small text-muted d-flex flex-column gap-2 mb-0">
-              <li><i class="bi bi-check2-circle text-gold me-2"></i> <strong>{{ club.total }} cortes</strong> inclusos todo mês</li>
-              <li><i class="bi bi-check2-circle text-gold me-2"></i> <strong>{{ club.plano.desconto_produtos }}% de desconto</strong> em produtos de finalização</li>
-              <li><i class="bi bi-check2-circle text-gold me-2"></i> Atendimento prioritário e toalha quente cortesia</li>
-              <li><i class="bi bi-check2-circle text-gold me-2"></i> Café espresso e cerveja artesanal inclusos no lounge</li>
+              <li><i class="bi bi-check2-circle text-brand me-2"></i> <strong>{{ club.total }} cortes</strong> inclusos todo mês</li>
+              <li><i class="bi bi-check2-circle text-brand me-2"></i> <strong>{{ club.plano.desconto_produtos }}% de desconto</strong> em produtos de finalização</li>
+              <li><i class="bi bi-check2-circle text-brand me-2"></i> Atendimento prioritário e toalha quente cortesia</li>
+              <li><i class="bi bi-check2-circle text-brand me-2"></i> Café espresso e cerveja artesanal inclusos no lounge</li>
             </ul>
           </div>
         </div>
@@ -61,38 +61,38 @@
     <div class="row g-4 justify-content-center mb-5">
       {% for plano in planos %}
       <div class="col-md-6 col-lg-4">
-        <div class="card card-delacruz h-100 p-4 d-flex flex-column position-relative {% if plano.destaque %}border-warning border-opacity-75 shadow-lg{% endif %}">
+        <div class="card surface-card h-100 p-4 d-flex flex-column position-relative {% if plano.destaque %}border-warning border-opacity-75 shadow-lg{% endif %}">
           {% if plano.destaque %}
-            <span class="position-absolute top-0 end-0 bg-gold text-dark small fw-bold px-3 py-1 rounded-bottom-start">Mais Popular</span>
+            <span class="position-absolute top-0 end-0 bg-brand text-dark small fw-bold px-3 py-1 rounded-bottom-start">Mais Popular</span>
           {% endif %}
 
           <h4 class="text-white fw-bold mb-1">{{ plano.nome }}</h4>
           <p class="text-muted small mb-3">{{ plano.descricao }}</p>
 
           <div class="mb-4">
-            <span class="display-6 fw-bold text-gold">R$ {{ plano.preco_mensal }}</span>
+            <span class="display-6 fw-bold text-brand">R$ {{ plano.preco_mensal }}</span>
             <span class="text-muted small"> / mês</span>
           </div>
 
           <ul class="list-unstyled d-flex flex-column gap-2 small text-muted mb-4">
             <li class="d-flex align-items-center gap-2 text-light">
-              <i class="bi bi-scissors text-gold"></i> <strong>{{ plano.quantidade_creditos }} cortes/serviços</strong> por mês
+              <i class="bi bi-scissors text-brand"></i> <strong>{{ plano.quantidade_creditos }} cortes/serviços</strong> por mês
             </li>
             <li class="d-flex align-items-center gap-2 text-light">
-              <i class="bi bi-tag text-gold"></i> <strong>{{ plano.desconto_produtos }}% de desconto</strong> em produtos
+              <i class="bi bi-tag text-brand"></i> <strong>{{ plano.desconto_produtos }}% de desconto</strong> em produtos
             </li>
             <li class="d-flex align-items-center gap-2">
-              <i class="bi bi-clock-history text-gold"></i> Validade de {{ plano.validade_dias }} dias por ciclo
+              <i class="bi bi-clock-history text-brand"></i> Validade de {{ plano.validade_dias }} dias por ciclo
             </li>
             <li class="d-flex align-items-center gap-2">
-              <i class="bi bi-cup-hot text-gold"></i> Lounge VIP com bebidas
+              <i class="bi bi-cup-hot text-brand"></i> Lounge VIP com bebidas
             </li>
           </ul>
 
           <form method="post" class="mt-auto">
             {% csrf_token %}
             <input type="hidden" name="plano_id" value="{{ plano.id }}">
-            <button type="submit" class="btn {% if plano.destaque %}btn-delacruz{% else %}btn-outline-gold{% endif %} w-100 py-2 fw-bold" onclick="return confirm('Deseja assinar o plano {{ plano.nome }} por R$ {{ plano.preco_mensal }}/mês?');">
+            <button type="submit" class="btn {% if plano.destaque %}btn-brand{% else %}btn-outline-brand{% endif %} w-100 py-2 fw-bold" onclick="return confirm('Deseja assinar o plano {{ plano.nome }} por R$ {{ plano.preco_mensal }}/mês?');">
               {% if club and club.plano.id == plano.id %}
                 Plano Atual (Renovar)
               {% else %}
@@ -111,8 +111,8 @@
 
     <!-- Histórico de Movimentação de Créditos -->
     {% if movimentacoes %}
-    <div class="card card-delacruz p-4">
-      <h5 class="text-white fw-bold mb-3"><i class="bi bi-clock-history text-gold me-2"></i> Extrato de Utilização de Créditos</h5>
+    <div class="card surface-card p-4">
+      <h5 class="text-white fw-bold mb-3"><i class="bi bi-clock-history text-brand me-2"></i> Extrato de Utilização de Créditos</h5>
       <div class="table-responsive">
         <table class="table table-dark table-hover align-middle mb-0">
           <thead>
@@ -137,7 +137,7 @@
               <td class="fw-bold {% if m.quantidade > 0 %}text-success{% else %}text-danger{% endif %}">
                 {{ m.quantidade|stringformat:"+d" }}
               </td>
-              <td class="text-gold fw-bold">{{ m.saldo_posterior }}</td>
+              <td class="text-brand fw-bold">{{ m.saldo_posterior }}</td>
             </tr>
             {% endfor %}
           </tbody>

@@ -1,0 +1,101 @@
+/* ==============================================================================
+   BARBER HEITOR — DESIGN SYSTEM DESIGN TOKENS
+   Aesthetic: Contemporary Premium Barbershop + Editorial Luxury + High Contrast
+   ============================================================================== */
+
+:root {
+  /* Surfaces & Backgrounds */
+  --color-bg-base: #06080d;
+  --color-bg-gradient: radial-gradient(circle at 50% 0%, #101624 0%, #06080d 75%);
+  --color-surface: #0d121c;
+  --color-surface-elevated: #141b29;
+  --color-surface-interactive: #1d273a;
+  --color-surface-sunken: #040508;
+
+  /* Brand Palette (Warm Champagne / Antique Brass & Gold) */
+  --color-brand-primary: #d4af37;
+  --color-brand-primary-rgb: 212, 175, 55;
+  --color-brand-accent: #f5e2ad;
+  --color-brand-dark: #8f721d;
+  --color-brand-dim: rgba(212, 175, 55, 0.12);
+  --color-brand-glow: rgba(212, 175, 55, 0.25);
+  --gradient-brand: linear-gradient(135deg, #f5e2ad 0%, #d4af37 50%, #aa8524 100%);
+  --gradient-brand-hover: linear-gradient(135deg, #ffffff 0%, #f5e2ad 40%, #d4af37 100%);
+  --gradient-surface: linear-gradient(180deg, rgba(20, 27, 41, 0.8) 0%, rgba(13, 18, 28, 0.95) 100%);
+
+  /* Typography Colors */
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-text-brand: #d4af37;
+  --color-text-inverted: #06080d;
+
+  /* Borders & Dividers */
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-medium: rgba(255, 255, 255, 0.15);
+  --color-border-brand: rgba(212, 175, 55, 0.28);
+  --color-border-brand-strong: rgba(212, 175, 55, 0.65);
+  --color-border-focus: #d4af37;
+
+  /* Semantic Feedback Statuses */
+  --color-success: #10b981;
+  --color-success-dim: rgba(16, 185, 129, 0.14);
+  --color-warning: #f59e0b;
+  --color-warning-dim: rgba(245, 158, 11, 0.14);
+  --color-danger: #ef4444;
+  --color-danger-dim: rgba(239, 68, 68, 0.14);
+  --color-info: #0ea5e9;
+  --color-info-dim: rgba(14, 165, 233, 0.14);
+
+  /* Typography Families */
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Spacing Scale */
+  --space-xs: 0.25rem;  /* 4px */
+  --space-sm: 0.5rem;   /* 8px */
+  --space-md: 1rem;     /* 16px */
+  --space-lg: 1.5rem;   /* 24px */
+  --space-xl: 2rem;     /* 32px */
+  --space-2xl: 3rem;    /* 48px */
+  --space-3xl: 4.5rem;  /* 72px */
+
+  /* Border Radii */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Elevations & Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.7);
+  --shadow-brand: 0 8px 24px rgba(212, 175, 55, 0.18);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+
+  /* Motion & Timings */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-decelerate: cubic-bezier(0.0, 0, 0.2, 1);
+  --easing-accelerate: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Touch & Layout Safe-Areas */
+  --touch-target-min: 44px;
+  --header-height: 76px;
+  --bottom-nav-height: 68px;
+}
+
+/* Reduced Motion Compliance */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

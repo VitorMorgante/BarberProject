@@ -9,13 +9,13 @@
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div class="d-flex align-items-center gap-3">
       <div class="p-3 bg-dark rounded-circle border border-gold">
-        <i class="bi bi-person-fill text-gold fs-2"></i>
+        <i class="bi bi-person-fill text-brand fs-2"></i>
       </div>
       <div>
         <div class="d-flex align-items-center gap-2">
-          <h2 class="brand-font text-gold mb-0">{{ cliente.nome }}</h2>
+          <h2 class="brand-font text-brand mb-0">{{ cliente.nome }}</h2>
           {% if p360.metricas.ltv_realizado >= 300 %}
-            <span class="badge bg-gold text-dark">VIP</span>
+            <span class="badge bg-brand text-dark">VIP</span>
           {% endif %}
           {% if p360.metricas.is_em_risco %}
             <span class="badge bg-danger">Em Risco</span>
@@ -26,7 +26,7 @@
     </div>
     <div class="d-flex gap-2">
       <a href="{% url 'admin_crm' %}" class="btn btn-outline-secondary btn-sm">Voltar ao CRM</a>
-      <button class="btn btn-delacruz btn-sm" data-bs-toggle="modal" data-bs-target="#modalFichaTecnica">
+      <button class="btn btn-brand btn-sm" data-bs-toggle="modal" data-bs-target="#modalFichaTecnica">
         <i class="bi bi-file-earmark-medical me-1"></i> Nova Ficha Técnica
       </button>
     </div>
@@ -35,21 +35,21 @@
   <!-- Métricas Relacionais -->
   <div class="row g-3 mb-4">
     <div class="col-md-3">
-      <div class="card card-delacruz p-3">
+      <div class="card surface-card p-3">
         <small class="text-secondary">LTV Realizado</small>
-        <h4 class="text-gold brand-font mb-0 mt-1">R$ {{ p360.metricas.ltv_realizado }}</h4>
+        <h4 class="text-brand brand-font mb-0 mt-1">R$ {{ p360.metricas.ltv_realizado }}</h4>
         <small class="text-muted">{{ p360.metricas.total_cortes }} atendimentos</small>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card card-delacruz p-3">
+      <div class="card surface-card p-3">
         <small class="text-secondary">Frequência Média</small>
         <h4 class="text-light brand-font mb-0 mt-1">{{ p360.metricas.freq_media_dias }} dias</h4>
         <small class="text-muted">Próximo estimado: {{ p360.metricas.proxima_data_prevista|date:"d/m/Y" }}</small>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card card-delacruz p-3">
+      <div class="card surface-card p-3">
         <small class="text-secondary">Score de Churn (Abandono)</small>
         <h4 class="text-{% if p360.metricas.churn_score < 40 %}success{% elif p360.metricas.churn_score < 70 %}warning{% else %}danger{% endif %} brand-font mb-0 mt-1">
           {{ p360.metricas.churn_score }}/100
@@ -58,7 +58,7 @@
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card card-delacruz p-3">
+      <div class="card surface-card p-3">
         <small class="text-secondary">LTV Futuro Estimado (12m)</small>
         <h4 class="text-success brand-font mb-0 mt-1">R$ {{ p360.metricas.ltv_futuro_estimado }}</h4>
         <small class="text-muted">Ticket Médio: R$ {{ p360.metricas.ticket_medio }}</small>
@@ -69,8 +69,8 @@
   <div class="row g-4">
     <!-- Coluna Esquerda: Fichas Técnicas & Preferências -->
     <div class="col-lg-5">
-      <div class="card card-delacruz p-4 mb-4">
-        <h5 class="text-gold brand-font mb-3 fs-6"><i class="bi bi-sliders me-2"></i> Preferências & Histórico Técnico</h5>
+      <div class="card surface-card p-4 mb-4">
+        <h5 class="text-brand brand-font mb-3 fs-6"><i class="bi bi-sliders me-2"></i> Preferências & Histórico Técnico</h5>
         
         <div class="mb-3">
           <small class="text-secondary d-block">Barbeiro Favorito:</small>
@@ -83,7 +83,7 @@
 
         {% if p360.fichas %}
           <div class="border-top border-secondary border-opacity-25 pt-3 mt-3">
-            <h6 class="text-gold small text-uppercase fw-bold mb-2">Última Ficha Técnica (Receita do Corte)</h6>
+            <h6 class="text-brand small text-uppercase fw-bold mb-2">Última Ficha Técnica (Receita do Corte)</h6>
             {% with f=p360.fichas.0 %}
               <div class="p-3 bg-dark rounded-3 border border-secondary border-opacity-25 small">
                 <div><strong>Máquina Lateral:</strong> {{ f.maquina_lateral|default:"-" }}</div>
@@ -103,9 +103,9 @@
 
     <!-- Coluna Direita: Linha do Tempo Unificada -->
     <div class="col-lg-7">
-      <div class="card card-delacruz">
+      <div class="card surface-card">
         <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 py-3">
-          <h5 class="text-gold brand-font mb-0 fs-6"><i class="bi bi-clock-history me-2"></i> Linha do Tempo Interativa (360º)</h5>
+          <h5 class="text-brand brand-font mb-0 fs-6"><i class="bi bi-clock-history me-2"></i> Linha do Tempo Interativa (360º)</h5>
         </div>
         <div class="card-body p-4">
           <div class="d-flex flex-column gap-3">
@@ -137,7 +137,7 @@
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content bg-dark border border-secondary text-light">
       <div class="modal-header border-secondary">
-        <h5 class="modal-title brand-font text-gold">Registrar Ficha Técnica de Corte (Meu Corte)</h5>
+        <h5 class="modal-title brand-font text-brand">Registrar Ficha Técnica de Corte (Meu Corte)</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form action="{% url 'salvar_ficha_tecnica' cliente.id %}" method="post">
@@ -172,7 +172,7 @@
         </div>
         <div class="modal-footer border-secondary">
           <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-delacruz btn-sm">Salvar Ficha Técnica</button>
+          <button type="submit" class="btn btn-brand btn-sm">Salvar Ficha Técnica</button>
         </div>
       </form>
     </div>

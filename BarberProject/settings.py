@@ -14,10 +14,13 @@ except ImportError:
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-k8$x!q3v@mz#7f&w+r2^t9p=y6u0j4e1s5n8c_b(g)d%hloai'
-)
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if os.getenv('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes'):
+        SECRET_KEY = 'django-insecure-k8$x!q3v@mz#7f&w+r2^t9p=y6u0j4e1s5n8c_b(g)d%hloai'
+    else:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured("DJANGO_SECRET_KEY é obrigatória em ambiente de produção (DEBUG=False).")
 
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
 
@@ -47,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -60,7 +64,7 @@ ROOT_URLCONF = 'BarberProject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'website' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,6 +73,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'website.context_processors.user_roles',
+                'website.context_processors.brand_context',
             ],
         },
     },
@@ -82,6 +87,15 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Suporte a PostgreSQL em Produção via DATABASE_URL
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    try:
+        import dj_database_url
+        DATABASES['default'] = dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+    except ImportError:
+        pass
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -99,6 +113,11 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'website' / 'static',
+]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 
@@ -115,12 +134,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Configurações de Módulos Delacruz Barber
+# ==============================================================================
+# CONFIGURAÇÃO CENTRAL DA MARCA — BARBER HEITOR
+# ==============================================================================
+BARBER_NAME = os.getenv('BARBER_NAME', 'Barber Heitor')
+BARBER_SHORT_NAME = os.getenv('BARBER_SHORT_NAME', 'Barber Heitor')
+BARBER_SLOGAN = os.getenv('BARBER_SLOGAN', 'Seu estilo. Sua assinatura.')
+BARBER_PHONE = os.getenv('BARBER_PHONE', '(44) 9102-2176')
+BARBER_PHONE_RAW = os.getenv('BARBER_PHONE_RAW', '554491022176')
+BARBER_EMAIL = os.getenv('BARBER_EMAIL', 'contato@barberheitor.com.br')
+BARBER_INSTAGRAM = os.getenv('BARBER_INSTAGRAM', 'barberheitor_oficial')
+BARBER_ADDRESS = os.getenv('BARBER_ADDRESS', 'Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí - PR')
+BARBER_HOURS = os.getenv('BARBER_HOURS', 'Seg a Sáb: 08:00 às 21:00')
+
+# ==============================================================================
+# CONFIGURAÇÕES DE MÓDULOS, PAGAMENTOS E INTEGRAÇÕES
+# ==============================================================================
 PAYMENT_GATEWAY = os.getenv('PAYMENT_GATEWAY', 'mock')
 PAYMENT_ACCESS_TOKEN = os.getenv('PAYMENT_ACCESS_TOKEN', '')
 PAYMENT_WEBHOOK_SECRET = os.getenv('PAYMENT_WEBHOOK_SECRET', '')
-PIX_CHAVE = os.getenv('PIX_CHAVE', 'delacruzbarber@email.com')
-PIX_TITULAR = os.getenv('PIX_TITULAR', 'Delacruz Barber')
+PIX_CHAVE = os.getenv('PIX_CHAVE', '')
+PIX_TITULAR = os.getenv('PIX_TITULAR', 'Barber Heitor')
 PIX_CIDADE = os.getenv('PIX_CIDADE', 'Paranavai')
 
 WHATSAPP_PROVIDER = os.getenv('WHATSAPP_PROVIDER', 'none')
@@ -132,4 +166,5 @@ AI_API_KEY = os.getenv('AI_API_KEY', '')
 
 VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', '')
 VAPID_PRIVATE_KEY = os.getenv('VAPID_PRIVATE_KEY', '')
-VAPID_ADMIN_EMAIL = os.getenv('VAPID_ADMIN_EMAIL', 'contato@delacruzbarber.com.br')
+VAPID_ADMIN_EMAIL = os.getenv('VAPID_ADMIN_EMAIL', 'contato@barberheitor.com.br')
+

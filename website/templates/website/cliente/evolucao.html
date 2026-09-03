@@ -1,5 +1,5 @@
 {% extends "website/modelo.html" %}
-{% block titulo %}Minha Evolução | Delacruz Barber{% endblock %}
+{% block titulo %}Minha Evolução | Barber Heitor{% endblock %}
 
 {% block conteudo %}
 <section class="py-5">
@@ -8,12 +8,12 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
       <div>
-        <span class="badge bg-gold text-dark text-uppercase fw-bold px-3 py-2 mb-2">Galeria Privada</span>
-        <h2 class="brand-font text-white fw-bold display-6 mb-1">Minha <span class="text-gold">Evolução</span></h2>
-        <p class="text-muted small mb-0">Seu histórico visual cronológico registrado na Delacruz Barber. Somente você tem acesso.</p>
+        <span class="badge bg-brand text-dark text-uppercase fw-bold px-3 py-2 mb-2">Galeria Privada</span>
+        <h2 class="brand-font text-white fw-bold display-6 mb-1">Minha <span class="text-brand">Evolução</span></h2>
+        <p class="text-muted small mb-0">Seu histórico visual cronológico registrado na Barber Heitor. Somente você tem acesso.</p>
       </div>
       <div>
-        <a href="{% url 'area_cliente' %}" class="btn btn-outline-gold btn-sm"><i class="bi bi-arrow-left me-1"></i> Voltar à Minha Área</a>
+        <a href="{% url 'area_cliente' %}" class="btn btn-outline-brand btn-sm"><i class="bi bi-arrow-left me-1"></i> Voltar à Minha Área</a>
       </div>
     </div>
 
@@ -21,10 +21,10 @@
     <div class="row g-4">
       {% for foto in fotos_evolucao %}
         <div class="col-sm-6 col-md-4 col-lg-3">
-          <div class="card card-delacruz h-100 overflow-hidden text-center shadow">
+          <div class="card surface-card h-100 overflow-hidden text-center shadow">
             <img src="{{ foto.imagem.url }}" alt="Evolução do corte" class="img-fluid w-100" style="height: 240px; object-fit: cover;">
             <div class="p-3 text-start">
-              <span class="badge bg-dark border border-secondary text-gold small mb-1">{{ foto.data|date:"d/m/Y" }}</span>
+              <span class="badge bg-dark border border-secondary text-brand small mb-1">{{ foto.data|date:"d/m/Y" }}</span>
               <h6 class="text-white fw-bold mb-1">Corte com {{ foto.barbeiro.nome }}</h6>
               {% if foto.observacoes %}
                 <p class="text-muted small mb-0">{{ foto.observacoes }}</p>
@@ -37,7 +37,7 @@
           <i class="bi bi-images display-3 text-secondary opacity-25 d-block mb-3"></i>
           <h5>Nenhuma foto no seu histórico visual ainda.</h5>
           <p class="small">Ao finalizar seus cortes, peça ao seu barbeiro para registrar uma foto do resultado final!</p>
-          <a href="{% url 'agendamento' %}" class="btn btn-delacruz btn-sm mt-2">Agendar Atendimento</a>
+          <a href="{% url 'agendamento' %}" class="btn btn-brand btn-sm mt-2">Agendar Atendimento</a>
         </div>
       {% endfor %}
     </div>

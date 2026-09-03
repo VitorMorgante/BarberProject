@@ -1,0 +1,33 @@
+{% extends 'website/modelo.html' %}
+{% load static %}
+
+{% block titulo %}Acesso Restrito (403) | {{ BARBER_NAME }}{% endblock %}
+
+{% block conteudo %}
+<section class="py-5" style="background-color: var(--color-surface-sunken); min-height: 70vh; display: flex; align-items: center;">
+  <div class="container py-5 text-center">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-8">
+        <div class="surface-card p-5 border-brand shadow-lg">
+          <div class="d-inline-flex p-3 rounded-circle bg-dark border border-warning border-opacity-30 mb-3">
+            <i class="bi bi-shield-lock text-brand fs-1"></i>
+          </div>
+          <h1 class="display-1 text-warning fw-bold mb-2">403</h1>
+          <h3 class="text-white mb-3">Acesso Não Autorizado</h3>
+          <p class="text-muted-custom small mb-4">
+            Você não possui as credenciais ou permissões necessárias para acessar este módulo de gestão ou recurso privado.
+          </p>
+          <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a href="{% url 'pagina_inicial' %}" class="btn btn-brand px-4 py-2">
+              <i class="bi bi-house-door me-1"></i> Ir Para o Início
+            </a>
+            <a href="{% url 'login' %}" class="btn btn-surface px-4 py-2">
+              <i class="bi bi-box-arrow-in-right me-1"></i> Fazer Login
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

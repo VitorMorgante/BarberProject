@@ -8,7 +8,12 @@ __pycache__/
 db.sqlite3
 .env
 .env.*
+!.env.example
 *.env
+
+# Static files collection
+staticfiles/
+
 # Coverage
 .coverage
 .coverage.*

@@ -75,7 +75,7 @@ class TestPublicPages(TestCase):
     def test_pwa_manifest(self):
         response = self.client.get(reverse('pwa_manifest'))
         self.assertEqual(response.status_code, 200)
-        self.assertIn('Delacruz Barber', response.json()['name'])
+        self.assertIn('Barber Heitor', response.json()['name'])
 
     def test_pwa_sw(self):
         response = self.client.get(reverse('pwa_sw'))
@@ -423,7 +423,7 @@ class TestCupomDescontoAndCalendarSync(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'text/calendar; charset=utf-8')
         self.assertIn(b'BEGIN:VCALENDAR', response.content)
-        self.assertIn(b'Delacruz Barber', response.content)
+        self.assertIn(b'Barber Heitor', response.content)
 
 
 class TestAreaBarbeiroView(TestCase):

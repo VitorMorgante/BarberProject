@@ -8,25 +8,25 @@
   <div class="row g-4">
     <!-- Sidebar de Navegação do Cliente -->
     <div class="col-lg-3">
-      <div class="card card-delacruz p-3">
-        <h5 class="brand-font text-gold mb-3"><i class="bi bi-shield-lock me-2"></i> Minha Conta</h5>
+      <div class="card surface-card p-3">
+        <h5 class="brand-font text-brand mb-3"><i class="bi bi-shield-lock me-2"></i> Minha Conta</h5>
         <div class="nav flex-column nav-pills gap-1">
           <a class="nav-link text-light" href="{% url 'area_cliente' %}"><i class="bi bi-calendar-check me-2"></i> Meus Agendamentos</a>
           <a class="nav-link text-light" href="{% url 'historico_cliente' %}"><i class="bi bi-clock-history me-2"></i> Histórico</a>
           <a class="nav-link text-light" href="{% url 'cliente_club' %}"><i class="bi bi-gem me-2"></i> Barber Club</a>
           <a class="nav-link text-light" href="{% url 'cliente_fidelidade' %}"><i class="bi bi-award me-2"></i> Fidelidade</a>
           <a class="nav-link text-light" href="{% url 'cliente_estilo' %}"><i class="bi bi-camera me-2"></i> IA Visagismo</a>
-          <a class="nav-link active bg-gold text-dark fw-bold" href="{% url 'central_lgpd' %}"><i class="bi bi-shield-check me-2"></i> Privacidade & LGPD</a>
+          <a class="nav-link active bg-brand text-dark fw-bold" href="{% url 'central_lgpd' %}"><i class="bi bi-shield-check me-2"></i> Privacidade & LGPD</a>
         </div>
       </div>
     </div>
 
     <!-- Conteúdo Principal LGPD -->
     <div class="col-lg-9">
-      <div class="card card-delacruz p-4 mb-4">
-        <h3 class="brand-font text-gold mb-2"><i class="bi bi-shield-check me-2"></i> Central de Privacidade e Consentimentos (LGPD)</h3>
+      <div class="card surface-card p-4 mb-4">
+        <h3 class="brand-font text-brand mb-2"><i class="bi bi-shield-check me-2"></i> Central de Privacidade e Consentimentos (LGPD)</h3>
         <p class="text-secondary small mb-4">
-          Na Delacruz Barber, sua privacidade e a segurança dos seus dados são tratadas com transparência total de acordo com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
+          Na Barber Heitor, sua privacidade e a segurança dos seus dados são tratadas com transparência total de acordo com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
         </p>
 
         <form method="post">
@@ -46,7 +46,7 @@
               <input class="form-check-input" type="checkbox" name="fotos_portfolio" id="fotosPortfolio" {% if consentimento.fotos_portfolio %}checked{% endif %}>
               <label class="form-check-label text-light" for="fotosPortfolio">
                 <strong>Autorizar divulgação de fotos em portfólio / redes</strong>
-                <span class="d-block text-secondary small">Permite publicação de fotos do resultado nos perfis públicos da Delacruz Barber.</span>
+                <span class="d-block text-secondary small">Permite publicação de fotos do resultado nos perfis públicos da Barber Heitor.</span>
               </label>
             </div>
 
@@ -75,19 +75,19 @@
             </div>
           </div>
 
-          <button type="submit" class="btn btn-delacruz">Salvar Preferências de Privacidade</button>
+          <button type="submit" class="btn btn-brand">Salvar Preferências de Privacidade</button>
         </form>
       </div>
 
       <!-- Direitos do Titular & Portabilidade -->
-      <div class="card card-delacruz p-4">
+      <div class="card surface-card p-4">
         <h5 class="text-light fs-6 mb-3 border-bottom border-secondary border-opacity-25 pb-2">Seus Direitos como Titular</h5>
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
           <div>
-            <h6 class="text-gold mb-1">Exportação de Dados Pessoais (Portabilidade)</h6>
+            <h6 class="text-brand mb-1">Exportação de Dados Pessoais (Portabilidade)</h6>
             <p class="text-secondary small mb-0">Baixe uma cópia estruturada em JSON de todos os seus dados cadastrais e histórico de agendamentos.</p>
           </div>
-          <a href="{% url 'exportar_lgpd' %}" class="btn btn-outline-gold btn-sm">
+          <a href="{% url 'exportar_lgpd' %}" class="btn btn-outline-brand btn-sm">
             <i class="bi bi-download me-1"></i> Baixar Meus Dados (JSON)
           </a>
         </div>

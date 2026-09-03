@@ -1,37 +1,43 @@
 {% extends 'website/modelo.html' %}
 {% load static %}
 
-{% block titulo %}Cardápio Digital Delacruz{% endblock %}
+{% block titulo %}Cardápio Digital{% endblock %}
 
 {% block conteudo %}
-<div class="container py-4">
+<div class="container py-5 text-start">
   <div class="text-center mb-5">
-    <span class="badge bg-gold text-dark px-3 py-2 text-uppercase fw-bold letter-spacing-1 mb-2">Menu de Bancada</span>
-    <h1 class="brand-font text-gold display-5">Cardápio & Experiências</h1>
-    <p class="text-secondary">Conheça nossos serviços de alta precisão, combos e produtos exclusivos</p>
+    <span class="section-subtitle">Menu Oficial de Bancada</span>
+    <h1 class="display-3 text-white mb-2">Cardápio & Experiências</h1>
+    <p class="text-muted-custom max-width-600 mx-auto" style="max-width: 600px;">
+      Conheça nossa carta completa de serviços de alta precisão, combos promocionais e produtos home care.
+    </p>
   </div>
 
   <!-- Combos e Pacotes Promocionais -->
   {% if pacotes %}
     <div class="mb-5">
-      <h3 class="brand-font text-gold mb-3"><i class="bi bi-stars me-2"></i> Pacotes & Combos Especiais</h3>
+      <h3 class="text-brand mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-stars"></i> Pacotes & Combos Especiais
+      </h3>
       <div class="row g-4">
         {% for p in pacotes %}
           <div class="col-md-6">
-            <div class="card card-delacruz p-4 h-100 border-gold border-opacity-50">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <h4 class="text-gold brand-font mb-0">{{ p.nome }}</h4>
-                <div class="text-end">
-                  {% if p.preco_original > p.preco_promocional %}
-                    <div class="text-decoration-line-through text-secondary small">R$ {{ p.preco_original }}</div>
-                  {% endif %}
-                  <span class="fs-4 fw-bold text-light">R$ {{ p.preco_promocional }}</span>
+            <div class="surface-card p-4 h-100 border-brand d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h4 class="text-white mb-0">{{ p.nome }}</h4>
+                  <div class="text-end">
+                    {% if p.preco_original > p.preco_promocional %}
+                      <div class="text-decoration-line-through text-muted-custom small">R$ {{ p.preco_original|floatformat:2 }}</div>
+                    {% endif %}
+                    <span class="fs-4 fw-bold text-brand">R$ {{ p.preco_promocional|floatformat:2 }}</span>
+                  </div>
                 </div>
+                <p class="text-muted-custom small mb-4">{{ p.descricao }}</p>
               </div>
-              <p class="text-secondary small mb-3">{{ p.descricao }}</p>
-              <div class="mt-auto">
-                <a href="{% url 'agendamento' %}" class="btn btn-delacruz btn-sm w-100">Agendar este Combo</a>
-              </div>
+              <a href="{% url 'agendamento' %}" class="btn btn-brand btn-sm w-100">
+                Agendar Este Combo
+              </a>
             </div>
           </div>
         {% endfor %}
@@ -39,45 +45,61 @@
     </div>
   {% endif %}
 
-  <!-- Lista de Serviços -->
+  <!-- Lista de Serviços Individuais -->
   <div class="mb-5">
-    <h3 class="brand-font text-gold mb-3"><i class="bi bi-scissors me-2"></i> Serviços Individuais</h3>
-    <div class="row g-3">
+    <h3 class="text-brand mb-4 d-flex align-items-center gap-2">
+      <i class="bi bi-scissors"></i> Serviços Individuais
+    </h3>
+    <div class="row g-4">
       {% for s in servicos %}
         <div class="col-md-6 col-lg-4">
-          <div class="card card-delacruz p-3 h-100 d-flex flex-column justify-content-between">
+          <div class="service-card">
             <div>
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <h5 class="text-light mb-0">{{ s.nome }}</h5>
-                <span class="text-gold fw-bold">R$ {{ s.preco }}</span>
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="text-white mb-0">{{ s.nome }}</h5>
+                <span class="text-brand fw-bold fs-5">R$ {{ s.preco|floatformat:2 }}</span>
               </div>
-              <p class="text-secondary small mb-2">{{ s.descricao|default:"Atendimento de precisão com acabamento impecável." }}</p>
+              <p class="text-muted-custom small mb-3">{{ s.descricao|default:"Atendimento de precisão com acabamento impecável e toalha quente." }}</p>
             </div>
-            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25">
-              <span class="badge bg-dark text-secondary"><i class="bi bi-clock me-1"></i>{{ s.duracao_minutos }} min</span>
-              <a href="{% url 'agendamento' %}?servico={{ s.id }}" class="btn btn-outline-gold btn-sm py-0 px-2">Agendar</a>
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary border-opacity-10">
+              <span class="badge bg-dark border border-secondary border-opacity-50 text-muted-custom">
+                <i class="bi bi-clock me-1"></i> {{ s.duracao_minutos }} min
+              </span>
+              <a href="{% url 'agendamento' %}?servico={{ s.id }}" class="btn btn-outline-brand btn-sm">
+                Agendar
+              </a>
             </div>
           </div>
+        </div>
+      {% empty %}
+        <div class="col-12 text-center py-4">
+          <p class="text-muted-custom">Nenhum serviço disponível no momento.</p>
         </div>
       {% endfor %}
     </div>
   </div>
 
-  <!-- Produtos de Cuidado Diário -->
+  <!-- Produtos Home Care -->
   {% if produtos %}
     <div class="mb-5">
-      <h3 class="brand-font text-gold mb-3"><i class="bi bi-bag-check me-2"></i> Produtos Home Care</h3>
-      <div class="row g-3">
+      <h3 class="text-brand mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-bag-check"></i> Produtos Home Care (Bancada)
+      </h3>
+      <div class="row g-4">
         {% for prod in produtos %}
-          <div class="col-md-6 col-lg-3">
-            <div class="card card-delacruz p-3 h-100 text-center">
-              <div class="p-3 bg-dark rounded-3 mb-2">
-                <i class="bi bi-box-seam text-gold fs-1"></i>
+          <div class="col-sm-6 col-lg-3">
+            <div class="surface-card p-4 h-100 text-center d-flex flex-column justify-content-between">
+              <div>
+                <div class="p-3 bg-dark rounded-3 mb-3 d-inline-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                  <i class="bi bi-box-seam text-brand fs-2"></i>
+                </div>
+                <h6 class="text-white mb-1">{{ prod.nome }}</h6>
+                <div class="text-brand fw-bold mb-2">R$ {{ prod.preco|floatformat:2 }}</div>
+                <small class="text-muted-custom d-block mb-3">{{ prod.descricao|default:"Fórmula profissional para manutenção do visual em casa." }}</small>
               </div>
-              <h6 class="text-light mb-1">{{ prod.nome }}</h6>
-              <div class="text-gold fw-bold mb-2">R$ {{ prod.preco }}</div>
-              <small class="text-secondary d-block mb-3">{{ prod.descricao|default:"Fórmula profissional para manutenção do visual em casa." }}</small>
-              <span class="badge bg-dark border border-secondary text-secondary">Peça ao seu Barbeiro</span>
+              <span class="badge bg-dark border border-secondary border-opacity-50 text-muted-custom py-2">
+                Solicite na Recepção / Bancada
+              </span>
             </div>
           </div>
         {% endfor %}

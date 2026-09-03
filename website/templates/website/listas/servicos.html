@@ -12,7 +12,7 @@
         </h2>
         <p class="text-muted-custom mb-0">Gerencie a carta de serviços oferecidos pela barbearia.</p>
       </div>
-      <a href="{% url 'cadastrar_servico' %}" class="btn btn-gold-solid text-uppercase fw-bold">
+      <a href="{% url 'cadastrar_servico' %}" class="btn btn-brand text-uppercase fw-bold">
         <i class="bi bi-plus-lg me-1"></i>Novo Serviço
       </a>
     </div>
@@ -35,13 +35,13 @@
           <tbody>
             {% for servico in servicos %}
             <tr>
-              <td class="text-gold fw-bold">#{{ servico.ordem }}</td>
+              <td class="text-brand fw-bold">#{{ servico.ordem }}</td>
               <td>
                 <span class="fw-bold d-block">{{ servico.nome }}</span>
                 <small class="text-muted d-block text-truncate" style="max-width: 250px;">{{ servico.descricao }}</small>
               </td>
               <td><span class="badge bg-secondary bg-opacity-20 text-light border border-secondary border-opacity-30">{{ servico.categoria }}</span></td>
-              <td class="text-gold fw-bold">R$ {{ servico.preco|floatformat:2 }}</td>
+              <td class="text-brand fw-bold">R$ {{ servico.preco|floatformat:2 }}</td>
               <td><i class="bi bi-clock me-1 text-muted"></i> {{ servico.duracao_minutos }} min</td>
               <td class="text-center">
                 {% if servico.ativo %}

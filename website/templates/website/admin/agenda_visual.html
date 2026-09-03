@@ -7,8 +7,8 @@
 <div class="container-fluid py-4 px-md-4">
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div>
-      <span class="badge bg-gold text-dark px-3 py-1 mb-1">Visual Scheduler</span>
-      <h2 class="brand-font text-gold mb-0">Agenda Visual da Equipe</h2>
+      <span class="badge bg-brand text-dark px-3 py-1 mb-1">Visual Scheduler</span>
+      <h2 class="brand-font text-brand mb-0">Agenda Visual da Equipe</h2>
       <p class="text-secondary small mb-0">Grade horária integrada por bancada com reagendamento</p>
     </div>
     <!-- Filtros de Data e Barbeiro -->
@@ -20,7 +20,7 @@
           <option value="{{ b.id }}">{{ b.nome }}</option>
         {% endfor %}
       </select>
-      <button type="submit" class="btn btn-outline-gold btn-sm">Ver Agenda</button>
+      <button type="submit" class="btn btn-outline-brand btn-sm">Ver Agenda</button>
     </form>
   </div>
 
@@ -28,13 +28,13 @@
   <div class="row g-4">
     {% for b in barbeiros %}
       <div class="col-md-6 col-lg-4">
-        <div class="card card-delacruz h-100 shadow-sm">
+        <div class="card surface-card h-100 shadow-sm">
           <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 py-3 d-flex justify-content-between align-items-center">
             <div>
-              <h5 class="text-gold brand-font mb-0 fs-6">{{ b.nome }}</h5>
+              <h5 class="text-brand brand-font mb-0 fs-6">{{ b.nome }}</h5>
               <small class="text-secondary">{{ b.get_nivel_display }} • {{ b.cargo }}</small>
             </div>
-            <span class="badge bg-dark border border-gold text-gold">Bancada Ativa</span>
+            <span class="badge bg-dark border border-gold text-brand">Bancada Ativa</span>
           </div>
           <div class="card-body p-3">
             <div class="d-flex flex-column gap-2" id="coluna-barbeiro-{{ b.id }}">
@@ -42,7 +42,7 @@
                 {% if ag.barbeiro.id == b.id %}
                   <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-50 shadow-sm" draggable="true" data-agendamento-id="{{ ag.id }}">
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                      <span class="fw-bold text-gold"><i class="bi bi-clock me-1"></i>{{ ag.horario|time:"H:i" }}</span>
+                      <span class="fw-bold text-brand"><i class="bi bi-clock me-1"></i>{{ ag.horario|time:"H:i" }}</span>
                       <span class="badge bg-secondary" style="font-size: 0.75rem;">{{ ag.status }}</span>
                     </div>
                     <div class="text-light fw-semibold">{{ ag.cliente.nome }}</div>

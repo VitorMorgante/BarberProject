@@ -9,7 +9,7 @@
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
         <span class="section-subtitle">Acompanhe seu desempenho</span>
-        <h2 class="section-title text-gold mb-0"><i class="bi bi-graph-up-arrow me-2"></i> Relatórios Financeiros e de Serviços</h2>
+        <h2 class="section-title text-brand mb-0"><i class="bi bi-graph-up-arrow me-2"></i> Relatórios Financeiros e de Serviços</h2>
       </div>
       <a href="{% url 'area_barbeiro' %}" class="btn btn-outline-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Voltar</a>
     </div>
@@ -17,7 +17,7 @@
     <!-- Overview Cards -->
     <div class="row g-4 mb-5">
       <div class="col-md-3">
-        <div class="card delacruz-card p-4 text-center h-100 border-start border-success border-4">
+        <div class="card surface-card p-4 text-center h-100 border-start border-success border-4">
           <span class="text-muted-custom text-uppercase d-block mb-1" style="font-size: 0.75rem;">Faturamento Hoje</span>
           <h3 class="fw-bold text-white mb-0">R$ {{ receita_hoje|floatformat:2 }}</h3>
           <span class="text-muted mt-2 d-block" style="font-size: 0.8rem;">Completados: {{ qtd_hoje }}</span>
@@ -25,24 +25,24 @@
       </div>
       
       <div class="col-md-3">
-        <div class="card delacruz-card p-4 text-center h-100 border-start border-info border-4">
+        <div class="card surface-card p-4 text-center h-100 border-start border-info border-4">
           <span class="text-muted-custom text-uppercase d-block mb-1" style="font-size: 0.75rem;">Faturamento Ontem</span>
           <h3 class="fw-bold text-white mb-0">R$ {{ receita_ontem|floatformat:2 }}</h3>
         </div>
       </div>
       
       <div class="col-md-3">
-        <div class="card delacruz-card p-4 text-center h-100 border-start border-warning border-4">
+        <div class="card surface-card p-4 text-center h-100 border-start border-warning border-4">
           <span class="text-muted-custom text-uppercase d-block mb-1" style="font-size: 0.75rem;">Últimos 30 Dias</span>
-          <h3 class="fw-bold text-gold mb-0">R$ {{ receita_30_dias|floatformat:2 }}</h3>
+          <h3 class="fw-bold text-brand mb-0">R$ {{ receita_30_dias|floatformat:2 }}</h3>
           <span class="text-muted mt-2 d-block" style="font-size: 0.8rem;">Completados: {{ qtd_30_dias }}</span>
         </div>
       </div>
       
       <div class="col-md-3">
-        <div class="card delacruz-card p-4 text-center h-100 border-start border-gold border-4">
+        <div class="card surface-card p-4 text-center h-100 border-start border-gold border-4">
           <span class="text-muted-custom text-uppercase d-block mb-1" style="font-size: 0.75rem;">Avaliação Média</span>
-          <h3 class="fw-bold text-gold mb-0"><i class="bi bi-star-fill text-gold me-2"></i>{{ nota_media }} / 5.0</h3>
+          <h3 class="fw-bold text-brand mb-0"><i class="bi bi-star-fill text-brand me-2"></i>{{ nota_media }} / 5.0</h3>
         </div>
       </div>
     </div>
@@ -50,16 +50,16 @@
     <!-- Interactive Financial & Service Charts -->
     <div class="row g-4 mb-5">
       <div class="col-lg-6">
-        <div class="card delacruz-card p-4 h-100">
-          <h5 class="fw-bold text-white mb-3"><i class="bi bi-bar-chart-fill text-gold me-2"></i> Evolução de Faturamento</h5>
+        <div class="card surface-card p-4 h-100">
+          <h5 class="fw-bold text-white mb-3"><i class="bi bi-bar-chart-fill text-brand me-2"></i> Evolução de Faturamento</h5>
           <div class="position-relative" style="height: 250px;">
             <canvas id="graficoFaturamentoBarbeiro"></canvas>
           </div>
         </div>
       </div>
       <div class="col-lg-6">
-        <div class="card delacruz-card p-4 h-100">
-          <h5 class="fw-bold text-white mb-3"><i class="bi bi-pie-chart-fill text-gold me-2"></i> Distribuição dos Serviços</h5>
+        <div class="card surface-card p-4 h-100">
+          <h5 class="fw-bold text-white mb-3"><i class="bi bi-pie-chart-fill text-brand me-2"></i> Distribuição dos Serviços</h5>
           <div class="position-relative" style="height: 250px;">
             <canvas id="graficoServicosBarbeiro"></canvas>
           </div>
@@ -70,8 +70,8 @@
     <div class="row g-4">
       <!-- Most Requested Services Table -->
       <div class="col-lg-6">
-        <div class="card delacruz-card p-4 h-100">
-          <h4 class="fw-bold text-white mb-4"><i class="bi bi-list-stars me-2 text-gold"></i> Ranking de Serviços (30 Dias)</h4>
+        <div class="card surface-card p-4 h-100">
+          <h4 class="fw-bold text-white mb-4"><i class="bi bi-list-stars me-2 text-brand"></i> Ranking de Serviços (30 Dias)</h4>
           <div class="d-flex flex-column gap-3">
             {% for item in servicos_mais_pedidos %}
               <div>
@@ -81,7 +81,7 @@
                 </div>
                 <!-- Visual progress bar representation -->
                 <div class="progress bg-dark border border-secondary border-opacity-10" style="height: 10px;">
-                  <div class="progress-bar bg-gold" role="progressbar" style="width: {% widthratio item.quantidade qtd_30_dias 100 %}%"></div>
+                  <div class="progress-bar bg-brand" role="progressbar" style="width: {% widthratio item.quantidade qtd_30_dias 100 %}%"></div>
                 </div>
               </div>
             {% empty %}
@@ -93,11 +93,11 @@
 
       <!-- Professional Profile Stat -->
       <div class="col-lg-6">
-        <div class="card delacruz-card p-4 h-100">
-          <h4 class="fw-bold text-white mb-4"><i class="bi bi-award me-2 text-gold"></i> Visão Geral & Desempenho</h4>
+        <div class="card surface-card p-4 h-100">
+          <h4 class="fw-bold text-white mb-4"><i class="bi bi-award me-2 text-brand"></i> Visão Geral & Desempenho</h4>
           <p class="text-muted-custom">Resumo de desempenho para o profissional logado. Os valores acumulados consideram apenas atendimentos com status <strong>Concluído</strong>.</p>
           <div class="p-3 bg-dark bg-opacity-20 rounded border border-secondary border-opacity-10 mt-3">
-            <h5 class="fw-bold text-gold mb-3">Dicas para Potencializar seu Faturamento</h5>
+            <h5 class="fw-bold text-brand mb-3">Dicas para Potencializar seu Faturamento</h5>
             <ul class="text-muted-custom ps-3 mb-0" style="font-size: 0.88rem;">
               <li class="mb-2">Mantenha a agenda atualizada e confirme os agendamentos via WhatsApp.</li>
               <li class="mb-2">Ofereça produtos no fechamento da comanda para elevar seu faturamento adicional.</li>

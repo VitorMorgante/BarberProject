@@ -1,0 +1,33 @@
+{% extends 'website/modelo.html' %}
+{% load static %}
+
+{% block titulo %}Página Não Encontrada (404) | {{ BARBER_NAME }}{% endblock %}
+
+{% block conteudo %}
+<section class="py-5" style="background-color: var(--color-surface-sunken); min-height: 70vh; display: flex; align-items: center;">
+  <div class="container py-5 text-center">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-8">
+        <div class="surface-card p-5 border-brand shadow-lg">
+          <div class="d-inline-flex p-3 rounded-circle bg-dark border border-warning border-opacity-30 mb-3">
+            <i class="bi bi-compass text-brand fs-1"></i>
+          </div>
+          <h1 class="display-1 text-brand fw-bold mb-2">404</h1>
+          <h3 class="text-white mb-3">Página Não Encontrada</h3>
+          <p class="text-muted-custom small mb-4">
+            O endereço que você tentou acessar não existe, foi movido ou está temporariamente indisponível.
+          </p>
+          <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a href="{% url 'pagina_inicial' %}" class="btn btn-brand px-4 py-2">
+              <i class="bi bi-house-door me-1"></i> Voltar ao Início
+            </a>
+            <a href="https://wa.me/{{ BARBER_PHONE_RAW }}" target="_blank" rel="noopener noreferrer" class="btn btn-surface px-4 py-2 text-success">
+              <i class="bi bi-whatsapp me-1"></i> Suporte WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

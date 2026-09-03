@@ -1,44 +1,38 @@
 {% extends "website/modelo.html" %}
 {% load crispy_forms_tags %}
 
-{% block titulo %}{{ titulo }}{% endblock %}
+{% block titulo %}{{ titulo }} | {{ BARBER_NAME }}{% endblock %}
 
 {% block conteudo %}
-<section class="py-5">
-  <div class="container py-4">
+<section class="py-5" style="background-color: var(--color-surface-sunken);">
+  <div class="container py-4 text-start">
     <div class="row justify-content-center">
-      <div class="col-lg-7">
-        <div class="card delacruz-card p-4">
-          <h2 class="section-title">{{ titulo }}</h2>
-          <form method="post">
+      <div class="col-lg-7 col-md-9">
+        <div class="surface-card p-4 p-md-5 border-brand shadow-lg">
+          <div class="mb-4 pb-2 border-bottom border-secondary border-opacity-10">
+            <span class="section-subtitle">Formulário Operacional</span>
+            <h2 class="display-3 text-white mb-0">{{ titulo }}</h2>
+          </div>
+
+          <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {% if botao == "Excluir" %}
-              <p class="text-center text-warning">
-                Tem certeza que deseja excluir este registro?
-              </p>
+              <div class="alert alert-warning border-0 p-3 mb-4" style="background-color: var(--color-warning-dim);">
+                <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                <span class="text-white">Atenção: Tem certeza de que deseja excluir permanentemente este registro?</span>
+              </div>
             {% else %}
               {{ form|crispy }}
             {% endif %}
-            {% if titulo == "Login" %}
-            <div class="auth-actions">
-                <button type="submit" class="btn btn-delacruz">
-                    Entrar
-                </button>
 
-                <a href="{% url 'pagina_inicial' %}" class="btn btn-delacruz-outline">
-                    Voltar
-                </a>
-            </div>
-            {% else %}
-            <div class="d-flex gap-2 mt-4">
-              <button type="submit" class="btn btn-delacruz">
-                {{ botao }}
+            <div class="d-flex gap-2 mt-4 pt-2">
+              <button type="submit" class="btn {% if botao == 'Excluir' %}btn-danger{% else %}btn-brand{% endif %} px-4">
+                {{ botao|default:"Salvar Registro" }}
               </button>
-              <a href="javascript:history.back()" class="btn btn-outline-light">
+              <a href="javascript:history.back()" class="btn btn-surface px-4">
                 Voltar
               </a>
             </div>
-            {% endif %}
           </form>
         </div>
       </div>

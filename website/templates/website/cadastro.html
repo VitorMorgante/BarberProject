@@ -1,25 +1,29 @@
 {% extends "website/modelo.html" %}
 {% load crispy_forms_tags %}
 
-{% block titulo %}Cadastro{% endblock %}
+{% block titulo %}Criar Conta | {{ BARBER_NAME }}{% endblock %}
 
 {% block conteudo %}
-<section class="py-5">
-  <div class="container py-4">
+<section class="py-5" style="background-color: var(--color-surface-sunken);">
+  <div class="container py-4 text-start">
     <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <div class="card delacruz-card p-4">
-          <h2 class="section-title text-center mb-4 text-gold">Crie sua Conta</h2>
-          <p class="text-muted-custom text-center mb-4">Cadastre-se na Delacruz Barber para gerenciar seus agendamentos, ver históricos e deixar avaliações!</p>
+      <div class="col-lg-8 col-md-10">
+        <div class="surface-card p-4 p-md-5 border-brand shadow-lg">
+          <div class="text-center mb-4 pb-2 border-bottom border-secondary border-opacity-10">
+            <span class="section-subtitle justify-content-center">Experiência VIP</span>
+            <h1 class="display-3 text-white mb-2">Crie Sua Conta</h1>
+            <p class="text-muted-custom small mb-0">Cadastre-se na {{ BARBER_NAME }} para salvar seus dados, acompanhar seu histórico capilar e acumular cortes no Cartão Fidelidade.</p>
+          </div>
+
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form|crispy }}
-            <div class="d-flex gap-2 mt-4 justify-content-center">
-              <button type="submit" class="btn btn-gold-solid px-5 py-2">
-                Cadastrar
+            <div class="d-flex flex-column flex-sm-row gap-2 mt-4 justify-content-center pt-2">
+              <button type="submit" class="btn btn-brand px-5 py-3">
+                <i class="bi bi-person-check-fill me-2"></i> Criar Minha Conta
               </button>
-              <a href="{% url 'login' %}" class="btn btn-outline-light px-5 py-2">
-                Já tenho conta
+              <a href="{% url 'login' %}" class="btn btn-surface px-4 py-3">
+                Já possuo conta
               </a>
             </div>
           </form>

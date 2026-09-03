@@ -12,7 +12,7 @@
         </h2>
         <p class="text-muted-custom mb-0">Gerencie a agenda e os horários reservados pelos clientes.</p>
       </div>
-      <a href="{% url 'cadastrar_agendamento' %}" class="btn btn-gold-solid text-uppercase fw-bold">
+      <a href="{% url 'cadastrar_agendamento' %}" class="btn btn-brand text-uppercase fw-bold">
         <i class="bi bi-plus-lg me-1"></i>Novo Agendamento
       </a>
     </div>
@@ -39,12 +39,12 @@
               </td>
               <td>
                 <span class="d-block">{{ agendamento.servico.nome }}</span>
-                <small class="text-gold">R$ {{ agendamento.servico.preco|floatformat:2 }}</small>
+                <small class="text-brand">R$ {{ agendamento.servico.preco|floatformat:2 }}</small>
               </td>
               <td>{{ agendamento.barbeiro.nome|truncatewords:1 }}</td>
               <td>
                 <span class="fw-bold d-block">{{ agendamento.data|date:"d/m/Y" }}</span>
-                <small class="text-gold"><i class="bi bi-clock me-1"></i>{{ agendamento.horario|time:"H:i" }}</small>
+                <small class="text-brand"><i class="bi bi-clock me-1"></i>{{ agendamento.horario|time:"H:i" }}</small>
               </td>
               <td>
                 <span class="badge-status-{{ agendamento.status }}">{{ agendamento.get_status_display }}</span>

@@ -77,7 +77,7 @@ class AdminStaffRequiredMixin(UserPassesTestMixin):
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
             return redirect('login')
-        messages.error(self.request, 'Acesso restrito à administração da Delacruz Barber.')
+        messages.error(self.request, 'Acesso restrito à administração da Barber Heitor.')
         return redirect('pagina_inicial')
 
 
@@ -165,7 +165,8 @@ class ContatoView(CreateView):
     extra_context = {'titulo': 'Fale Conosco', 'botao': 'Enviar Mensagem'}
 
     def form_valid(self, form):
-        messages.success(self.request, 'Mensagem enviada com sucesso! A equipe Delacruz Barber entrará em contato.')
+        form.save()
+        messages.success(self.request, 'Mensagem enviada com sucesso! A equipe Barber Heitor entrará em contato.')
         return super().form_valid(form)
 
 
@@ -286,7 +287,7 @@ class AgendamentoPublicoView(FormView):
         # Se não exige sinal, confirma e redireciona
         agendamento.status = Agendamento.Status.CONFIRMADO
         agendamento.save(update_fields=['status'])
-        messages.success(self.request, 'Agendamento confirmado com sucesso! A Delacruz Barber aguarda você.')
+        messages.success(self.request, 'Agendamento confirmado com sucesso! A Barber Heitor aguarda você.')
 
         if self.request.user.is_authenticated:
             return redirect('area_cliente')
@@ -307,10 +308,15 @@ class PagamentoPixView(TemplateView):
         context['pagamento'] = pagamento
         context['agendamento'] = pagamento.agendamento
         context['config'] = ConfiguracaoEstabelecimento.get_solo()
+        context['show_simulation'] = settings.DEBUG and getattr(settings, 'PAYMENT_GATEWAY', 'mock').lower() == 'mock'
         return context
 
     def post(self, request, *args, **kwargs):
-        """Simulador de pagamento para desenvolvimento e testes rápidos."""
+        """Simulador de pagamento para desenvolvimento e testes rápidos com proteção estrita."""
+        if not (settings.DEBUG and getattr(settings, 'PAYMENT_GATEWAY', 'mock').lower() == 'mock'):
+            from django.http import HttpResponseForbidden
+            return HttpResponseForbidden("Simulação manual de pagamento desabilitada em ambiente de produção.")
+
         identificador = self.kwargs.get('identificador')
         pagamento = get_object_or_404(Pagamento, identificador_interno=identificador)
         PaymentService.confirmar_pagamento(pagamento, payload="Confirmação Manual / Mock")
@@ -354,11 +360,17 @@ def webhook_pagamento(request, gateway):
         payload = request.POST.dict()
 
     evento_id = request.headers.get('X-Event-Id') or payload.get('id') or payload.get('data', {}).get('id') or str(timezone.now().timestamp())
-    sucesso = PaymentService.processar_webhook(gateway=gateway, evento_id=str(evento_id), payload_dict=payload)
+    sucesso = PaymentService.processar_webhook(
+        gateway=gateway,
+        evento_id=str(evento_id),
+        payload_dict=payload,
+        headers=dict(request.headers)
+    )
 
     if sucesso:
         return JsonResponse({'status': 'processed'})
     return JsonResponse({'status': 'ignored_or_error'}, status=200)
+
 
 
 # ==============================================================================
@@ -366,15 +378,15 @@ def webhook_pagamento(request, gateway):
 # ==============================================================================
 
 def manifest_view(request):
-    """Retorna o manifesto PWA da Delacruz Barber."""
+    """Retorna o manifesto PWA da Barber Heitor."""
     manifest = {
-        "name": "Delacruz Barber - Barbearia Premium",
-        "short_name": "Delacruz Barber",
-        "description": "Agendamentos, Barber Club e gestão para a barbearia Delacruz Barber.",
+        "name": "Barber Heitor - Barbearia Premium",
+        "short_name": "Barber Heitor",
+        "description": "Agendamentos, Barber Club e gestão para a barbearia Barber Heitor.",
         "start_url": "/",
         "display": "standalone",
-        "theme_color": "#020617",
-        "background_color": "#020617",
+        "theme_color": "#06080d",
+        "background_color": "#06080d",
         "icons": [
             {
                 "src": "/static/website/img/icon-192.png",
@@ -394,12 +406,13 @@ def manifest_view(request):
 def service_worker_view(request):
     """Retorna o script Service Worker para cache seguro de assets públicos."""
     sw_code = """
-    const CACHE_NAME = 'delacruz-cache-v1';
+    const CACHE_NAME = 'barber-heitor-cache-v2';
     const STATIC_ASSETS = [
       '/',
       '/servicos/',
       '/barbeiros/',
       '/sobre/',
+      '/static/website/css/tokens.css',
       '/static/website/css/style.css',
       '/static/website/js/main.js',
       'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css',
@@ -502,7 +515,7 @@ class CadastroUsuarioView(FormView):
             )
 
         login(self.request, user)
-        messages.success(self.request, f'Bem-vindo à Delacruz Barber, {nome}! Sua conta foi criada com sucesso.')
+        messages.success(self.request, f'Bem-vindo à Barber Heitor, {nome}! Sua conta foi criada com sucesso.')
         return redirect('area_cliente')
 
 
@@ -1488,7 +1501,7 @@ class ConfiguracaoEstabelecimentoView(AdminStaffRequiredMixin, UpdateView):
         return ConfiguracaoEstabelecimento.get_solo()
 
     def form_valid(self, form):
-        messages.success(self.request, 'Configurações da Delacruz Barber salvas com sucesso!')
+        messages.success(self.request, 'Configurações da Barber Heitor salvas com sucesso!')
         return super().form_valid(form)
 
 
@@ -1827,29 +1840,30 @@ def download_ics_view(request, pk):
 
     ics_content = f"""BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Delacruz Barber//Agendamento v2.0//PT-BR
+PRODID:-//Barber Heitor//Agendamento v2.0//PT-BR
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
-UID:delacruz-agendamento-{agendamento.id}@delacruzbarber.com.br
+UID:barberheitor-agendamento-{agendamento.id}@barberheitor.com.br
 DTSTAMP:{dtstamp}
 DTSTART:{dtstart}
 DTEND:{dtend}
-SUMMARY:Delacruz Barber: {agendamento.servico.nome} com {agendamento.barbeiro.nome}
-DESCRIPTION:Agendamento de {agendamento.servico.nome} na Delacruz Barber com o barbeiro {agendamento.barbeiro.nome}. Valor: R$ {agendamento.servico.preco}. Telefone: (44) 9919-0997.
+SUMMARY:Barber Heitor: {agendamento.servico.nome} com {agendamento.barbeiro.nome}
+DESCRIPTION:Agendamento de {agendamento.servico.nome} na Barber Heitor com o barbeiro {agendamento.barbeiro.nome}. Valor: R$ {agendamento.servico.preco}. Telefone: (44) 9102-2176.
 LOCATION:Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí - PR
 STATUS:CONFIRMED
 BEGIN:VALARM
 TRIGGER:-PT2H
 ACTION:DISPLAY
-DESCRIPTION:Lembrete de corte na Delacruz Barber em 2 horas!
+DESCRIPTION:Lembrete de corte na Barber Heitor em 2 horas!
 END:VALARM
 END:VEVENT
 END:VCALENDAR"""
 
     response = HttpResponse(ics_content, content_type='text/calendar; charset=utf-8')
-    response['Content-Disposition'] = f'attachment; filename="delacruz-agendamento-{agendamento.id}.ics"'
+    response['Content-Disposition'] = f'attachment; filename="barber-heitor-agendamento-{agendamento.id}.ics"'
     return response
+
 
 
 class RepetirUltimoCorteView(LoginRequiredMixin, View):
@@ -1966,7 +1980,7 @@ class WalkinCreateView(AdminStaffRequiredMixin, View):
 
         cliente, _ = Cliente.objects.get_or_create(
             telefone=telefone if telefone else f"walkin-{uuid.uuid4().hex[:6]}",
-            defaults={'nome': nome, 'email': f'walkin-{uuid.uuid4().hex[:6]}@delacruzbarber.com.br', 'canal_origem': 'Passou em frente'}
+            defaults={'nome': nome, 'email': f'walkin-{uuid.uuid4().hex[:6]}@barberheitor.com.br', 'canal_origem': 'Passou em frente'}
         )
 
         hoje = timezone.localtime().date()
@@ -2052,7 +2066,7 @@ class ExportarDadosLGPDView(LoginRequiredMixin, View):
         }
 
         response = HttpResponse(json.dumps(dados, indent=2, default=str), content_type='application/json; charset=utf-8')
-        response['Content-Disposition'] = f'attachment; filename="delacruz_meus_dados_{cliente.id}.json"'
+        response['Content-Disposition'] = f'attachment; filename="barber_heitor_meus_dados_{cliente.id}.json"'
         return response
 
 
@@ -2433,7 +2447,7 @@ def health_check_view(request):
 
     payload = {
         "status": "healthy" if status_code == 200 else "unhealthy",
-        "app": "Delacruz Barber",
+        "app": "Barber Heitor",
         "version": "2.0.0",
         "database": db_status,
         "timestamp": timezone.now().isoformat(),

@@ -1,6 +1,6 @@
 {% extends "website/modelo.html" %}
 {% load crispy_forms_tags %}
-{% block titulo %}Consultor de Visagismo & Estilo IA | Delacruz Barber{% endblock %}
+{% block titulo %}Consultor de Visagismo & Estilo IA | Barber Heitor{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -43,15 +43,15 @@
     <!-- Header -->
     <div class="text-center max-w-700 mx-auto mb-4">
       <span class="badge bg-info bg-opacity-25 text-info text-uppercase fw-bold px-3 py-2 mb-2">Visagismo Computacional</span>
-      <h2 class="brand-font text-white fw-bold display-6">Descubra o Corte Ideal para <span class="text-gold">Seu Rosto</span></h2>
+      <h2 class="brand-font text-white fw-bold display-6">Descubra o Corte Ideal para <span class="text-brand">Seu Rosto</span></h2>
       <p class="text-muted small">Nossa Inteligência Artificial analisa suas proporções faciais e simetria para indicar os cortes e barbas que melhor valorizam seu visual.</p>
     </div>
 
     <div class="row g-4 mb-5">
       <!-- Formulário de Upload & Câmera ao Vivo -->
       <div class="col-lg-5">
-        <div class="card card-delacruz p-4 h-100">
-          <h5 class="text-white fw-bold mb-3"><i class="bi bi-camera text-gold me-2"></i> Foto do Rosto</h5>
+        <div class="card surface-card p-4 h-100">
+          <h5 class="text-white fw-bold mb-3"><i class="bi bi-camera text-brand me-2"></i> Foto do Rosto</h5>
           
           <!-- Botões de Escolha: Câmera ou Arquivo -->
           <div class="d-flex gap-2 mb-3">
@@ -70,7 +70,7 @@
               <div class="face-guide-overlay"></div>
             </div>
             <span class="small text-muted d-block mb-2">Posicione o rosto dentro da moldura</span>
-            <button type="button" class="btn btn-delacruz btn-sm px-4" id="btnCapturarFoto">
+            <button type="button" class="btn btn-brand btn-sm px-4" id="btnCapturarFoto">
               <i class="bi bi-camera-fill me-1"></i> Tirar Foto Agora
             </button>
           </div>
@@ -89,7 +89,7 @@
               </label>
             </div>
 
-            <button type="submit" class="btn btn-delacruz w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2">
+            <button type="submit" class="btn btn-brand w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2">
               <i class="bi bi-magic"></i> Analisar Visagismo com IA
             </button>
           </form>
@@ -98,7 +98,7 @@
 
       <!-- Último Resultado de Análise -->
       <div class="col-lg-7">
-        <div class="card card-delacruz p-4 h-100">
+        <div class="card surface-card p-4 h-100">
           <h5 class="text-white fw-bold mb-3"><i class="bi bi-cpu text-info me-2"></i> Resultado do Visagismo</h5>
           
           {% if analises %}
@@ -107,7 +107,7 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2 pb-2 border-bottom border-secondary border-opacity-25">
                   <div>
                     <span class="text-muted small">Formato Facial Identificado:</span>
-                    <h4 class="text-gold fw-bold mb-0">{{ ult.formato_rosto_detectado }}</h4>
+                    <h4 class="text-brand fw-bold mb-0">{{ ult.formato_rosto_detectado }}</h4>
                   </div>
                   <span class="badge bg-info bg-opacity-25 text-info px-3 py-2">
                     Confiança: {{ ult.confianca|floatformat:0 }}%
@@ -117,12 +117,12 @@
               </div>
 
               <!-- Estilos Recomendados do Catálogo -->
-              <h6 class="text-gold fw-bold mb-2">Cortes Recomendados do Nosso Catálogo:</h6>
+              <h6 class="text-brand fw-bold mb-2">Cortes Recomendados do Nosso Catálogo:</h6>
               <div class="row g-2">
                 {% for estilo in ult.estilos_sugeridos.all %}
                   <div class="col-sm-6">
                     <div class="p-2 rounded bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-2">
-                      <i class="bi bi-scissors text-gold fs-5"></i>
+                      <i class="bi bi-scissors text-brand fs-5"></i>
                       <div>
                         <strong class="text-white small d-block">{{ estilo.nome }}</strong>
                         <span class="text-muted" style="font-size: 0.75rem;">Manutenção: {{ estilo.manutencao }}</span>
@@ -145,17 +145,17 @@
     </div>
 
     <!-- Catálogo de Estilos da Barbearia -->
-    <h3 class="brand-font text-white fw-bold mb-4"><i class="bi bi-grid text-gold me-2"></i> Catálogo de Cortes Delacruz</h3>
+    <h3 class="brand-font text-white fw-bold mb-4"><i class="bi bi-grid text-brand me-2"></i> Catálogo de Cortes Barber Heitor</h3>
     <div class="row g-4">
       {% for estilo in catalogo_cortes %}
         <div class="col-md-6 col-lg-4">
-          <div class="card card-delacruz h-100 p-4">
+          <div class="card surface-card h-100 p-4">
             <h5 class="text-white fw-bold mb-1">{{ estilo.nome }}</h5>
-            <span class="badge bg-dark border border-secondary text-gold small mb-3 align-self-start">Formatos: {{ estilo.formato_rosto }}</span>
+            <span class="badge bg-dark border border-secondary text-brand small mb-3 align-self-start">Formatos: {{ estilo.formato_rosto }}</span>
             <p class="text-muted small mb-3">{{ estilo.descricao }}</p>
             <ul class="list-unstyled small text-muted d-flex flex-column gap-1 mt-auto">
-              <li><i class="bi bi-check text-gold me-1"></i> Tipo de Cabelo: <strong>{{ estilo.tipo_cabelo }}</strong></li>
-              <li><i class="bi bi-clock text-gold me-1"></i> Manutenção: <strong>{{ estilo.manutencao }}</strong></li>
+              <li><i class="bi bi-check text-brand me-1"></i> Tipo de Cabelo: <strong>{{ estilo.tipo_cabelo }}</strong></li>
+              <li><i class="bi bi-clock text-brand me-1"></i> Manutenção: <strong>{{ estilo.manutencao }}</strong></li>
             </ul>
           </div>
         </div>

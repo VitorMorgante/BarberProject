@@ -1,158 +1,106 @@
 {% extends "website/modelo.html" %}
 {% load static %}
 
-{% block titulo %}Sobre{% endblock %}
+{% block titulo %}Sobre Nós{% endblock %}
 
 {% block conteudo %}
-<section class="py-5 bg-dark-custom">
-  <div class="container py-4 text-start">
-    <div class="text-center mb-5">
-      <span class="section-subtitle">Conheça o Sistema</span>
-      <h2 class="section-title-center text-uppercase fw-bold text-success">Sobre o Projeto</h2>
-      <p class="text-muted-custom max-width-600 mx-auto">
-        Entenda o funcionamento da Delacruz Barber, nosso objetivo, atores e arquitetura de diagramas.
-      </p>
-    </div>
-
-    <div class="row g-4 mb-5">
-      <!-- Description Card -->
-      <div class="col-md-6">
-        <div class="card p-4 h-100">
-          <div class="card-body">
-            <h4 class="brand-font text-success mb-3"><i class="bi bi-info-circle me-2"></i>O Sistema</h4>
-            <p>
-              Este é um sistema desenvolvido em Django para a <strong>Delacruz Barber</strong>, onde os clientes podem agendar serviços de forma online e os usuários autenticados podem gerenciar os dados do sistema de forma segura.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Objective Card -->
-      <div class="col-md-6">
-        <div class="card p-4 h-100">
-          <div class="card-body">
-            <h4 class="brand-font text-success mb-3"><i class="bi bi-trophy me-2"></i>Objetivo do Projeto</h4>
-            <p>
-              O principal objetivo deste projeto é otimizar a conveniência do cliente através de um agendamento rápido online e, simultaneamente, capacitar a administração da barbearia. A plataforma oferece ferramentas organizadas de controle de agenda, gerenciamento de barbeiros ativos, estatísticas de receita e mensagens recebidas.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row g-4 mb-5">
-      <!-- Actors Card -->
-      <div class="col-md-6">
-        <div class="card p-4 h-100">
-          <div class="card-body">
-            <h4 class="brand-font text-success mb-3"><i class="bi bi-people me-2"></i>Principais Atores do Sistema</h4>
-            <ul class="list-unstyled">
-              <li class="mb-3">
-                <i class="bi bi-person-fill text-success me-2"></i><strong>Cliente:</strong> 
-                Usuário público que acessa a plataforma para escolher serviços, selecionar o barbeiro de sua preferência, consultar a data e horários disponíveis em tempo real e registrar o agendamento.
-              </li>
-              <li class="mb-3">
-                <i class="bi bi-scissors text-success me-2"></i><strong>Barbeiro:</strong> 
-                Profissional com acesso à área administrativa que acompanha sua grade de horários, visualiza agendamentos ativos na sua agenda e gerencia seu perfil.
-              </li>
-              <li>
-                <i class="bi bi-shield-lock-fill text-success me-2"></i><strong>Administrador:</strong> 
-                Gerente da barbearia com permissões completas para cadastrar novos serviços, adicionar novos profissionais ao time, gerenciar clientes cadastrados, configurar a escala de horários e auditar a receita geral.
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Functionalities Card -->
-      <div class="col-md-6">
-        <div class="card p-4 h-100">
-          <div class="card-body">
-            <h4 class="brand-font text-success mb-3"><i class="bi bi-sliders me-2"></i>Principais Funcionalidades</h4>
-            <ul class="list-unstyled">
-              <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i>Agendamento 100% online com seleção visual de serviço, barbeiro, data e horário.</li>
-              <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i>Validação automática de conflitos de horários em tempo real no banco de dados.</li>
-              <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i>Formulário de contato com persistência no banco de dados para suporte ou dúvidas gerais.</li>
-              <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i>Painel administrativo seguro com dashboard analítico completo.</li>
-              <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i>Operações de CRUD (Criar, Ler, Atualizar, Deletar) para gerenciar todas as entidades.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Diagrams Section -->
-    <div class="text-center mb-4 mt-5">
-      <h3 class="brand-font text-uppercase fw-bold text-success mb-3">Modelagem de Sistemas</h3>
-      <p class="text-muted-custom max-width-600 mx-auto mb-4">
-        Abaixo estão ilustrados os diagramas de modelagem e arquitetura de software correspondentes à solução.
-      </p>
-    </div>
-
-    <div class="row g-4">
-      <!-- Use Case Diagram Card -->
+<section class="py-5" style="background-color: var(--color-surface-sunken);">
+  <div class="container py-5 text-start">
+    
+    <!-- Hero Editorial -->
+    <div class="row align-items-center g-5 mb-5 pb-4 border-bottom border-secondary border-opacity-10">
       <div class="col-lg-6">
-        <div class="card p-4 text-center h-100">
-          <h5 class="brand-font text-light mb-3">Diagrama de Caso de Uso</h5>
-          <div class="diagram-image-container p-3 mb-3 bg-dark-custom rounded border border-secondary border-opacity-10 d-flex align-items-center justify-content-center" style="min-height: 280px;">
-            <div class="w-100">
-              {% if has_diagrama_caso_uso %}
-                <img src="{% static 'website/img/diagrama-caso-uso.png' %}" alt="Diagrama de caso de uso" class="img-fluid rounded">
-              {% else %}
-                <div class="p-4 text-center">
-                  <i class="bi bi-diagram-3 text-success fs-1 mb-2"></i>
-                  <p class="text-muted-custom mb-0 fw-semibold">Insira aqui a imagem do diagrama de caso de uso.</p>
-                </div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
+        <span class="section-subtitle">Nossa Essência</span>
+        <h1 class="display-2 text-white mb-4">A Barbearia Que Redefiniu o Cuidado Masculino</h1>
+        <p class="body-text fs-5 mb-4">
+          A <strong>{{ BARBER_NAME }}</strong> nasceu com um propósito inegociável: elevar a autoestima masculina por meio de rigor técnico, visagismo e atendimento de alto nível.
+        </p>
+        <p class="text-muted-custom mb-0" style="line-height: 1.8;">
+          Não acreditamos em cortes padronizados ou esperas cansativas. Criamos um ecossistema exclusivo onde cada cliente tem hora reservada, atenção individualizada e acesso a produtos de tratamento importados em um lounge acolhedor.
+        </p>
       </div>
 
-      <!-- Class Diagram Card -->
       <div class="col-lg-6">
-        <div class="card p-4 text-center h-100">
-          <h5 class="brand-font text-light mb-3">Diagrama de Classes</h5>
-          <div class="diagram-image-container p-3 mb-3 bg-dark-custom rounded border border-secondary border-opacity-10 d-flex align-items-center justify-content-center" style="min-height: 280px;">
-            <div class="w-100">
-              {% if has_diagrama_classes %}
-                <img src="{% static 'website/img/diagrama-classes.png' %}" alt="Diagrama de classes" class="img-fluid rounded">
-              {% else %}
-                <div class="p-4 text-center">
-                  <i class="bi bi-diagram-2 text-success fs-1 mb-2"></i>
-                  <p class="text-muted-custom mb-0 fw-semibold">Insira aqui a imagem do diagrama de classes.</p>
-                </div>
-              {% endif %}
-            </div>
-          </div>
+        <div class="position-relative overflow-hidden rounded-3 shadow-lg border border-brand" style="height: 380px;">
+          <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800" 
+               alt="Espaço {{ BARBER_NAME }}" 
+               class="w-100 h-100 object-fit-cover">
         </div>
       </div>
     </div>
 
-    <!-- Our Barbers Teaser section to show barbers and satisfy tests -->
-    <div class="text-center mb-4 mt-5">
-      <h3 class="brand-font text-uppercase fw-bold text-success mb-3">Nossos Barbeiros</h3>
-      <p class="text-muted-custom max-width-600 mx-auto mb-4">
-        Conheça nossos profissionais altamente qualificados.
+    <!-- Nossos Pilares de Valor -->
+    <div class="row g-4 mb-5">
+      <div class="col-md-4">
+        <div class="surface-card p-4 h-100">
+          <div class="highlight-icon">
+            <i class="bi bi-scissors"></i>
+          </div>
+          <h4 class="text-white mb-2">Precisão Cirúrgica</h4>
+          <p class="text-muted-custom small mb-0">
+            Estudamos cada linha do rosto para criar degradês suaves, contornos limpos e barbas geometricamente alinhadas.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="surface-card p-4 h-100">
+          <div class="highlight-icon">
+            <i class="bi bi-shield-check"></i>
+          </div>
+          <h4 class="text-white mb-2">Tecnologia Própria</h4>
+          <p class="text-muted-custom small mb-0">
+            Plataforma digital integrada com PIX seguro, acompanhamento de histórico capilar e clube de benefícios exclusivos.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="surface-card p-4 h-100">
+          <div class="highlight-icon">
+            <i class="bi bi-stars"></i>
+          </div>
+          <h4 class="text-white mb-2">Hospitalidade de Elite</h4>
+          <p class="text-muted-custom small mb-0">
+            Espaço climatizado, toalhas quentes aromáticas, café expresso selecionado e bebidas geladas para relaxar.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nossa Equipe -->
+    <div class="text-center mb-5 mt-5">
+      <span class="section-subtitle">Profissionais à Sua Disposição</span>
+      <h2 class="display-3 text-white mb-3">Nossos Barbeiros</h2>
+      <p class="text-muted-custom max-width-600 mx-auto" style="max-width: 600px;">
+        Conheça quem transforma técnica em arte na bancada da {{ BARBER_NAME }}.
       </p>
     </div>
 
     <div class="row justify-content-center g-4">
       {% for barbeiro in barbeiros %}
       <div class="col-md-6 col-lg-4">
-        <div class="card p-3 h-100">
-          <div class="card-body text-center">
-            <h5 class="brand-font text-white mb-2">{{ barbeiro.nome }}</h5>
-            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-2 py-1 mb-2" style="font-size: 0.8rem;">
-              {{ barbeiro.cargo }}
+        <div class="surface-card p-4 text-center h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="rounded-circle border border-warning border-opacity-50 mx-auto mb-3 bg-dark d-flex align-items-center justify-content-center" style="width: 90px; height: 90px;">
+              <i class="bi bi-person fs-1 text-brand"></i>
+            </div>
+            <h4 class="text-white mb-1">{{ barbeiro.nome }}</h4>
+            <span class="badge bg-dark border border-warning text-brand px-3 py-1 mb-3" style="font-size: 0.75rem;">
+              {{ barbeiro.cargo|default:"Barbeiro Especialista" }}
             </span>
-            <p class="text-muted mt-2" style="font-size: 0.9rem;">{{ barbeiro.descricao_curta }}</p>
+            <p class="text-muted-custom small mb-4">
+              {{ barbeiro.descricao_curta|default:"Especialista em visagismo e atendimento de alto padrão." }}
+            </p>
           </div>
+          <a href="{% url 'agendamento' %}?barbeiro={{ barbeiro.pk }}" class="btn btn-outline-brand btn-sm w-100">
+            Agendar com {{ barbeiro.nome|truncatewords:1 }}
+          </a>
         </div>
       </div>
       {% empty %}
-      <div class="col-12 text-center">
-        <p class="text-muted">Nenhum barbeiro cadastrado.</p>
+      <div class="col-12 text-center py-4">
+        <p class="text-muted-custom">Nenhum barbeiro ativo no momento.</p>
       </div>
       {% endfor %}
     </div>

@@ -1,5 +1,5 @@
 {% extends "website/modelo.html" %}
-{% block titulo %}Meus Ganhos & Comissões | Delacruz Barber{% endblock %}
+{% block titulo %}Meus Ganhos & Comissões | Barber Heitor{% endblock %}
 
 {% block conteudo %}
 <section class="py-5">
@@ -8,45 +8,45 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
       <div>
-        <span class="badge bg-gold text-dark text-uppercase fw-bold px-3 py-1 mb-1">Extrato Financeiro</span>
-        <h2 class="brand-font text-white fw-bold mb-0">Meus <span class="text-gold">Ganhos & Comissões</span></h2>
+        <span class="badge bg-brand text-dark text-uppercase fw-bold px-3 py-1 mb-1">Extrato Financeiro</span>
+        <h2 class="brand-font text-white fw-bold mb-0">Meus <span class="text-brand">Ganhos & Comissões</span></h2>
         <p class="text-muted small mb-0">{{ barbeiro.nome }} • Acompanhamento transparente de comissões e repasses.</p>
       </div>
       
       <!-- Filtros de Período -->
       <div class="btn-group shadow-sm">
-        <a href="?periodo=hoje" class="btn btn-sm {% if periodo_selecionado == 'hoje' %}btn-delacruz{% else %}btn-dark border-secondary{% endif %}">Hoje</a>
-        <a href="?periodo=semana" class="btn btn-sm {% if periodo_selecionado == 'semana' %}btn-delacruz{% else %}btn-dark border-secondary{% endif %}">Esta Semana</a>
-        <a href="?periodo=mes" class="btn btn-sm {% if periodo_selecionado == 'mes' %}btn-delacruz{% else %}btn-dark border-secondary{% endif %}">Este Mês</a>
-        <a href="?periodo=30_dias" class="btn btn-sm {% if periodo_selecionado == '30_dias' %}btn-delacruz{% else %}btn-dark border-secondary{% endif %}">30 Dias</a>
+        <a href="?periodo=hoje" class="btn btn-sm {% if periodo_selecionado == 'hoje' %}btn-brand{% else %}btn-dark border-secondary{% endif %}">Hoje</a>
+        <a href="?periodo=semana" class="btn btn-sm {% if periodo_selecionado == 'semana' %}btn-brand{% else %}btn-dark border-secondary{% endif %}">Esta Semana</a>
+        <a href="?periodo=mes" class="btn btn-sm {% if periodo_selecionado == 'mes' %}btn-brand{% else %}btn-dark border-secondary{% endif %}">Este Mês</a>
+        <a href="?periodo=30_dias" class="btn btn-sm {% if periodo_selecionado == '30_dias' %}btn-brand{% else %}btn-dark border-secondary{% endif %}">30 Dias</a>
       </div>
     </div>
 
     <!-- Summary KPIs -->
     <div class="row g-3 mb-4">
       <div class="col-6 col-lg-3">
-        <div class="card card-delacruz p-3">
+        <div class="card surface-card p-3">
           <span class="small text-muted text-uppercase d-block">Comissão Serviços:</span>
-          <span class="fs-4 fw-bold text-gold">R$ {{ extrato.comissao_servicos }}</span>
+          <span class="fs-4 fw-bold text-brand">R$ {{ extrato.comissao_servicos }}</span>
           <span class="small text-muted d-block mt-1">De R$ {{ extrato.faturamento_servicos }} faturados</span>
         </div>
       </div>
       <div class="col-6 col-lg-3">
-        <div class="card card-delacruz p-3">
+        <div class="card surface-card p-3">
           <span class="small text-muted text-uppercase d-block">Comissão Produtos:</span>
           <span class="fs-4 fw-bold text-success">R$ {{ extrato.comissao_produtos }}</span>
           <span class="small text-muted d-block mt-1">De R$ {{ extrato.faturamento_produtos }} vendidos</span>
         </div>
       </div>
       <div class="col-6 col-lg-3">
-        <div class="card card-delacruz p-3">
+        <div class="card surface-card p-3">
           <span class="small text-muted text-uppercase d-block">Total de Comissões:</span>
           <span class="fs-4 fw-bold text-white">R$ {{ extrato.total_comissao }}</span>
           <span class="small text-muted d-block mt-1">{{ extrato.qtd_atendimentos }} cortes realizados</span>
         </div>
       </div>
       <div class="col-6 col-lg-3">
-        <div class="card card-delacruz p-3 border-warning border-opacity-50">
+        <div class="card surface-card p-3 border-warning border-opacity-50">
           <span class="small text-muted text-uppercase d-block">Saldo a Receber:</span>
           <span class="fs-4 fw-bold text-warning">R$ {{ extrato.saldo_a_receber }}</span>
           <span class="small text-muted d-block mt-1">Repasses: R$ {{ extrato.total_repasses }}</span>
@@ -57,16 +57,16 @@
     <!-- Interactive Charts Row -->
     <div class="row g-4 mb-4">
       <div class="col-lg-6">
-        <div class="card card-delacruz p-4 h-100">
-          <h6 class="text-white fw-bold mb-3"><i class="bi bi-pie-chart-fill text-gold me-2"></i> Origem das Comissões (Serviços vs Produtos)</h6>
+        <div class="card surface-card p-4 h-100">
+          <h6 class="text-white fw-bold mb-3"><i class="bi bi-pie-chart-fill text-brand me-2"></i> Origem das Comissões (Serviços vs Produtos)</h6>
           <div class="position-relative" style="height: 230px;">
             <canvas id="graficoOrigemComissao"></canvas>
           </div>
         </div>
       </div>
       <div class="col-lg-6">
-        <div class="card card-delacruz p-4 h-100">
-          <h6 class="text-white fw-bold mb-3"><i class="bi bi-bar-chart-line-fill text-gold me-2"></i> Comparativo: Faturamento vs Sua Comissão</h6>
+        <div class="card surface-card p-4 h-100">
+          <h6 class="text-white fw-bold mb-3"><i class="bi bi-bar-chart-line-fill text-brand me-2"></i> Comparativo: Faturamento vs Sua Comissão</h6>
           <div class="position-relative" style="height: 230px;">
             <canvas id="graficoComparativoGanhos"></canvas>
           </div>
@@ -75,8 +75,8 @@
     </div>
 
     <!-- Tabela Detalhada de Comissões -->
-    <div class="card card-delacruz p-4">
-      <h5 class="text-white fw-bold mb-3"><i class="bi bi-list-check text-gold me-2"></i> Lançamentos Detalhados de Comissão</h5>
+    <div class="card surface-card p-4">
+      <h5 class="text-white fw-bold mb-3"><i class="bi bi-list-check text-brand me-2"></i> Lançamentos Detalhados de Comissão</h5>
       
       <div class="table-responsive">
         <table class="table table-dark table-hover align-middle mb-0">
@@ -111,7 +111,7 @@
                 </td>
                 <td>R$ {{ c.valor_base }}</td>
                 <td>{{ c.percentual_aplicado }}%</td>
-                <td class="text-gold fw-bold">R$ {{ c.valor_comissao }}</td>
+                <td class="text-brand fw-bold">R$ {{ c.valor_comissao }}</td>
                 <td>
                   <span class="badge {% if c.status == 'Paga' %}bg-success{% elif c.status == 'Pendente' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
                     {{ c.status }}
