@@ -40,3 +40,6 @@ skills-lock.json
 # System files
 .DS_Store
 Thumbs.db
+
+# Documentation
+docs/
