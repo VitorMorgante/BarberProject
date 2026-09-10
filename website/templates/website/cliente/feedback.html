@@ -15,7 +15,11 @@
             <h5 class="fw-bold mb-1 text-white">Resumo do Atendimento</h5>
             <p class="text-muted-custom mb-0" style="font-size: 0.88rem;">
               <strong>Serviço:</strong> {{ agendamento.servico.nome }}<br>
-              <strong>Profissional:</strong> {{ agendamento.barbeiro.nome }}<br>
+              <strong>Profissional:</strong> 
+              {% if agendamento.barbeiro.foto_url or agendamento.barbeiro.imagem_url %}
+                <img src="{{ agendamento.barbeiro.foto_url|default:agendamento.barbeiro.imagem_url }}" alt="{{ agendamento.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30 mx-1" style="width: 20px; height: 20px; object-fit: cover;">
+              {% endif %}
+              {{ agendamento.barbeiro.nome }}<br>
               <strong>Data:</strong> {{ agendamento.data|date:"d/m/Y" }} às {{ agendamento.horario|time:"H:i" }}
             </p>
           </div>

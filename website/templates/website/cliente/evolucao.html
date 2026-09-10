@@ -25,7 +25,12 @@
             <img src="{{ foto.imagem.url }}" alt="Evolução do corte" class="img-fluid w-100" style="height: 240px; object-fit: cover;">
             <div class="p-3 text-start">
               <span class="badge bg-dark border border-secondary text-brand small mb-1">{{ foto.data|date:"d/m/Y" }}</span>
-              <h6 class="text-white fw-bold mb-1">Corte com {{ foto.barbeiro.nome }}</h6>
+              <h6 class="text-white fw-bold mb-1 d-flex align-items-center gap-2">
+                {% if foto.barbeiro.foto_url or foto.barbeiro.imagem_url %}
+                  <img src="{{ foto.barbeiro.foto_url|default:foto.barbeiro.imagem_url }}" alt="{{ foto.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 20px; height: 20px; object-fit: cover;">
+                {% endif %}
+                <span>Corte com {{ foto.barbeiro.nome }}</span>
+              </h6>
               {% if foto.observacoes %}
                 <p class="text-muted small mb-0">{{ foto.observacoes }}</p>
               {% endif %}

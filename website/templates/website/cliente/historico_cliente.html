@@ -30,7 +30,14 @@
                 {% for a in agendamentos %}
                   <tr>
                     <td class="fw-bold text-white">{{ a.servico.nome }}</td>
-                    <td>{{ a.barbeiro.nome }}</td>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        {% if a.barbeiro.foto_url or a.barbeiro.imagem_url %}
+                          <img src="{{ a.barbeiro.foto_url|default:a.barbeiro.imagem_url }}" alt="{{ a.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 22px; height: 22px; object-fit: cover;">
+                        {% endif %}
+                        <span>{{ a.barbeiro.nome }}</span>
+                      </div>
+                    </td>
                     <td>{{ a.data|date:"d/m/Y" }}</td>
                     <td>{{ a.horario|time:"H:i" }}</td>
                     <td>R$ {{ a.servico.preco }}</td>

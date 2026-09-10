@@ -9,8 +9,8 @@
       <div class="col-lg-8">
         <div class="detail-card shadow">
           <div class="d-flex align-items-center gap-4 mb-4 pb-3 border-bottom border-secondary border-opacity-10 flex-wrap">
-            {% if barbeiro.imagem_url %}
-            <img src="{{ barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="rounded-circle border border-warning" style="width: 90px; height: 90px; object-fit: cover;">
+            {% if barbeiro.foto_url or barbeiro.imagem_url %}
+            <img src="{{ barbeiro.foto_url|default:barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="rounded-circle border border-warning" style="width: 90px; height: 90px; object-fit: cover;">
             {% else %}
             <div class="rounded-circle bg-secondary bg-opacity-20 d-flex align-items-center justify-content-center border border-secondary border-opacity-30" style="width: 90px; height: 90px; color: var(--text-muted);">
               <i class="bi bi-person-fill fs-1"></i>

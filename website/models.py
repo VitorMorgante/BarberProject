@@ -72,7 +72,7 @@ class Barbeiro(models.Model):
     nivel = models.CharField(max_length=20, choices=Nivel.choices, default=Nivel.PLENO)
     especialidade = models.CharField(max_length=300)
     descricao_curta = models.TextField(blank=True)
-    imagem_url = models.URLField(blank=True)
+    imagem_url = models.CharField(max_length=500, blank=True, help_text="URL externa ou caminho estático da foto")
     tempo_buffer_depois = models.PositiveIntegerField(default=5, help_text="Buffer em minutos após cada serviço")
     ativo = models.BooleanField(default=True)
     cadastrado_em = models.DateTimeField(auto_now_add=True)
@@ -85,6 +85,15 @@ class Barbeiro(models.Model):
 
     def __str__(self):
         return f"{self.nome} ({self.get_nivel_display()})"
+
+    @property
+    def foto_url(self):
+        """Retorna a foto oficial do barbeiro com fallback inteligente para a foto oficial do Heitor Pontes."""
+        if self.imagem_url:
+            return self.imagem_url
+        if 'heitor' in self.nome.lower():
+            return '/static/website/img/barbeiros/heitor_pontes.jpg'
+        return '/static/website/img/barbeiros/heitor_pontes.jpg'
 
 
 class BarbeiroServico(models.Model):

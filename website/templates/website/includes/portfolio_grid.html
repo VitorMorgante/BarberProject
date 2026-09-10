@@ -1,0 +1,98 @@
+{% load static %}
+
+<!-- Controles de Filtros Apenas com Categorias Existentes -->
+<div class="d-flex flex-wrap justify-content-center gap-2 mb-4" role="tablist" aria-label="Filtrar itens do portfólio">
+  <button type="button" class="btn btn-surface btn-sm gallery-filter-btn active px-3 py-2" data-filter="all" role="tab" aria-selected="true">
+    <i class="bi bi-grid-fill me-1 text-brand"></i> Todos ({{ portfolio_itens|length|default:"9" }})
+  </button>
+  <button type="button" class="btn btn-surface btn-sm gallery-filter-btn px-3 py-2" data-filter="fotos" role="tab" aria-selected="false">
+    <i class="bi bi-camera-fill me-1 text-brand"></i> Fotos (6)
+  </button>
+  <button type="button" class="btn btn-surface btn-sm gallery-filter-btn px-3 py-2" data-filter="videos" role="tab" aria-selected="false">
+    <i class="bi bi-play-circle-fill text-brand me-1"></i> Vídeos (3)
+  </button>
+</div>
+
+<!-- Grade Responsiva com Proporção 3:4 Preservada -->
+<div class="row g-4 justify-content-center gallery-row text-start" id="portfolio-grid">
+  {% for item in portfolio_itens %}
+    <div class="col-12 col-sm-6 col-lg-4 gallery-col" data-category="{{ item.categoria_filtro }}">
+      <div class="surface-card h-100 overflow-hidden d-flex flex-column shadow-lg portfolio-card border border-secondary border-opacity-10">
+        
+        <!-- Contêiner de Mídia Vertical (Proporção 3:4) -->
+        <div class="portfolio-media-wrapper position-relative" style="aspect-ratio: 3 / 4; width: 100%; overflow: hidden; background-color: var(--color-surface-sunken, #06080d);">
+          {% if item.is_video %}
+            <video controls playsinline preload="none"
+                   width="{{ item.largura|default:'720' }}"
+                   height="{{ item.altura|default:'960' }}"
+                   aria-label="{{ item.titulo }} - Registro em vídeo de corte na barbearia"
+                   poster="{% static item.capa_static %}"
+                   class="w-100 h-100 object-fit-cover portfolio-video">
+              <source src="{% static item.arquivo_static %}" type="video/mp4">
+              <div class="p-3 text-center text-muted-custom">
+                <p class="small mb-2">Seu navegador não suporta reprodução direta de MP4.</p>
+                <a href="{% static item.arquivo_static %}" class="btn btn-sm btn-outline-brand" target="_blank" rel="noopener">
+                  <i class="bi bi-box-arrow-up-right me-1"></i>Abrir arquivo de vídeo
+                </a>
+              </div>
+            </video>
+          {% else %}
+            <img src="{% static item.arquivo_static %}"
+                 alt="{{ item.alt }}"
+                 width="{{ item.largura|default:'1536' }}"
+                 height="{{ item.altura|default:'2048' }}"
+                 loading="lazy"
+                 decoding="async"
+                 class="w-100 h-100 object-fit-cover portfolio-img"
+                 style="transition: transform 0.4s ease;">
+          {% endif %}
+        </div>
+
+        <!-- Descrições Abaixo da Mídia (Sem Obstrução Visual do Corte) -->
+        <div class="card-body p-3 d-flex flex-column justify-content-between flex-grow-1" style="background-color: var(--color-surface, #0d121c);">
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge bg-dark border border-secondary text-brand px-2 py-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                {{ item.categoria }}
+              </span>
+              <span class="text-muted-custom small" style="font-size: 0.78rem;">
+                {% if item.is_video %}
+                  <i class="bi bi-film text-brand me-1"></i>Vídeo ({{ item.duracao_formatada }})
+                {% else %}
+                  <i class="bi bi-camera text-brand me-1"></i>Fotografia
+                {% endif %}
+              </span>
+            </div>
+            
+            <h5 class="text-white fw-bold mb-1" style="font-size: 1.05rem;">{{ item.titulo }}</h5>
+            
+            <p class="text-muted-custom mb-3" style="font-size: 0.85rem; line-height: 1.45;">
+              {{ item.descricao }}
+            </p>
+          </div>
+
+          <!-- Barra de Ações Acessíveis e Resolução -->
+          <div class="pt-2 border-top border-secondary border-opacity-10 d-flex justify-content-between align-items-center">
+            {% if item.is_video %}
+              <a href="{% static item.arquivo_static %}" target="_blank" rel="noopener" class="text-brand text-decoration-none small d-inline-flex align-items-center gap-1" aria-label="Abrir vídeo {{ item.titulo }} em tela cheia">
+                <i class="bi bi-box-arrow-up-right"></i> Abrir vídeo
+              </a>
+              <span class="text-muted-custom small" style="font-size: 0.75rem;">720 × 960</span>
+            {% else %}
+              <a href="{% static item.arquivo_static %}" target="_blank" rel="noopener" class="text-brand text-decoration-none small d-inline-flex align-items-center gap-1" aria-label="Ver fotografia {{ item.titulo }} em tamanho original">
+                <i class="bi bi-arrows-fullscreen"></i> Ver ampliada
+              </a>
+              <span class="text-muted-custom small" style="font-size: 0.75rem;">{{ item.largura }} × {{ item.altura }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12 text-center py-5">
+      <i class="bi bi-images fs-1 text-muted-custom d-block mb-3 opacity-50"></i>
+      <p class="text-muted-custom">Nenhuma mídia encontrada no momento.</p>
+    </div>
+  {% endfor %}
+</div>

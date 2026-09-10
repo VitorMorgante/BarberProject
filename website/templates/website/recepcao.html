@@ -70,8 +70,11 @@
                 <div class="p-3 rounded-3 bg-dark border border-primary border-opacity-50 d-flex justify-content-between align-items-center">
                   <div>
                     <h6 class="mb-1 text-light">{{ ag.cliente.nome }}</h6>
-                    <div class="small text-secondary">
-                      <span class="text-brand"><i class="bi bi-person me-1"></i>{{ ag.barbeiro.nome }}</span> • 
+                    <div class="small text-secondary d-flex align-items-center gap-2 mt-1">
+                      {% if ag.barbeiro.foto_url or ag.barbeiro.imagem_url %}
+                        <img src="{{ ag.barbeiro.foto_url|default:ag.barbeiro.imagem_url }}" alt="{{ ag.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 22px; height: 22px; object-fit: cover;">
+                      {% endif %}
+                      <span class="text-brand">{{ ag.barbeiro.nome }}</span> • 
                       <span>{{ ag.servico.nome }}</span>
                     </div>
                   </div>
@@ -160,7 +163,14 @@
                     <strong class="text-white d-block">{{ a.cliente.nome }}</strong>
                     <span class="text-secondary small">{{ a.cliente.telefone }}</span>
                   </td>
-                  <td>{{ a.barbeiro.nome }}</td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      {% if a.barbeiro.foto_url or a.barbeiro.imagem_url %}
+                        <img src="{{ a.barbeiro.foto_url|default:a.barbeiro.imagem_url }}" alt="{{ a.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 22px; height: 22px; object-fit: cover;">
+                      {% endif %}
+                      <span>{{ a.barbeiro.nome }}</span>
+                    </div>
+                  </td>
                   <td class="small">{{ a.servico.nome }}</td>
                   <td>
                     <span class="badge-status {% if a.status == 'Confirmado' %}status-confirmado{% elif a.status == 'Em Atendimento' %}status-atendimento{% elif a.status == 'Concluído' %}status-concluido{% else %}status-pendente{% endif %}">

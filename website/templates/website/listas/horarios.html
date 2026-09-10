@@ -32,7 +32,14 @@
           <tbody>
             {% for horario in horarios %}
             <tr>
-              <td><span class="fw-bold">{{ horario.barbeiro.nome }}</span></td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% if horario.barbeiro.foto_url or horario.barbeiro.imagem_url %}
+                    <img src="{{ horario.barbeiro.foto_url|default:horario.barbeiro.imagem_url }}" alt="{{ horario.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 22px; height: 22px; object-fit: cover;">
+                  {% endif %}
+                  <span class="fw-bold">{{ horario.barbeiro.nome }}</span>
+                </div>
+              </td>
               <td class="text-brand fw-bold"><i class="bi bi-clock me-2"></i>{{ horario.horario|time:"H:i" }}</td>
               <td>{{ horario.observacao|default:"-" }}</td>
               <td class="text-center">

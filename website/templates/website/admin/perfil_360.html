@@ -74,7 +74,12 @@
         
         <div class="mb-3">
           <small class="text-secondary d-block">Barbeiro Favorito:</small>
-          <span class="text-light fw-bold">{{ p360.metricas.barbeiro_favorito.nome|default:"Sem preferência explícita" }}</span>
+          <div class="d-flex align-items-center gap-2">
+            {% if p360.metricas.barbeiro_favorito and p360.metricas.barbeiro_favorito.foto_url %}
+              <img src="{{ p360.metricas.barbeiro_favorito.foto_url }}" alt="{{ p360.metricas.barbeiro_favorito.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 22px; height: 22px; object-fit: cover;">
+            {% endif %}
+            <span class="text-light fw-bold">{{ p360.metricas.barbeiro_favorito.nome|default:"Sem preferência explícita" }}</span>
+          </div>
         </div>
         <div class="mb-3">
           <small class="text-secondary d-block">Serviço Mais Frequente:</small>

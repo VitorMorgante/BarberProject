@@ -267,10 +267,12 @@
       <div class="col-md-6 col-lg-4">
         <div class="barber-card">
           <div class="barber-img-container">
-            {% if barbeiro.imagem_url %}
-              <img src="{{ barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="barber-img">
+            {% if barbeiro.foto_url or barbeiro.imagem_url %}
+              <img src="{{ barbeiro.foto_url|default:barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="barber-img" style="object-fit: cover;">
             {% else %}
-              <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=600" alt="{{ barbeiro.nome }}" class="barber-img">
+              <div class="w-100 h-100 bg-dark d-flex align-items-center justify-content-center text-muted">
+                <i class="bi bi-person-fill fs-1"></i>
+              </div>
             {% endif %}
             <div class="position-absolute top-0 end-0 m-3">
               <span class="badge bg-dark border border-warning text-brand px-3 py-1 text-uppercase fw-bold" style="font-size: 0.75rem;">
@@ -361,54 +363,27 @@
 {% endif %}
 
 <!-- ==============================================================================
-     6. GALERIA DE CORTES & TRANSFORMAÇÕES
+     6. GALERIA DE CORTES & TRANSFORMAÇÕES (PORTFÓLIO HEITOR)
      ============================================================================== -->
-<section class="py-5" id="galeria" style="background-color: var(--color-surface-sunken);">
+<section class="py-5" id="galeria" style="background-color: var(--color-surface-sunken, #06080d);">
   <div class="container py-5">
     
     <div class="text-center mb-5">
-      <span class="section-subtitle">Portfólio de Trabalhos</span>
-      <h2 class="display-3 text-white mb-3">Galeria de Inspirações</h2>
-      <p class="text-muted-custom max-width-600 mx-auto" style="max-width: 600px;">
-        Navegue pelos cortes e finalizações mais recentes realizados por nossa equipe.
+      <span class="section-subtitle">Portfólio</span>
+      <h2 class="display-3 text-white mb-3">Fotos e vídeos dos cortes</h2>
+      <p class="text-muted-custom mx-auto" style="max-width: 620px;">
+        Registros de atendimentos e finalizações realizados na Barber Heitor.
       </p>
     </div>
 
-    <!-- Filter Buttons -->
-    <div class="d-flex flex-wrap justify-content-center gap-2 mb-5">
-      <button class="btn btn-surface btn-sm gallery-filter-btn active" data-filter="all">Todos</button>
-      <button class="btn btn-surface btn-sm gallery-filter-btn" data-filter="cortes">Cortes</button>
-      <button class="btn btn-surface btn-sm gallery-filter-btn" data-filter="barbas">Barbas</button>
-      <button class="btn btn-surface btn-sm gallery-filter-btn" data-filter="degrades">Degradês</button>
-    </div>
+    <!-- Grade Reutilizável de Mídias (6 Fotos e 3 Vídeos) -->
+    {% include "website/includes/portfolio_grid.html" with portfolio_itens=portfolio_itens %}
 
-    <!-- Gallery Grid -->
-    <div class="row g-4 gallery-row text-start">
-      {% for foto in fotos_trabalho %}
-      <div class="col-sm-6 col-lg-3 gallery-col" data-category="{% if 'degrad' in foto.titulo.lower or 'fade' in foto.titulo.lower %}degrades {% endif %}{% if foto.categoria == 'Corte' %}cortes{% elif foto.categoria == 'Barba' %}barbas{% else %}cortes{% endif %}">
-        <div class="surface-card overflow-hidden h-100">
-          <div class="position-relative" style="height: 240px;">
-            {% if foto.imagem %}
-              <img src="{{ foto.imagem.url }}" alt="{{ foto.titulo }}" class="w-100 h-100 object-fit-cover">
-            {% else %}
-              <div class="w-100 h-100 bg-dark d-flex align-items-center justify-content-center text-muted">
-                <i class="bi bi-scissors fs-1"></i>
-              </div>
-            {% endif %}
-            <div class="position-absolute bottom-0 start-0 end-0 p-3" style="background: linear-gradient(to top, rgba(6,8,13,0.95), transparent);">
-              <span class="badge bg-dark border border-secondary text-brand" style="font-size: 0.72rem;">{{ foto.categoria }}</span>
-              <h6 class="text-white mb-0 mt-1">{{ foto.titulo }}</h6>
-              <small class="text-muted-custom d-block"><i class="bi bi-person me-1"></i>{{ foto.barbeiro.nome }}</small>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div class="col-12 text-center py-5">
-        <i class="bi bi-images fs-1 text-muted-custom d-block mb-3"></i>
-        <p class="text-muted-custom">Novas fotos de trabalhos serão adicionadas em breve.</p>
-      </div>
-      {% endfor %}
+    <!-- Link para Página Dedicada da Galeria Completa -->
+    <div class="text-center mt-5">
+      <a href="{% url 'galeria' %}" class="btn btn-outline-brand px-4 py-2">
+        <i class="bi bi-collection-play me-2"></i>Ver Portfólio Completo
+      </a>
     </div>
 
   </div>

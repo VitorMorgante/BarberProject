@@ -12,7 +12,14 @@
         <h2 class="brand-font text-white fw-bold mb-0">
           Atendimento: <span class="text-brand">{{ agendamento.cliente.nome }}</span>
         </h2>
-        <p class="text-muted small mb-0">Barbeiro: {{ agendamento.barbeiro.nome }} • Data: {{ agendamento.data|date:"d/m/Y" }} às {{ agendamento.horario|time:"H:i" }}</p>
+        <p class="text-muted small mb-0 d-flex align-items-center gap-2">
+          <span>Barbeiro:</span>
+          {% if agendamento.barbeiro.foto_url or agendamento.barbeiro.imagem_url %}
+            <img src="{{ agendamento.barbeiro.foto_url|default:agendamento.barbeiro.imagem_url }}" alt="{{ agendamento.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 20px; height: 20px; object-fit: cover;">
+          {% endif %}
+          <strong class="text-white">{{ agendamento.barbeiro.nome }}</strong>
+          <span>• Data: {{ agendamento.data|date:"d/m/Y" }} às {{ agendamento.horario|time:"H:i" }}</span>
+        </p>
       </div>
       <div>
         <a href="{% url 'agendamentos_barbeiro' %}" class="btn btn-outline-brand btn-sm"><i class="bi bi-arrow-left me-1"></i> Voltar aos Atendimentos</a>

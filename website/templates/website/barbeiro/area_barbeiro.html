@@ -9,12 +9,17 @@
     
     <!-- Header Profissional -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-10">
-      <div>
-        <span class="section-subtitle">Painel Profissional</span>
-        <h1 class="display-3 text-white mb-1">
-          Barbeiro — <span class="text-brand">{{ barbeiro.nome|default:request.user.get_full_name }}</span>
-        </h1>
-        <p class="text-muted-custom small mb-0">{{ barbeiro.cargo|default:"Barbeiro Especialista" }} • {{ BARBER_NAME }}</p>
+      <div class="d-flex align-items-center gap-3">
+        {% if barbeiro.foto_url or barbeiro.imagem_url %}
+          <img src="{{ barbeiro.foto_url|default:barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="rounded-circle border border-warning" style="width: 64px; height: 64px; object-fit: cover; flex-shrink: 0;">
+        {% endif %}
+        <div>
+          <span class="section-subtitle">Painel Profissional</span>
+          <h1 class="display-3 text-white mb-1">
+            Barbeiro — <span class="text-brand">{{ barbeiro.nome|default:request.user.get_full_name }}</span>
+          </h1>
+          <p class="text-muted-custom small mb-0">{{ barbeiro.cargo|default:"Barbeiro Especialista" }} • {{ BARBER_NAME }}</p>
+        </div>
       </div>
       <div class="d-flex gap-2 flex-wrap">
         <a href="{% url 'agendamentos_barbeiro' %}" class="btn btn-brand btn-sm d-flex align-items-center gap-2">
@@ -148,6 +153,8 @@
           <div class="text-center mb-4">
             {% if request.user.perfil.foto_perfil %}
               <img src="{{ request.user.perfil.foto_perfil.url }}" alt="Foto de Perfil" class="rounded-circle border border-warning border-opacity-50 mx-auto mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+            {% elif barbeiro.foto_url %}
+              <img src="{{ barbeiro.foto_url }}" alt="{{ barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-50 mx-auto mb-3" style="width: 100px; height: 100px; object-fit: cover;">
             {% else %}
               <div class="rounded-circle border border-warning border-opacity-50 d-flex align-items-center justify-content-center mx-auto mb-3 bg-dark" style="width: 100px; height: 100px;">
                 <i class="bi bi-scissors fs-1 text-brand"></i>

@@ -152,7 +152,14 @@
                     <small class="text-muted-custom">{{ a.cliente.telefone }}</small>
                   </td>
                   <td class="small">{{ a.servico.nome }}</td>
-                  <td>{{ a.barbeiro.nome }}</td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      {% if a.barbeiro.foto_url or a.barbeiro.imagem_url %}
+                        <img src="{{ a.barbeiro.foto_url|default:a.barbeiro.imagem_url }}" alt="{{ a.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 24px; height: 24px; object-fit: cover;">
+                      {% endif %}
+                      <span>{{ a.barbeiro.nome }}</span>
+                    </div>
+                  </td>
                   <td>
                     <span class="d-block">{{ a.data|date:"d/m/Y" }}</span>
                     <small class="text-brand font-monospace">{{ a.horario|time:"H:i" }}</small>

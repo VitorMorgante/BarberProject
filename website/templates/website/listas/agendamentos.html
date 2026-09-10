@@ -41,7 +41,14 @@
                 <span class="d-block">{{ agendamento.servico.nome }}</span>
                 <small class="text-brand">R$ {{ agendamento.servico.preco|floatformat:2 }}</small>
               </td>
-              <td>{{ agendamento.barbeiro.nome|truncatewords:1 }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% if agendamento.barbeiro.foto_url or agendamento.barbeiro.imagem_url %}
+                    <img src="{{ agendamento.barbeiro.foto_url|default:agendamento.barbeiro.imagem_url }}" alt="{{ agendamento.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 22px; height: 22px; object-fit: cover;">
+                  {% endif %}
+                  <span>{{ agendamento.barbeiro.nome }}</span>
+                </div>
+              </td>
               <td>
                 <span class="fw-bold d-block">{{ agendamento.data|date:"d/m/Y" }}</span>
                 <small class="text-brand"><i class="bi bi-clock me-1"></i>{{ agendamento.horario|time:"H:i" }}</small>

@@ -121,7 +121,7 @@ Acesse a aplicação em `http://127.0.0.1:8000/`.
 | :--- | :--- | :--- | :--- |
 | **Administrador / Executivo** | `admin` | `admin123` | Cockpit Executivo, Financeiro, Comissões, Estoque e Cadastros |
 | **Barbeiro (Danilo)** | `danilo` | `barbeiro123` | Painel do Barbeiro, Atendimentos, Comanda PDV, Comissões |
-| **Barbeiro (Heitor)** | `heitor` | `barbeiro123` | Painel do Barbeiro, Atendimentos, Comanda PDV, Comissões |
+| **Barbeiro (Heitor Pontes)** | `heitor.pontes` | `barbeiro123` | Painel do Barbeiro, Atendimentos, Comanda PDV, Comissões |
 | **Cliente Demonstrativo** | `cliente` | `cliente123` | Área do Cliente, Barber Club Prime, Fidelidade Digital |
 
 ---

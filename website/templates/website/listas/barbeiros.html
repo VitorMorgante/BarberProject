@@ -34,8 +34,8 @@
             {% for barbeiro in barbeiros %}
             <tr>
               <td>
-                {% if barbeiro.imagem_url %}
-                <img src="{{ barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 45px; height: 45px; object-fit: cover;">
+                {% if barbeiro.foto_url or barbeiro.imagem_url %}
+                <img src="{{ barbeiro.foto_url|default:barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 45px; height: 45px; object-fit: cover;">
                 {% else %}
                 <div class="rounded-circle bg-secondary bg-opacity-20 border border-secondary border-opacity-30 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; color: var(--text-muted);">
                   <i class="bi bi-person-fill fs-5"></i>

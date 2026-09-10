@@ -23,7 +23,7 @@
           <span class="fs-1 fw-bold text-brand">R$ {{ pagamento.valor|floatformat:2 }}</span>
           {% if agendamento %}
             <div class="small text-muted-custom mt-2 pt-2 border-top border-secondary border-opacity-10">
-              Serviço: <strong class="text-white">{{ agendamento.servico.nome }}</strong> com <strong class="text-white">{{ agendamento.barbeiro.nome }}</strong>
+              Serviço: <strong class="text-white">{{ agendamento.servico.nome }}</strong> com <strong class="text-white">{% if agendamento.barbeiro.foto_url or agendamento.barbeiro.imagem_url %}<img src="{{ agendamento.barbeiro.foto_url|default:agendamento.barbeiro.imagem_url }}" alt="{{ agendamento.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30 mx-1" style="width: 20px; height: 20px; object-fit: cover;">{% endif %}{{ agendamento.barbeiro.nome }}</strong>
               <br>
               Data: <span class="text-brand">{{ agendamento.data|date:"d/m/Y" }}</span> às <span class="text-brand">{{ agendamento.horario|time:"H:i" }}</span>
             </div>

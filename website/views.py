@@ -122,10 +122,12 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        from website.portfolio_data import get_portfolio_items
         context['servicos'] = Servico.objects.filter(ativo=True, destaque=True).order_by('ordem')
         context['barbeiros'] = Barbeiro.objects.filter(ativo=True)
         context['all_servicos'] = Servico.objects.filter(ativo=True)
         context['fotos_trabalho'] = FotoTrabalho.objects.filter(publicado=True).order_by('-criado_em')[:8]
+        context['portfolio_itens'] = get_portfolio_items()
         context['planos_club'] = PlanoAssinatura.objects.filter(ativo=True).order_by('preco_mensal')[:3]
         context['estilos_catalogo'] = EstiloCorte.objects.filter(ativo=True)[:6]
         return context
@@ -156,6 +158,17 @@ class BarbeirosPublicView(ListView):
 
     def get_queryset(self):
         return Barbeiro.objects.filter(ativo=True)
+
+
+class GaleriaPublicView(TemplateView):
+    template_name = 'website/galeria.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from website.portfolio_data import get_portfolio_items
+        context['portfolio_itens'] = get_portfolio_items()
+        context['fotos'] = FotoTrabalho.objects.filter(publicado=True).order_by('-criado_em')
+        return context
 
 
 class ContatoView(SuccessMessageMixin, CreateView):
@@ -427,10 +440,11 @@ def manifest_view(request):
 def service_worker_view(request):
     """Retorna o script Service Worker para cache seguro de assets públicos."""
     sw_code = """
-    const CACHE_NAME = 'barber-heitor-cache-v2';
+    const CACHE_NAME = 'barber-heitor-cache-v3';
     const STATIC_ASSETS = [
       '/',
       '/servicos/',
+      '/galeria/',
       '/barbeiros/',
       '/sobre/',
       '/static/website/css/tokens.css',
@@ -459,8 +473,8 @@ def service_worker_view(request):
     });
 
     self.addEventListener('fetch', (e) => {
-      // Ignora requisições de pagamento, autenticação e POST
-      if (e.request.method !== 'GET' || e.request.url.includes('/login/') || e.request.url.includes('/api/')) {
+      // Ignora requisições de vídeo mp4, pagamento, autenticação e POST
+      if (e.request.method !== 'GET' || e.request.url.includes('/login/') || e.request.url.includes('/api/') || e.request.url.endsWith('.mp4')) {
         return;
       }
       e.respondWith(

@@ -42,23 +42,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 2. Gallery Category Dynamic Filters
+  // 2. Gallery Category Dynamic Filters (Portfólio Barber Heitor)
   const filterButtons = document.querySelectorAll('.gallery-filter-btn');
   const galleryCols = document.querySelectorAll('.gallery-col');
 
   if (filterButtons.length > 0 && galleryCols.length > 0) {
     filterButtons.forEach(btn => {
       btn.addEventListener('click', () => {
-        filterButtons.forEach(b => b.classList.remove('active'));
+        filterButtons.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
         btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
 
         const filterValue = btn.getAttribute('data-filter');
 
         galleryCols.forEach(col => {
-          if (filterValue === 'all' || col.getAttribute('data-category') === filterValue || col.getAttribute('data-category')?.includes(filterValue)) {
-            col.style.display = 'block';
+          const cat = col.getAttribute('data-category') || '';
+          if (filterValue === 'all' || cat === filterValue || cat.includes(filterValue)) {
+            col.style.display = '';
             col.style.opacity = '1';
           } else {
+            // Pausar vídeo caso esteja em reprodução ao ser ocultado pelo filtro
+            const video = col.querySelector('video');
+            if (video && !video.paused) {
+              video.pause();
+            }
             col.style.display = 'none';
             col.style.opacity = '0';
           }

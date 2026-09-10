@@ -23,6 +23,7 @@ urlpatterns = [
     path('agendamento/', views.AgendamentoPublicoView.as_view(), name='agendamento'),
     path('servicos/', views.ServicosPublicView.as_view(), name='servicos'),
     path('barbeiros/', views.BarbeirosPublicView.as_view(), name='barbeiros'),
+    path('galeria/', views.GaleriaPublicView.as_view(), name='galeria'),
 
     # Pagamentos & PIX
     path('pagamento/pix/<str:identificador>/', views.PagamentoPixView.as_view(), name='pagamento_pix'),

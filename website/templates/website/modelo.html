@@ -56,6 +56,7 @@
                   <!-- Cliente Menu -->
                   <li class="nav-item"><a class="nav-link" href="{% url 'pagina_inicial' %}"><i class="bi bi-house-door me-1"></i>Início</a></li>
                   <li class="nav-item"><a class="nav-link" href="{% url 'area_cliente' %}"><i class="bi bi-person-circle me-1"></i>Minha Área</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{% url 'galeria' %}"><i class="bi bi-collection-play me-1"></i>Portfólio</a></li>
                   <li class="nav-item"><a class="nav-link" href="{% url 'cliente_club' %}"><i class="bi bi-gem text-brand me-1"></i>Barber Club</a></li>
                   <li class="nav-item"><a class="nav-link" href="{% url 'cliente_fidelidade' %}"><i class="bi bi-award text-brand me-1"></i>Fidelidade</a></li>
                   <li class="nav-item"><a class="nav-link" href="{% url 'cliente_evolucao' %}"><i class="bi bi-images me-1"></i>Minha Evolução</a></li>
@@ -99,8 +100,16 @@
                   <li class="nav-item"><a class="nav-link" href="{% url 'listar_mensagens' %}"><i class="bi bi-chat-dots me-1"></i>Mensagens</a></li>
                 {% endif %}
                 
-                <!-- Logout -->
-                <li class="nav-item ms-lg-2">
+                <!-- User Profile & Logout -->
+                <li class="nav-item ms-lg-2 d-flex align-items-center gap-2">
+                  {% if is_barbeiro and barbeiro_logado %}
+                    <span class="text-white small d-inline-flex align-items-center gap-1">
+                      {% if barbeiro_logado.foto_url %}
+                        <img src="{{ barbeiro_logado.foto_url }}" alt="{{ barbeiro_logado.nome }}" class="rounded-circle border border-warning border-opacity-40" style="width: 24px; height: 24px; object-fit: cover;">
+                      {% endif %}
+                      <span class="d-none d-xl-inline text-truncate" style="max-width: 120px;">{{ barbeiro_logado.nome }}</span>
+                    </span>
+                  {% endif %}
                   <form method="post" action="{% url 'logout' %}" class="d-inline">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline-danger btn-sm border-0 d-inline-flex align-items-center gap-1" title="Encerrar sessão">
@@ -112,6 +121,7 @@
                 <!-- Guest Menu -->
                 <li class="nav-item"><a class="nav-link" href="{% url 'pagina_inicial' %}">Início</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'servicos' %}">Serviços</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'galeria' %}">Portfólio</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'barbeiros' %}">Barbeiros</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'cardapio_digital' %}">Cardápio</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'sobre' %}">Sobre</a></li>
@@ -282,6 +292,7 @@
             <ul class="list-unstyled d-flex flex-column gap-2" style="font-size: 0.9rem;">
               <li><a href="{% url 'pagina_inicial' %}" class="footer-link">Início</a></li>
               <li><a href="{% url 'servicos' %}" class="footer-link">Serviços</a></li>
+              <li><a href="{% url 'galeria' %}" class="footer-link">Portfólio de Cortes</a></li>
               <li><a href="{% url 'barbeiros' %}" class="footer-link">Nossa Equipe</a></li>
               <li><a href="{% url 'cardapio_digital' %}" class="footer-link">Cardápio de Serviços</a></li>
               <li><a href="{% url 'agendamento' %}" class="footer-link">Agendamento Online</a></li>

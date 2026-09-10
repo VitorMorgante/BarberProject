@@ -18,7 +18,12 @@
 
           <div class="detail-row">
             <span class="detail-label">Barbeiro:</span>
-            <span class="detail-value fw-bold"><a href="{% url 'ver_barbeiro' horariodisponivel.barbeiro.pk %}" class="text-brand-hover">{{ horariodisponivel.barbeiro.nome }}</a></span>
+            <span class="detail-value fw-bold d-inline-flex align-items-center gap-2">
+              {% if horariodisponivel.barbeiro.foto_url or horariodisponivel.barbeiro.imagem_url %}
+                <img src="{{ horariodisponivel.barbeiro.foto_url|default:horariodisponivel.barbeiro.imagem_url }}" alt="{{ horariodisponivel.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 24px; height: 24px; object-fit: cover;">
+              {% endif %}
+              <a href="{% url 'ver_barbeiro' horariodisponivel.barbeiro.pk %}" class="text-brand-hover">{{ horariodisponivel.barbeiro.nome }}</a>
+            </span>
           </div>
 
           <div class="detail-row">

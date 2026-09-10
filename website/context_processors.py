@@ -17,10 +17,13 @@ def user_roles(request):
     
     # Check Barbeiro: PerfilUsuario.tipo_usuario == 'barbeiro' OR has a related Barbeiro record
     is_barbeiro = False
+    barbeiro_logado = None
     if hasattr(user, 'perfil') and user.perfil.tipo_usuario.lower() == 'barbeiro':
         is_barbeiro = True
+        barbeiro_logado = Barbeiro.objects.filter(usuario=user).first()
     elif Barbeiro.objects.filter(usuario=user).exists():
         is_barbeiro = True
+        barbeiro_logado = Barbeiro.objects.filter(usuario=user).first()
         
     # Check Cliente: if not admin and not barber, defaults to client
     is_cliente = not is_admin and not is_barbeiro
@@ -28,7 +31,8 @@ def user_roles(request):
     return {
         'is_cliente': is_cliente,
         'is_barbeiro': is_barbeiro,
-        'is_admin': is_admin
+        'is_admin': is_admin,
+        'barbeiro_logado': barbeiro_logado
     }
 
 

@@ -50,9 +50,9 @@ class Command(BaseCommand):
 
         # 3. Usuário Barbeiro (Heitor Pontes)
         heitor_user, created_h = User.objects.get_or_create(
-            username='heitor',
+            username='heitor.pontes',
             defaults={
-                'email': 'heitor@barberheitor.com.br',
+                'email': 'heitor.pontes@barberheitor.com.br',
                 'first_name': 'Heitor',
                 'last_name': 'Pontes'
             }
@@ -64,7 +64,7 @@ class Command(BaseCommand):
             usuario=heitor_user,
             defaults={'tipo_usuario': 'barbeiro', 'telefone': '4491022176'}
         )
-        self.stdout.write(self.style.SUCCESS('  [OK] Barbeiro Login: heitor / barbeiro123'))
+        self.stdout.write(self.style.SUCCESS('  [OK] Barbeiro Login: heitor.pontes / barbeiro123'))
 
         # 4. Usuário Cliente Demonstrativo
         cliente_user, created_c = User.objects.get_or_create(
@@ -122,14 +122,16 @@ class Command(BaseCommand):
                 'cargo': 'Barbeiro Master & Visagista',
                 'especialidade': 'Cortes modernos, barboterapia e consultoria visagista',
                 'descricao_curta': 'Sócio-fundador da Barber Heitor, especialista em design de barba e visagismo.',
+                'imagem_url': '/static/website/img/barbeiros/heitor_pontes.jpg',
                 'ativo': True,
                 'usuario': heitor_user,
             },
         )
-        if not heitor.usuario or heitor.cargo != 'Barbeiro Master & Visagista':
+        if not heitor.usuario or heitor.cargo != 'Barbeiro Master & Visagista' or not heitor.imagem_url:
             heitor.usuario = heitor_user
             heitor.cargo = 'Barbeiro Master & Visagista'
-            heitor.save(update_fields=['usuario', 'cargo'])
+            heitor.imagem_url = '/static/website/img/barbeiros/heitor_pontes.jpg'
+            heitor.save(update_fields=['usuario', 'cargo', 'imagem_url'])
         RegraComissao.objects.get_or_create(
             barbeiro=heitor,
             defaults={'percentual_servico': Decimal('50.00'), 'percentual_produto': Decimal('15.00')}

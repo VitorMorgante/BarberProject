@@ -70,10 +70,15 @@
           <div class="d-flex flex-column gap-3">
             {% for ag in fila.em_atendimento %}
               <div class="p-4 rounded-3 bg-dark border border-warning border-opacity-40 d-flex justify-content-between align-items-center">
-                <div>
-                  <div class="text-secondary small text-uppercase fw-bold letter-spacing-1">Barbeiro</div>
-                  <h4 class="text-brand brand-font mb-2">{{ ag.barbeiro.nome }}</h4>
-                  <div class="badge bg-secondary text-light px-3 py-2 fs-6">{{ ag.servico.nome }}</div>
+                <div class="d-flex align-items-center gap-3">
+                  {% if ag.barbeiro.foto_url or ag.barbeiro.imagem_url %}
+                    <img src="{{ ag.barbeiro.foto_url|default:ag.barbeiro.imagem_url }}" alt="{{ ag.barbeiro.nome }}" class="rounded-circle border border-warning" style="width: 56px; height: 56px; object-fit: cover; flex-shrink: 0;">
+                  {% endif %}
+                  <div>
+                    <div class="text-secondary small text-uppercase fw-bold letter-spacing-1">Barbeiro</div>
+                    <h4 class="text-brand brand-font mb-1">{{ ag.barbeiro.nome }}</h4>
+                    <div class="badge bg-secondary text-light px-3 py-1 fs-6">{{ ag.servico.nome }}</div>
+                  </div>
                 </div>
                 <div class="text-end">
                   <div class="text-secondary small">Cliente</div>

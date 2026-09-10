@@ -50,7 +50,18 @@
                 {% for w in entradas_waitlist %}
                   <tr>
                     <td class="fw-bold text-white">{{ w.servico.nome }}</td>
-                    <td>{{ w.barbeiro.nome|default:"Qualquer um" }}</td>
+                    <td>
+                      {% if w.barbeiro %}
+                        <div class="d-flex align-items-center gap-2">
+                          {% if w.barbeiro.foto_url or w.barbeiro.imagem_url %}
+                            <img src="{{ w.barbeiro.foto_url|default:w.barbeiro.imagem_url }}" alt="{{ w.barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-30" style="width: 20px; height: 20px; object-fit: cover;">
+                          {% endif %}
+                          <span>{{ w.barbeiro.nome }}</span>
+                        </div>
+                      {% else %}
+                        Qualquer um
+                      {% endif %}
+                    </td>
                     <td>{{ w.data_desejada|date:"d/m/Y" }}</td>
                     <td>{{ w.horario_inicio|time:"H:i" }} às {{ w.horario_fim|time:"H:i" }}</td>
                     <td>

@@ -39,7 +39,7 @@ class BarbeiroForm(forms.ModelForm):
             'cargo': forms.TextInput(attrs={'class': 'form-control'}),
             'especialidade': forms.TextInput(attrs={'class': 'form-control'}),
             'descricao_curta': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'imagem_url': forms.URLInput(attrs={'class': 'form-control'}),
+            'imagem_url': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '/static/... ou https://...'}),
             'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 

@@ -82,9 +82,13 @@
       <div class="col-md-6 col-lg-4">
         <div class="surface-card p-4 text-center h-100 d-flex flex-column justify-content-between">
           <div>
-            <div class="rounded-circle border border-warning border-opacity-50 mx-auto mb-3 bg-dark d-flex align-items-center justify-content-center" style="width: 90px; height: 90px;">
-              <i class="bi bi-person fs-1 text-brand"></i>
-            </div>
+            {% if barbeiro.foto_url or barbeiro.imagem_url %}
+              <img src="{{ barbeiro.foto_url|default:barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="rounded-circle border border-warning border-opacity-50 mx-auto mb-3" style="width: 90px; height: 90px; object-fit: cover;">
+            {% else %}
+              <div class="rounded-circle border border-warning border-opacity-50 mx-auto mb-3 bg-dark d-flex align-items-center justify-content-center" style="width: 90px; height: 90px;">
+                <i class="bi bi-person fs-1 text-brand"></i>
+              </div>
+            {% endif %}
             <h4 class="text-white mb-1">{{ barbeiro.nome }}</h4>
             <span class="badge bg-dark border border-warning text-brand px-3 py-1 mb-3" style="font-size: 0.75rem;">
               {{ barbeiro.cargo|default:"Barbeiro Especialista" }}

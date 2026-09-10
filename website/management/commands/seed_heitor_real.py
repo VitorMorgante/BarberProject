@@ -337,20 +337,43 @@ class Command(BaseCommand):
             # 4. PROFISSIONAL HEITOR & ESCALAS
             self.stdout.write("\n[4/5] Configurando Profissional Heitor & Escala de Atendimento...")
             heitor = Barbeiro.objects.filter(nome__icontains='Heitor').first()
+            user_heitor, _ = User.objects.get_or_create(
+                username='heitor.pontes',
+                defaults={
+                    'email': 'heitor.pontes@barberheitor.com.br',
+                    'first_name': 'Heitor',
+                    'last_name': 'Pontes',
+                    'is_staff': False,
+                    'is_superuser': False,
+                    'is_active': True,
+                }
+            )
+            if not user_heitor.has_usable_password():
+                user_heitor.set_password('barbeiro123')
+                user_heitor.save()
+            PerfilUsuario.objects.get_or_create(
+                usuario=user_heitor,
+                defaults={'tipo_usuario': 'barbeiro', 'telefone': '(44) 99190-0997'}
+            )
+
             if not heitor:
                 heitor = Barbeiro.objects.create(
-                    nome='Heitor',
-                    cargo='Barbeiro',
+                    nome='Heitor Pontes',
+                    cargo='Barbeiro Master & Visagista',
                     especialidade='Cortes masculinos, degradê, barba e sobrancelha',
                     descricao_curta='Especialista em cortes modernos e alinhamento de barba.',
+                    imagem_url='/static/website/img/barbeiros/heitor_pontes.jpg',
+                    usuario=user_heitor,
                     tempo_buffer_depois=5,
                     ativo=True,
                 )
                 self.stdout.write(f"  + Criado barbeiro: {heitor.nome}")
             else:
-                if heitor.nome != 'Heitor':
-                    heitor.nome = 'Heitor'
+                heitor.nome = 'Heitor Pontes'
                 heitor.tempo_buffer_depois = 5
+                heitor.imagem_url = '/static/website/img/barbeiros/heitor_pontes.jpg'
+                if not heitor.usuario:
+                    heitor.usuario = user_heitor
                 heitor.ativo = True
                 heitor.save()
                 self.stdout.write(f"  ~ Atualizado barbeiro: {heitor.nome} (buffer={heitor.tempo_buffer_depois}min)")

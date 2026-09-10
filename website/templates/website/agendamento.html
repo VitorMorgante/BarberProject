@@ -104,11 +104,13 @@
                      data-barber-id="{{ b.pk }}" 
                      data-barber-name="{{ b.nome }}"
                      style="cursor: pointer;">
-                  <div class="rounded-circle overflow-hidden flex-shrink-0" style="width: 52px; height: 52px;">
-                    {% if b.imagem_url %}
-                    <img src="{{ b.imagem_url }}" alt="{{ b.nome }}" class="w-100 h-100 object-fit-cover">
+                  <div class="rounded-circle overflow-hidden flex-shrink-0" style="width: 52px; height: 52px; background-color: var(--color-surface-sunken);">
+                    {% if b.foto_url or b.imagem_url %}
+                    <img src="{{ b.foto_url|default:b.imagem_url }}" alt="{{ b.nome }}" class="w-100 h-100 object-fit-cover">
                     {% else %}
-                    <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=150" alt="{{ b.nome }}" class="w-100 h-100 object-fit-cover">
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+                      <i class="bi bi-person-fill fs-4"></i>
+                    </div>
                     {% endif %}
                   </div>
                   <div>
