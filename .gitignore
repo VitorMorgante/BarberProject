@@ -41,5 +41,6 @@ skills-lock.json
 .DS_Store
 Thumbs.db
 
-# Documentation
+# Documentation & Prompts
 docs/
+Prompt_Tech_Lead_Barber_Heitor.md
