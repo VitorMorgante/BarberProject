@@ -50,6 +50,7 @@
       
       <!-- Hidden Controls Synchronized with JS State -->
       <input type="hidden" name="servico" id="id_servico" value="{{ form.servico.value|default:'' }}">
+      <input type="hidden" name="servicos_selecionados" id="id_servicos_selecionados" value="">
       <input type="hidden" name="barbeiro" id="id_barbeiro" value="{{ form.barbeiro.value|default:'' }}">
       <input type="hidden" name="horario" id="id_horario" value="{{ form.horario.value|default:'' }}">
 
@@ -61,7 +62,10 @@
           <div class="step-card" id="service-step-card">
             <div class="step-header">
               <div class="step-number">1</div>
-              <h4 class="text-white mb-0">Escolha o Serviço</h4>
+              <div>
+                <h4 class="text-white mb-0">Escolha o(s) Serviço(s)</h4>
+                <small class="text-muted-custom">Selecione um ou mais serviços combinados para seu atendimento</small>
+              </div>
             </div>
             <div class="service-select-list">
               {% for s in servicos %}

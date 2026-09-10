@@ -39,15 +39,39 @@ class AgendaInteligenteService:
         return min(100, int(taxa_falta * 1.5))
 
     @staticmethod
-    def obter_horarios_com_score(data_agendamento: date, servico: Servico, barbeiro: Barbeiro = None, cliente: Cliente = None):
+    def obter_horarios_com_score(
+        data_agendamento: date,
+        servico: Servico = None,
+        barbeiro: Barbeiro = None,
+        cliente: Cliente = None,
+        servicos: list = None,
+        plano = None,
+        duracao_minutos: int = None
+    ):
         """
         Gera os horários disponíveis com score de eficiência operacional:
-        - Score alto (90-100): Encaixe perfeito, colado a outro atendimento (evita buracos)
-        - Score médio (70-89): Início de turno ou intervalo planejado
-        - Score baixo (<70): Cria janela ociosa isolada
+        - Início permitido: de 08:00 até 21:30 (inclusive), passo de 5 minutos.
+        - Duração total: calculada por serviço, lista de serviços ou plano.
+        - Buffer fixo: 5 minutos de transição ao final do atendimento.
+        - Detecção simétrica de colisão no intervalo de ocupação:
+          [inicio, inicio + duracao + 5min)
+        - Folga explícita (folga=True) retorna estritamente lista vazia.
         """
         config = ConfiguracaoEstabelecimento.get_solo()
-        duracao_servico = servico.duracao_minutos
+
+        # Resolução da duração total
+        if duracao_minutos:
+            duracao_total = int(duracao_minutos)
+        elif plano:
+            duracao_total = plano.get_duracao_total_estimada()
+        elif servicos:
+            duracao_total = sum(s.duracao_minutos for s in servicos if s)
+        elif servico:
+            duracao_total = servico.duracao_minutos
+        else:
+            duracao_total = 30
+
+        buffer_min = 5
         barbeiros = [barbeiro] if barbeiro else list(Barbeiro.objects.filter(ativo=True))
         dia_semana = data_agendamento.weekday()
         horarios_pontuados = []
@@ -56,8 +80,11 @@ class AgendaInteligenteService:
         hoje = agora.date()
         hora_minima_hoje = (agora + timedelta(minutes=config.antecedencia_minima_minutos)).time() if data_agendamento == hoje else time(0, 0)
 
+        CANDIDATO_INICIO = time(8, 0)
+        CANDIDATO_FIM = time(21, 30)
+
         for barb in barbeiros:
-            # 1. Verifica férias ou bloqueios do dia
+            # 1. Verifica bloqueios integrais do dia
             bloqueio_integral = BloqueioAgenda.objects.filter(
                 Q(barbeiro=barb) | Q(barbeiro__isnull=True),
                 ativo=True,
@@ -68,37 +95,36 @@ class AgendaInteligenteService:
             if bloqueio_integral:
                 continue
 
-            # 2. Duração e buffer específicos deste barbeiro
-            barb_servico = BarbeiroServico.objects.filter(barbeiro=barb, servico=servico, ativo=True).first()
-            duracao = barb_servico.duracao_minutos if barb_servico and barb_servico.duracao_minutos else duracao_servico
-            buffer_min = barb.tempo_buffer_depois or config.buffer_padrao_minutos
-
-            # 3. Escala do dia da semana
+            # 2. Escala do dia da semana
             escala = EscalaBarbeiro.objects.filter(barbeiro=barb, dia_semana=dia_semana, ativo=True).first()
             turnos = []
-            if escala and not escala.folga:
+            if escala:
+                if escala.folga:
+                    # Folga explícita: estritamente 0 horários disponíveis para este barbeiro
+                    continue
                 turnos.append((escala.horario_inicio_1, escala.horario_fim_1))
                 if escala.horario_inicio_2 and escala.horario_fim_2:
                     turnos.append((escala.horario_inicio_2, escala.horario_fim_2))
             else:
-                # Fallback: se não tiver escala cadastrada, busca HorarioDisponivel legado ou padrão 09:00 - 19:00
+                # Fallback: APENAS se NÃO houver nenhum registro de EscalaBarbeiro para este dia
                 horarios_legados = list(barb.horarios.filter(ativo=True).order_by('horario'))
                 if horarios_legados:
                     for hl in horarios_legados:
-                        # Considera cada horário legado como slot
                         h_ini = hl.horario
                         dt_dummy = datetime.combine(data_agendamento, h_ini)
-                        h_fim = (dt_dummy + timedelta(minutes=duracao)).time()
+                        h_fim = (dt_dummy + timedelta(minutes=duracao_total + buffer_min)).time()
                         turnos.append((h_ini, h_fim))
                 else:
-                    turnos.append((time(9, 0), time(12, 0)))
-                    turnos.append((time(13, 30), time(19, 0)))
+                    turnos.append((time(8, 0), time(22, 40)))
 
-            # 4. Agendamentos existentes do barbeiro neste dia
+            if not turnos:
+                continue
+
+            # 3. Agendamentos existentes do barbeiro neste dia
             agendamentos_dia = list(Agendamento.objects.filter(
                 barbeiro=barb,
                 data=data_agendamento
-            ).exclude(status=Agendamento.Status.CANCELADO).select_related('servico', 'barbeiro').order_by('horario'))
+            ).exclude(status=Agendamento.Status.CANCELADO).select_related('servico', 'barbeiro').prefetch_related('itens').order_by('horario'))
 
             # Bloqueios parciais do dia
             bloqueios_parciais = list(BloqueioAgenda.objects.filter(
@@ -109,83 +135,196 @@ class AgendaInteligenteService:
                 horario_inicio__isnull=False
             ))
 
-            for h_inicio_turno, h_fim_turno in turnos:
-                curr_dt = datetime.combine(data_agendamento, h_inicio_turno)
-                fim_turno_dt = datetime.combine(data_agendamento, h_fim_turno)
+            # 4. Geração de candidatos: estritamente das 08:00 às 21:30 em passos de 5 minutos
+            candidate_dt = datetime.combine(data_agendamento, CANDIDATO_INICIO)
+            max_candidate_dt = datetime.combine(data_agendamento, CANDIDATO_FIM)
+            step = timedelta(minutes=5)
 
-                while curr_dt + timedelta(minutes=duracao) <= fim_turno_dt:
-                    slot_inicio = curr_dt.time()
-                    slot_fim_dt = curr_dt + timedelta(minutes=duracao)
-                    slot_fim = slot_fim_dt.time()
+            while candidate_dt <= max_candidate_dt:
+                slot_inicio = candidate_dt.time()
+                novo_fim_ocupado_dt = candidate_dt + timedelta(minutes=duracao_total + buffer_min)
 
-                    if data_agendamento == hoje and slot_inicio < hora_minima_hoje:
-                        curr_dt += timedelta(minutes=30)
-                        continue
+                if data_agendamento == hoje and slot_inicio < hora_minima_hoje:
+                    candidate_dt += step
+                    continue
 
-                    # Verifica conflito com agendamentos
-                    conflito = False
-                    colado_anterior = False
-                    colado_posterior = False
+                # Verifica se o atendimento + buffer cabe dentro de algum turno da escala do barbeiro
+                cabe_no_expediente = False
+                abertura_turno = False
+                for h_ini_turno, h_fim_turno in turnos:
+                    turno_ini_dt = datetime.combine(data_agendamento, h_ini_turno)
+                    turno_fim_dt = datetime.combine(data_agendamento, h_fim_turno)
+                    if candidate_dt >= turno_ini_dt and novo_fim_ocupado_dt <= turno_fim_dt:
+                        cabe_no_expediente = True
+                        if candidate_dt == turno_ini_dt:
+                            abertura_turno = True
+                        break
 
-                    for ag in agendamentos_dia:
-                        ag_inicio_dt = datetime.combine(data_agendamento, ag.horario)
-                        ag_dur = ag.servico.duracao_minutos
-                        ag_fim_dt = ag_inicio_dt + timedelta(minutes=ag_dur + buffer_min)
+                if not cabe_no_expediente:
+                    candidate_dt += step
+                    continue
 
-                        # Colisão de intervalo
-                        if not (slot_fim_dt <= ag_inicio_dt or curr_dt >= ag_fim_dt):
-                            conflito = True
-                            break
+                # 5. Colisão simétrica no intervalo de ocupação
+                conflito = False
+                colado_anterior = False
+                colado_posterior = False
 
-                        # Encaixe perfeito adjacente
-                        if ag_fim_dt == curr_dt:
-                            colado_anterior = True
-                        if slot_fim_dt == ag_inicio_dt:
-                            colado_posterior = True
+                for ag in agendamentos_dia:
+                    ag_ini_dt = datetime.combine(data_agendamento, ag.horario)
+                    ag_dur = ag.get_duracao_total()
+                    ag_fim_ocupado_dt = ag_ini_dt + timedelta(minutes=ag_dur + buffer_min)
 
-                    # Verifica conflito com bloqueios parciais
-                    if not conflito:
-                        for bl in bloqueios_parciais:
-                            bl_ini_dt = datetime.combine(data_agendamento, bl.horario_inicio)
-                            bl_fim_dt = datetime.combine(data_agendamento, bl.horario_fim)
-                            if not (slot_fim_dt <= bl_ini_dt or curr_dt >= bl_fim_dt):
-                                conflito = True
-                                break
+                    # Há conflito se: novo_inicio < existente_fim_ocupado e novo_fim_ocupado > existente_inicio
+                    if candidate_dt < ag_fim_ocupado_dt and novo_fim_ocupado_dt > ag_ini_dt:
+                        conflito = True
+                        break
 
-                    if not conflito:
-                        # Cálculo do score de inteligência operacional
-                        score = 70  # Base
-                        if colado_anterior and colado_posterior:
-                            score = 100  # Preenche perfeitamente um buraco
-                        elif colado_anterior or colado_posterior:
-                            score = 90   # Encaixe contínuo otimizado
-                        elif curr_dt == datetime.combine(data_agendamento, h_inicio_turno):
-                            score = 85   # Abertura de turno
-                        else:
-                            score = 65   # Horário solto no meio do turno (pode criar buraco)
+                    # Encaixe perfeito adjacente
+                    if ag_fim_ocupado_dt == candidate_dt:
+                        colado_anterior = True
+                    if novo_fim_ocupado_dt == ag_ini_dt:
+                        colado_posterior = True
 
-                        # Bônus de preferência do cliente
-                        if cliente:
-                            if cliente.barbeiro_preferido == barb:
-                                score += 5
-                            if cliente.preferencia_acabamento and 'manha' in cliente.preferencia_acabamento.lower() and slot_inicio < time(12, 0):
-                                score += 5
+                if conflito:
+                    candidate_dt += step
+                    continue
 
-                        horarios_pontuados.append({
-                            'barbeiro_id': barb.id,
-                            'barbeiro_nome': barb.nome,
-                            'barbeiro_nivel': barb.get_nivel_display(),
-                            'horario': slot_inicio.strftime('%H:%M'),
-                            'duracao': duracao,
-                            'score': min(100, score),
-                            'recomendado': score >= 85
-                        })
+                # Verifica conflito com bloqueios parciais
+                for bl in bloqueios_parciais:
+                    bl_ini_dt = datetime.combine(data_agendamento, bl.horario_inicio)
+                    bl_fim_dt = datetime.combine(data_agendamento, bl.horario_fim)
+                    if candidate_dt < bl_fim_dt and novo_fim_ocupado_dt > bl_ini_dt:
+                        conflito = True
+                        break
 
-                    curr_dt += timedelta(minutes=30)
+                if conflito:
+                    candidate_dt += step
+                    continue
+
+                # Cálculo do score de inteligência operacional
+                score = 70
+                if colado_anterior and colado_posterior:
+                    score = 100
+                elif colado_anterior or colado_posterior:
+                    score = 90
+                elif abertura_turno:
+                    score = 85
+                else:
+                    score = 65
+
+                if cliente:
+                    if cliente.barbeiro_preferido == barb:
+                        score += 5
+                    if cliente.preferencia_acabamento and 'manha' in cliente.preferencia_acabamento.lower() and slot_inicio < time(12, 0):
+                        score += 5
+
+                horarios_pontuados.append({
+                    'barbeiro_id': barb.id,
+                    'barbeiro_nome': barb.nome,
+                    'barbeiro_nivel': barb.get_nivel_display(),
+                    'horario': slot_inicio.strftime('%H:%M'),
+                    'duracao': duracao_total,
+                    'score': min(100, score),
+                    'recomendado': score >= 85
+                })
+
+                candidate_dt += step
 
         # Ordena por horário e score decrescente
         horarios_pontuados.sort(key=lambda x: (x['horario'], -x['score']))
         return horarios_pontuados
+
+    @staticmethod
+    def validar_e_bloquear_horario(
+        barbeiro: Barbeiro,
+        data_agendamento: date,
+        horario: time,
+        duracao_minutos: int,
+        agendamento_id: int = None
+    ) -> bool:
+        """
+        Valida e bloqueia transacionalmente com select_for_update se o horário solicitado
+        está estritamente livre para o barbeiro na data, considerando a duração, buffer de 5 minutos,
+        expediente da escala e bloqueios de agenda.
+        Retorna True se válido e reservável, False caso haja qualquer colisão ou restrição.
+        """
+        CANDIDATO_INICIO = time(8, 0)
+        CANDIDATO_FIM = time(21, 30)
+        if horario < CANDIDATO_INICIO or horario > CANDIDATO_FIM:
+            return False
+
+        dia_semana = data_agendamento.weekday()
+        buffer_min = 5
+
+        # 1. Escala e Folga
+        escala = EscalaBarbeiro.objects.filter(barbeiro=barbeiro, dia_semana=dia_semana, ativo=True).first()
+        turnos = []
+        if escala:
+            if escala.folga:
+                return False
+            turnos.append((escala.horario_inicio_1, escala.horario_fim_1))
+            if escala.horario_inicio_2 and escala.horario_fim_2:
+                turnos.append((escala.horario_inicio_2, escala.horario_fim_2))
+        else:
+            turnos.append((time(8, 0), time(22, 40)))
+
+        novo_ini_dt = datetime.combine(data_agendamento, horario)
+        novo_fim_ocupado_dt = novo_ini_dt + timedelta(minutes=duracao_minutos + buffer_min)
+
+        cabe_no_expediente = False
+        for h_ini_turno, h_fim_turno in turnos:
+            turno_ini_dt = datetime.combine(data_agendamento, h_ini_turno)
+            turno_fim_dt = datetime.combine(data_agendamento, h_fim_turno)
+            if novo_ini_dt >= turno_ini_dt and novo_fim_ocupado_dt <= turno_fim_dt:
+                cabe_no_expediente = True
+                break
+
+        if not cabe_no_expediente:
+            return False
+
+        # 2. Bloqueios integrais e parciais
+        if BloqueioAgenda.objects.filter(
+            Q(barbeiro=barbeiro) | Q(barbeiro__isnull=True),
+            ativo=True,
+            data_inicio__lte=data_agendamento,
+            data_fim__gte=data_agendamento,
+            horario_inicio__isnull=True
+        ).exists():
+            return False
+
+        bloqueios_parciais = BloqueioAgenda.objects.filter(
+            Q(barbeiro=barbeiro) | Q(barbeiro__isnull=True),
+            ativo=True,
+            data_inicio__lte=data_agendamento,
+            data_fim__gte=data_agendamento,
+            horario_inicio__isnull=False
+        )
+        for bl in bloqueios_parciais:
+            bl_ini_dt = datetime.combine(data_agendamento, bl.horario_inicio)
+            bl_fim_dt = datetime.combine(data_agendamento, bl.horario_fim)
+            if novo_ini_dt < bl_fim_dt and novo_fim_ocupado_dt > bl_ini_dt:
+                return False
+
+        # 3. Concorrência: select_for_update nos agendamentos da data
+        agendamentos_qs = Agendamento.objects.select_for_update().filter(
+            barbeiro=barbeiro,
+            data=data_agendamento
+        ).exclude(status=Agendamento.Status.CANCELADO)
+
+        if agendamento_id:
+            agendamentos_qs = agendamentos_qs.exclude(pk=agendamento_id)
+
+        agendamentos = list(agendamentos_qs.prefetch_related('itens', 'servico'))
+        for ag in agendamentos:
+            ag_ini_dt = datetime.combine(data_agendamento, ag.horario)
+            ag_dur = ag.get_duracao_total()
+            ag_fim_ocupado_dt = ag_ini_dt + timedelta(minutes=ag_dur + buffer_min)
+
+            if novo_ini_dt < ag_fim_ocupado_dt and novo_fim_ocupado_dt > ag_ini_dt:
+                return False
+
+        return True
+
 
     @staticmethod
     @transaction.atomic

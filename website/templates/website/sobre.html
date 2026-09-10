@@ -13,7 +13,7 @@
         <span class="section-subtitle">Nossa Essência</span>
         <h1 class="display-2 text-white mb-4">A Barbearia Que Redefiniu o Cuidado Masculino</h1>
         <p class="body-text fs-5 mb-4">
-          A <strong>{{ BARBER_NAME }}</strong> nasceu com um propósito inegociável: elevar a autoestima masculina por meio de rigor técnico, visagismo e atendimento de alto nível.
+          A <strong>{{ BARBER_NAME }}</strong> nasceu com um propósito inegociável: elevar a autoestima masculina por meio de rigor técnico, acabamento preciso e atendimento de alto nível.
         </p>
         <p class="text-muted-custom mb-0" style="line-height: 1.8;">
           Não acreditamos em cortes padronizados ou esperas cansativas. Criamos um ecossistema exclusivo onde cada cliente tem hora reservada, atenção individualizada e acesso a produtos de tratamento importados em um lounge acolhedor.
@@ -90,7 +90,7 @@
               {{ barbeiro.cargo|default:"Barbeiro Especialista" }}
             </span>
             <p class="text-muted-custom small mb-4">
-              {{ barbeiro.descricao_curta|default:"Especialista em visagismo e atendimento de alto padrão." }}
+              {{ barbeiro.descricao_curta|default:"Especialista em cortes contemporâneos e atendimento de alto padrão." }}
             </p>
           </div>
           <a href="{% url 'agendamento' %}?barbeiro={{ barbeiro.pk }}" class="btn btn-outline-brand btn-sm w-100">

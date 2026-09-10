@@ -95,7 +95,7 @@
             <i class="bi bi-scissors"></i>
           </div>
           <h5 class="text-white mb-2">Corte Cirúrgico</h5>
-          <p class="text-muted-custom small mb-0">Visagismo e proporção facial aplicados a cada formato de crânio e textura de fio.</p>
+          <p class="text-muted-custom small mb-0">Técnica clássica e moderna aplicada a cada acabamento e textura de fio.</p>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3">
@@ -140,7 +140,7 @@
       <span class="section-subtitle">Alta Precisão & Acabamento</span>
       <h2 class="display-3 text-white mb-3">Nossos Serviços</h2>
       <p class="text-muted-custom max-width-600 mx-auto" style="max-width: 600px;">
-        Combinamos a tradição da barbearia clássica com as técnicas contemporâneas de visagismo masculino.
+        Combinamos a tradição da barbearia clássica com as técnicas contemporâneas de acabamento masculino.
       </p>
     </div>
 
@@ -283,7 +283,7 @@
             <h4 class="text-white mb-1">{{ barbeiro.nome }}</h4>
             <div class="text-brand small fw-semibold mb-2">{{ barbeiro.especialidade|default:"Cortes Clássicos, Degradê & Barba" }}</div>
             <p class="text-muted-custom small mb-4" style="min-height: 48px;">
-              {{ barbeiro.descricao_curta|default:"Especialista em visagismo masculino e acabamentos de alta definição." }}
+              {{ barbeiro.descricao_curta|default:"Especialista em cortes masculinos e acabamentos de alta definição." }}
             </p>
             <a href="{% url 'agendamento' %}?barbeiro={{ barbeiro.pk }}" class="btn btn-brand w-100">
               Agendar com {{ barbeiro.nome|truncatewords:1 }}

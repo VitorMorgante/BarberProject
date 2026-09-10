@@ -95,25 +95,18 @@ class AgendamentoForm(forms.ModelForm):
         status = cleaned_data.get('status')
 
         if barbeiro and data_agendamento and horario and status != Agendamento.Status.CANCELADO:
-            query = Agendamento.objects.filter(
+            servico = cleaned_data.get('servico')
+            duracao = servico.duracao_minutos if servico else 30
+            from website.services.agenda_inteligente_service import AgendaInteligenteService
+            valido = AgendaInteligenteService.validar_e_bloquear_horario(
                 barbeiro=barbeiro,
-                data=data_agendamento,
+                data_agendamento=data_agendamento,
                 horario=horario,
-            ).exclude(status=Agendamento.Status.CANCELADO)
-
-            if self.instance and self.instance.pk:
-                query = query.exclude(pk=self.instance.pk)
-
-            if query.exists():
-                raise ValidationError('Este horário já está reservado para o barbeiro selecionado.')
-
-            horario_valido = HorarioDisponivel.objects.filter(
-                barbeiro=barbeiro,
-                horario=horario,
-                ativo=True,
-            ).exists()
-            if not horario_valido:
-                raise ValidationError('Este horário não está disponível para o barbeiro selecionado.')
+                duracao_minutos=duracao,
+                agendamento_id=self.instance.pk if (self.instance and self.instance.pk) else None
+            )
+            if not valido:
+                raise ValidationError('Este horário não está disponível para o barbeiro selecionado nesta data (fora do expediente, folga ou em conflito de agenda).')
 
         return cleaned_data
 

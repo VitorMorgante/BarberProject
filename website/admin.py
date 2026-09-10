@@ -4,6 +4,7 @@ from .models import (
     Cliente, PerfilDependente, ContaCorrenteCliente, MovimentacaoContaCorrente,
     HorarioDisponivel, Agendamento, MensagemContato, PerfilUsuario, Feedback, AvaliacaoDetalhada,
     FotoTrabalho, PlanoAssinatura, AssinaturaCliente, MovimentacaoCredito, PacoteServico,
+    ItemAgendamento,
     ProgramaFidelidade, ProgressoFidelidade, RecompensaFidelidade, LocalEstoque,
     Produto, SaldoEstoqueLocal, TransferenciaEstoque, PerdaEstoque, KitConsumoServico,
     ItemKitConsumo, Fornecedor, PedidoCompra, ItemPedidoCompra, InventarioEstoque,
@@ -27,9 +28,9 @@ class UnidadeBarbeariaAdmin(admin.ModelAdmin):
 
 @admin.register(Servico)
 class ServicoAdmin(admin.ModelAdmin):
-    list_display = ['nome', 'preco', 'duracao_minutos', 'categoria', 'ativo', 'destaque', 'ordem']
+    list_display = ['nome', 'codigo', 'preco', 'duracao_minutos', 'categoria', 'ativo', 'destaque', 'ordem']
     list_filter = ['ativo', 'destaque', 'categoria']
-    search_fields = ['nome']
+    search_fields = ['nome', 'codigo']
 
 
 @admin.register(Barbeiro)
@@ -86,11 +87,17 @@ class HorarioDisponivelAdmin(admin.ModelAdmin):
     list_filter = ['barbeiro', 'ativo']
 
 
+class ItemAgendamentoInline(admin.TabularInline):
+    model = ItemAgendamento
+    extra = 0
+
+
 @admin.register(Agendamento)
 class AgendamentoAdmin(admin.ModelAdmin):
     list_display = ['cliente', 'dependente', 'servico', 'barbeiro', 'data', 'horario', 'status', 'is_walkin', 'criado_em']
     list_filter = ['status', 'barbeiro', 'data', 'is_walkin']
     search_fields = ['cliente__nome', 'dependente__nome']
+    inlines = [ItemAgendamentoInline]
 
 
 @admin.register(MensagemContato)
@@ -124,8 +131,9 @@ class FotoTrabalhoAdmin(admin.ModelAdmin):
 
 @admin.register(PlanoAssinatura)
 class PlanoAssinaturaAdmin(admin.ModelAdmin):
-    list_display = ['nome', 'preco_mensal', 'quantidade_creditos', 'desconto_produtos', 'ativo', 'destaque']
-    list_filter = ['ativo', 'destaque']
+    list_display = ['nome', 'codigo', 'preco_mensal', 'modalidade', 'limite_mensal', 'ativo', 'destaque']
+    list_filter = ['modalidade', 'ativo', 'destaque']
+    search_fields = ['nome', 'codigo']
 
 
 @admin.register(AssinaturaCliente)

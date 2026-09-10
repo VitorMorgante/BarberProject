@@ -15,6 +15,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import TemplateView, ListView, DetailView, FormView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
@@ -157,17 +158,13 @@ class BarbeirosPublicView(ListView):
         return Barbeiro.objects.filter(ativo=True)
 
 
-class ContatoView(CreateView):
+class ContatoView(SuccessMessageMixin, CreateView):
     model = MensagemContato
     form_class = MensagemContatoForm
     template_name = 'website/contato.html'
     success_url = reverse_lazy('contato')
     extra_context = {'titulo': 'Fale Conosco', 'botao': 'Enviar Mensagem'}
-
-    def form_valid(self, form):
-        form.save()
-        messages.success(self.request, 'Mensagem enviada com sucesso! A equipe Barber Heitor entrará em contato.')
-        return super().form_valid(form)
+    success_message = 'Mensagem de "%(nome)s" enviada com sucesso! A equipe Barber Heitor entrará em contato em breve.'
 
 
 class AgendamentoPublicoView(FormView):
@@ -210,6 +207,19 @@ class AgendamentoPublicoView(FormView):
         horario_agendamento = form.cleaned_data['horario']
         observacoes = form.cleaned_data.get('observacoes', '')
 
+        # Suporte a múltiplos serviços
+        servicos_selecionados_str = self.request.POST.get('servicos_selecionados', '')
+        servicos_objs = []
+        if servicos_selecionados_str:
+            s_ids = [s.strip() for s in servicos_selecionados_str.split(',') if s.strip()]
+            servicos_objs = list(Servico.objects.filter(pk__in=s_ids, ativo=True))
+
+        if not servicos_objs:
+            servicos_objs = [servico]
+
+        duracao_total = sum(s.duracao_minutos for s in servicos_objs)
+        preco_total = sum(s.preco for s in servicos_objs)
+
         # Localiza ou cria o Cliente correspondente
         if self.request.user.is_authenticated:
             cliente, _ = Cliente.objects.get_or_create(
@@ -229,15 +239,15 @@ class AgendamentoPublicoView(FormView):
             cliente.telefone = telefone
             cliente.save()
 
-        # Verifica concorrência de horário antes de gravar
-        conflito = Agendamento.objects.filter(
+        # Validação transacional com select_for_update e lock
+        valido = AgendaInteligenteService.validar_e_bloquear_horario(
             barbeiro=barbeiro,
-            data=data_agendamento,
-            horario=horario_agendamento
-        ).exclude(status=Agendamento.Status.CANCELADO).exists()
-
-        if conflito:
-            messages.error(self.request, 'Este horário acabou de ser reservado por outro cliente. Por favor, escolha outro.')
+            data_agendamento=data_agendamento,
+            horario=horario_agendamento,
+            duracao_minutos=duracao_total
+        )
+        if not valido:
+            messages.error(self.request, 'Este horário não está disponível ou acabou de ser reservado por outro cliente. Por favor, escolha outro horário.')
             return redirect('agendamento')
 
         # Cria o agendamento de forma segura contra concorrência
@@ -245,7 +255,7 @@ class AgendamentoPublicoView(FormView):
             agendamento = Agendamento.objects.create(
                 usuario=self.request.user if self.request.user.is_authenticated else None,
                 cliente=cliente,
-                servico=servico,
+                servico=servicos_objs[0],
                 barbeiro=barbeiro,
                 data=data_agendamento,
                 horario=horario_agendamento,
@@ -256,28 +266,39 @@ class AgendamentoPublicoView(FormView):
             messages.error(self.request, 'Este horário acabou de ser reservado por outro cliente. Por favor, escolha outro.')
             return redirect('agendamento')
 
+        # Cria os ItemAgendamento com snapshots de preço e duração
+        for s in servicos_objs:
+            ItemAgendamento.objects.create(
+                agendamento=agendamento,
+                servico=s,
+                preco_snapshot=s.preco,
+                duracao_snapshot=s.duracao_minutos,
+                coberto_por_assinatura=False
+            )
+
         # Cria Comanda inicial
         comanda = Comanda.objects.create(
             agendamento=agendamento,
             cliente=cliente,
             barbeiro=barbeiro,
-            subtotal=servico.preco,
-            valor_total=servico.preco,
+            subtotal=preco_total,
+            valor_total=preco_total,
             status=Comanda.Status.ABERTA
         )
-        ItemComanda.objects.create(
-            comanda=comanda,
-            tipo=ItemComanda.Tipo.SERVICO,
-            servico=servico,
-            descricao=servico.nome,
-            quantidade=1,
-            preco_unitario=servico.preco,
-            total=servico.preco
-        )
+        for s in servicos_objs:
+            ItemComanda.objects.create(
+                comanda=comanda,
+                tipo=ItemComanda.Tipo.SERVICO,
+                servico=s,
+                descricao=s.nome,
+                quantidade=1,
+                preco_unitario=s.preco,
+                total=s.preco
+            )
 
         # Verifica cobrança de Sinal PIX
         config = ConfiguracaoEstabelecimento.get_solo()
-        valor_sinal = PaymentService.calcular_sinal_agendamento(servico, config)
+        valor_sinal = PaymentService.calcular_sinal_agendamento(servicos_objs[0], config)
 
         if valor_sinal > Decimal('0.00'):
             pagamento = PaymentService.criar_pagamento_sinal(agendamento)
@@ -660,11 +681,15 @@ class HistoricoClienteView(LoginRequiredMixin, ListView):
         return Agendamento.objects.filter(cliente=cliente).order_by('-data', '-horario')
 
 
-class FeedbackCreateView(LoginRequiredMixin, CreateView):
+class FeedbackCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     model = Feedback
     form_class = FeedbackForm
     template_name = 'website/cliente/feedback.html'
     success_url = reverse_lazy('area_cliente')
+
+    def get_success_message(self, cleaned_data):
+        barbeiro_nome = self.object.barbeiro.nome if self.object.barbeiro else 'Barber Heitor'
+        return f'Agradecemos pelo seu feedback sobre o atendimento com {barbeiro_nome}! Ele nos ajuda a manter a excelência.'
 
     def dispatch(self, request, *args, **kwargs):
         agendamento = get_object_or_404(Agendamento, pk=self.kwargs['pk'])
@@ -707,7 +732,6 @@ class FeedbackCreateView(LoginRequiredMixin, CreateView):
         form.instance.agendamento = agendamento
         form.instance.aprovado = True
 
-        messages.success(self.request, 'Agradecemos pelo seu feedback! Ele nos ajuda a manter a excelência.')
         return super().form_valid(form)
 
 
@@ -751,8 +775,12 @@ class ClienteClubView(LoginRequiredMixin, TemplateView):
         plano = get_object_or_404(PlanoAssinatura, pk=plano_id, ativo=True)
         cliente = get_object_or_404(Cliente, usuario=request.user)
 
-        SubscriptionService.ativar_ou_renovar_assinatura(cliente, plano)
-        messages.success(request, f'Parabéns! Sua assinatura do {plano.nome} foi ativada com sucesso (+{plano.quantidade_creditos} créditos liberados).')
+        SubscriptionService.solicitar_assinatura(cliente, plano)
+        messages.info(
+            request,
+            f'Solicitação do {plano.nome} registrada com status Pendente! '
+            f'A liberação dos benefícios do clube ocorrerá após a confirmação do pagamento na barbearia ou via PIX.'
+        )
         return redirect('cliente_club')
 
 
@@ -768,28 +796,14 @@ class ClienteFidelidadeView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class ClienteEstiloView(LoginRequiredMixin, FormView):
-    """Consultor de Estilo & Visagismo com IA."""
-    template_name = 'website/cliente/estilo.html'
-    form_class = AnaliseEstiloForm
-    success_url = reverse_lazy('cliente_estilo')
+class ClienteEstiloView(LoginRequiredMixin, View):
+    """Redirecionamento suave de rota descontinuada de visagismo."""
+    def get(self, request, *args, **kwargs):
+        messages.info(request, "O serviço digital de visagismo foi descontinuado. Conheça nossos serviços oficiais.")
+        return redirect('servicos')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        cliente = Cliente.objects.filter(usuario=self.request.user).first()
-        context['analises'] = AnaliseEstilo.objects.filter(cliente=cliente).order_by('-criado_em') if cliente else []
-        context['catalogo_cortes'] = EstiloCorte.objects.filter(ativo=True)
-        return context
-
-    def form_valid(self, form):
-        cliente = get_object_or_404(Cliente, usuario=self.request.user)
-        imagem_file = form.cleaned_data['imagem']
-        try:
-            analise = StyleAIService.analisar_rosto_e_recomendar(cliente, imagem_file)
-            messages.success(self.request, f'Análise de visagismo concluída! Seu formato facial identificado é {analise.formato_rosto_detectado}. Veja as recomendações abaixo.')
-        except Exception as e:
-            messages.error(self.request, f'Erro na análise: {str(e)}')
-        return redirect('cliente_estilo')
+    def post(self, request, *args, **kwargs):
+        return redirect('servicos')
 
 
 class ClienteEvolucaoView(LoginRequiredMixin, ListView):
@@ -1084,13 +1098,17 @@ class BarbeiroComandaView(BarbeiroRequiredMixin, TemplateView):
         return redirect('barbeiro_comanda', pk=agendamento.pk)
 
 
-class BarbeiroFotoResultadoView(BarbeiroRequiredMixin, CreateView):
+class BarbeiroFotoResultadoView(SuccessMessageMixin, BarbeiroRequiredMixin, CreateView):
     """Anexa foto do resultado ao histórico visual privado do cliente."""
     model = HistoricoVisualCliente
     form_class = HistoricoVisualClienteForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('agendamentos_barbeiro')
     extra_context = {'titulo': 'Registrar Foto do Resultado (Privado)', 'botao': 'Salvar Foto de Evolução'}
+
+    def get_success_message(self, cleaned_data):
+        cliente_nome = self.object.cliente.nome if self.object.cliente else 'Cliente'
+        return f'Foto de resultado do cliente "{cliente_nome}" salva com sucesso no histórico privado!'
 
     def dispatch(self, request, *args, **kwargs):
         agendamento = get_object_or_404(Agendamento, pk=self.kwargs['pk'])
@@ -1112,7 +1130,6 @@ class BarbeiroFotoResultadoView(BarbeiroRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.data = date.today()
-        messages.success(self.request, 'Foto do resultado salva no histórico privado do cliente!')
         return super().form_valid(form)
 
 
@@ -1217,12 +1234,16 @@ class FotoTrabalhoListView(BarbeiroRequiredMixin, ListView):
         return FotoTrabalho.objects.filter(barbeiro=barbeiro).order_by('-criado_em')
 
 
-class FotoTrabalhoCreateView(BarbeiroRequiredMixin, CreateView):
+class FotoTrabalhoCreateView(SuccessMessageMixin, BarbeiroRequiredMixin, CreateView):
     model = FotoTrabalho
     form_class = FotoTrabalhoForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('fotos_barbeiro')
     extra_context = {'titulo': 'Cadastrar Foto de Trabalho', 'botao': 'Cadastrar'}
+
+    def get_success_message(self, cleaned_data):
+        titulo = getattr(self.object, 'titulo', None) or 'Foto de trabalho'
+        return f'Foto de trabalho "{titulo}" cadastrada com sucesso no portfólio!'
 
     def form_valid(self, form):
         barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
@@ -1231,11 +1252,10 @@ class FotoTrabalhoCreateView(BarbeiroRequiredMixin, CreateView):
             return redirect('pagina_inicial')
         form.instance.usuario = self.request.user
         form.instance.barbeiro = barbeiro
-        messages.success(self.request, 'Foto cadastrada com sucesso no portfólio!')
         return super().form_valid(form)
 
 
-class FotoTrabalhoUpdateView(BarbeiroRequiredMixin, UpdateView):
+class FotoTrabalhoUpdateView(SuccessMessageMixin, BarbeiroRequiredMixin, UpdateView):
     model = FotoTrabalho
     form_class = FotoTrabalhoForm
     template_name = 'website/form.html'
@@ -1245,8 +1265,12 @@ class FotoTrabalhoUpdateView(BarbeiroRequiredMixin, UpdateView):
     def get_queryset(self):
         return FotoTrabalho.objects.filter(usuario=self.request.user)
 
+    def get_success_message(self, cleaned_data):
+        titulo = getattr(self.object, 'titulo', None) or 'Foto de trabalho'
+        return f'Foto de trabalho "{titulo}" atualizada com sucesso no portfólio!'
 
-class FotoTrabalhoDeleteView(BarbeiroRequiredMixin, DeleteView):
+
+class FotoTrabalhoDeleteView(SuccessMessageMixin, BarbeiroRequiredMixin, DeleteView):
     model = FotoTrabalho
     template_name = 'website/form.html'
     success_url = reverse_lazy('fotos_barbeiro')
@@ -1254,6 +1278,10 @@ class FotoTrabalhoDeleteView(BarbeiroRequiredMixin, DeleteView):
 
     def get_queryset(self):
         return FotoTrabalho.objects.filter(usuario=self.request.user)
+
+    def get_success_message(self, cleaned_data):
+        titulo = getattr(self.object, 'titulo', None) or 'Foto de trabalho'
+        return f'Foto de trabalho "{titulo}" excluída com sucesso do portfólio!'
 
 
 # ==============================================================================
@@ -1381,16 +1409,18 @@ class ComissoesAdminView(AdminStaffRequiredMixin, TemplateView):
         return context
 
 
-class RepasseComissaoCreateView(AdminStaffRequiredMixin, CreateView):
+class RepasseComissaoCreateView(SuccessMessageMixin, AdminStaffRequiredMixin, CreateView):
     model = RepasseComissao
     form_class = RepasseComissaoForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('admin_comissoes')
     extra_context = {'titulo': 'Registrar Repasse de Comissão', 'botao': 'Confirmar Repasse'}
 
+    def get_success_message(self, cleaned_data):
+        return f'Repasse de R$ {self.object.valor} para o barbeiro {self.object.barbeiro.nome} registrado com sucesso!'
+
     def form_valid(self, form):
         form.instance.usuario_responsavel = self.request.user
-        messages.success(self.request, f'Repasse de R$ {form.instance.valor} para {form.instance.barbeiro.nome} registrado com sucesso!')
         return super().form_valid(form)
 
 
@@ -1405,27 +1435,33 @@ class ProdutoListView(AdminStaffRequiredMixin, ListView):
         return Produto.objects.all().order_by('nome')
 
 
-class ProdutoCreate(AdminStaffRequiredMixin, CreateView):
+class ProdutoCreate(SuccessMessageMixin, AdminStaffRequiredMixin, CreateView):
     model = Produto
     form_class = ProdutoForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_produtos')
     extra_context = {'titulo': 'Cadastrar Produto', 'botao': 'Salvar Produto'}
+    success_message = 'Produto "%(nome)s" cadastrado com sucesso no catálogo!'
 
 
-class ProdutoUpdate(AdminStaffRequiredMixin, UpdateView):
+class ProdutoUpdate(SuccessMessageMixin, AdminStaffRequiredMixin, UpdateView):
     model = Produto
     form_class = ProdutoForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_produtos')
     extra_context = {'titulo': 'Editar Produto', 'botao': 'Salvar Alterações'}
+    success_message = 'Produto "%(nome)s" atualizado com sucesso!'
 
 
-class ProdutoDelete(AdminStaffRequiredMixin, DeleteView):
+class ProdutoDelete(SuccessMessageMixin, AdminStaffRequiredMixin, DeleteView):
     model = Produto
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_produtos')
     extra_context = {'titulo': 'Excluir Produto', 'botao': 'Excluir Produto'}
+
+    def get_success_message(self, cleaned_data):
+        nome = getattr(self.object, 'nome', None) or 'Produto'
+        return f'Produto "{nome}" excluído com sucesso do catálogo!'
 
 
 class EstoqueMovimentacaoView(AdminStaffRequiredMixin, FormView):
@@ -1467,30 +1503,36 @@ class PlanoAssinaturaListView(AdminStaffRequiredMixin, ListView):
     context_object_name = 'planos'
 
 
-class PlanoAssinaturaCreate(AdminStaffRequiredMixin, CreateView):
+class PlanoAssinaturaCreate(SuccessMessageMixin, AdminStaffRequiredMixin, CreateView):
     model = PlanoAssinatura
     form_class = PlanoAssinaturaForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_planos')
     extra_context = {'titulo': 'Cadastrar Plano Barber Club', 'botao': 'Salvar Plano'}
+    success_message = 'Plano "%(nome)s" do Barber Club cadastrado com sucesso!'
 
 
-class PlanoAssinaturaUpdate(AdminStaffRequiredMixin, UpdateView):
+class PlanoAssinaturaUpdate(SuccessMessageMixin, AdminStaffRequiredMixin, UpdateView):
     model = PlanoAssinatura
     form_class = PlanoAssinaturaForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_planos')
     extra_context = {'titulo': 'Editar Plano Barber Club', 'botao': 'Salvar Alterações'}
+    success_message = 'Plano "%(nome)s" do Barber Club atualizado com sucesso!'
 
 
-class PlanoAssinaturaDelete(AdminStaffRequiredMixin, DeleteView):
+class PlanoAssinaturaDelete(SuccessMessageMixin, AdminStaffRequiredMixin, DeleteView):
     model = PlanoAssinatura
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_planos')
     extra_context = {'titulo': 'Excluir Plano Barber Club', 'botao': 'Excluir'}
 
+    def get_success_message(self, cleaned_data):
+        nome = getattr(self.object, 'nome', None) or 'Plano'
+        return f'Plano "{nome}" do Barber Club excluído com sucesso!'
 
-class ConfiguracaoEstabelecimentoView(AdminStaffRequiredMixin, UpdateView):
+
+class ConfiguracaoEstabelecimentoView(SuccessMessageMixin, AdminStaffRequiredMixin, UpdateView):
     model = ConfiguracaoEstabelecimento
     form_class = ConfiguracaoEstabelecimentoForm
     template_name = 'website/form.html'
@@ -1500,9 +1542,9 @@ class ConfiguracaoEstabelecimentoView(AdminStaffRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         return ConfiguracaoEstabelecimento.get_solo()
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Configurações da Barber Heitor salvas com sucesso!')
-        return super().form_valid(form)
+    def get_success_message(self, cleaned_data):
+        nome = getattr(self.object, 'nome_estabelecimento', None) or 'Barber Heitor'
+        return f'Configurações de "{nome}" salvas com sucesso!'
 
 
 class WaitlistAdminView(AdminStaffRequiredMixin, ListView):
@@ -1514,31 +1556,37 @@ class WaitlistAdminView(AdminStaffRequiredMixin, ListView):
 
 # --- CRUDS EXISTENTES (PRESERVADOS) ---
 
-class ServicoCreate(LoginRequiredMixin, AdminStaffRequiredMixin, CreateView):
+class ServicoCreate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, CreateView):
     model = Servico
     form_class = ServicoForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_servicos')
     extra_context = {'titulo': 'Cadastrar Serviço', 'botao': 'Cadastrar'}
+    success_message = 'Serviço "%(nome)s" cadastrado com sucesso!'
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user
         return super().form_valid(form)
 
 
-class ServicoUpdate(LoginRequiredMixin, AdminStaffRequiredMixin, UpdateView):
+class ServicoUpdate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, UpdateView):
     model = Servico
     form_class = ServicoForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_servicos')
     extra_context = {'titulo': 'Editar Serviço', 'botao': 'Salvar alterações'}
+    success_message = 'Serviço "%(nome)s" atualizado com sucesso!'
 
 
-class ServicoDelete(LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
+class ServicoDelete(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
     model = Servico
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_servicos')
     extra_context = {'titulo': 'Excluir Serviço', 'botao': 'Excluir'}
+
+    def get_success_message(self, cleaned_data):
+        nome = getattr(self.object, 'nome', None) or 'Serviço'
+        return f'Serviço "{nome}" excluído com sucesso!'
 
 
 class ServicoList(LoginRequiredMixin, AdminStaffRequiredMixin, ListView):
@@ -1553,12 +1601,13 @@ class ServicoDetail(LoginRequiredMixin, AdminStaffRequiredMixin, DetailView):
     context_object_name = 'servico'
 
 
-class BarbeiroCreate(AdminRequiredMixin, CreateView):
+class BarbeiroCreate(SuccessMessageMixin, AdminRequiredMixin, CreateView):
     model = Barbeiro
     form_class = BarbeiroForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_barbeiros')
     extra_context = {'titulo': 'Cadastrar Barbeiro', 'botao': 'Cadastrar'}
+    success_message = 'Barbeiro "%(nome)s" cadastrado com sucesso na equipe Barber Heitor!'
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -1569,12 +1618,13 @@ class BarbeiroCreate(AdminRequiredMixin, CreateView):
         return response
 
 
-class BarbeiroUpdate(AdminRequiredMixin, UpdateView):
+class BarbeiroUpdate(SuccessMessageMixin, AdminRequiredMixin, UpdateView):
     model = Barbeiro
     form_class = BarbeiroForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_barbeiros')
     extra_context = {'titulo': 'Editar Barbeiro', 'botao': 'Salvar alterações'}
+    success_message = 'Perfil do barbeiro "%(nome)s" atualizado com sucesso!'
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -1585,11 +1635,15 @@ class BarbeiroUpdate(AdminRequiredMixin, UpdateView):
         return response
 
 
-class BarbeiroDelete(AdminRequiredMixin, DeleteView):
+class BarbeiroDelete(SuccessMessageMixin, AdminRequiredMixin, DeleteView):
     model = Barbeiro
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_barbeiros')
     extra_context = {'titulo': 'Excluir Barbeiro', 'botao': 'Excluir'}
+
+    def get_success_message(self, cleaned_data):
+        nome = getattr(self.object, 'nome', None) or 'Barbeiro'
+        return f'Barbeiro "{nome}" removido da equipe com sucesso!'
 
 
 class BarbeiroList(AdminRequiredMixin, ListView):
@@ -1604,27 +1658,33 @@ class BarbeiroDetail(AdminRequiredMixin, DetailView):
     context_object_name = 'barbeiro'
 
 
-class ClienteCreate(LoginRequiredMixin, AdminStaffRequiredMixin, CreateView):
+class ClienteCreate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, CreateView):
     model = Cliente
     form_class = ClienteForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_clientes')
     extra_context = {'titulo': 'Cadastrar Cliente', 'botao': 'Cadastrar'}
+    success_message = 'Cliente "%(nome)s" cadastrado com sucesso!'
 
 
-class ClienteUpdate(LoginRequiredMixin, AdminStaffRequiredMixin, UpdateView):
+class ClienteUpdate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, UpdateView):
     model = Cliente
     form_class = ClienteForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_clientes')
     extra_context = {'titulo': 'Editar Cliente', 'botao': 'Salvar alterações'}
+    success_message = 'Dados do cliente "%(nome)s" atualizados com sucesso!'
 
 
-class ClienteDelete(LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
+class ClienteDelete(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
     model = Cliente
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_clientes')
     extra_context = {'titulo': 'Excluir Cliente', 'botao': 'Excluir'}
+
+    def get_success_message(self, cleaned_data):
+        nome = getattr(self.object, 'nome', None) or 'Cliente'
+        return f'Cliente "{nome}" excluído com sucesso!'
 
 
 class ClienteList(LoginRequiredMixin, AdminStaffRequiredMixin, ListView):
@@ -1639,27 +1699,42 @@ class ClienteDetail(LoginRequiredMixin, AdminStaffRequiredMixin, DetailView):
     context_object_name = 'cliente'
 
 
-class HorarioDisponivelCreate(LoginRequiredMixin, AdminStaffRequiredMixin, CreateView):
+class HorarioDisponivelCreate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, CreateView):
     model = HorarioDisponivel
     form_class = HorarioDisponivelForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_horarios')
     extra_context = {'titulo': 'Cadastrar Horário', 'botao': 'Cadastrar'}
 
+    def get_success_message(self, cleaned_data):
+        barbeiro_nome = self.object.barbeiro.nome if self.object.barbeiro else 'Barbeiro'
+        horario_str = self.object.horario.strftime('%H:%M') if getattr(self.object, 'horario', None) else ''
+        return f'Horário {horario_str} para o barbeiro {barbeiro_nome} cadastrado com sucesso!'
 
-class HorarioDisponivelUpdate(LoginRequiredMixin, AdminStaffRequiredMixin, UpdateView):
+
+class HorarioDisponivelUpdate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, UpdateView):
     model = HorarioDisponivel
     form_class = HorarioDisponivelForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_horarios')
     extra_context = {'titulo': 'Editar Horário', 'botao': 'Salvar alterações'}
 
+    def get_success_message(self, cleaned_data):
+        barbeiro_nome = self.object.barbeiro.nome if self.object.barbeiro else 'Barbeiro'
+        horario_str = self.object.horario.strftime('%H:%M') if getattr(self.object, 'horario', None) else ''
+        return f'Horário {horario_str} do barbeiro {barbeiro_nome} atualizado com sucesso!'
 
-class HorarioDisponivelDelete(LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
+
+class HorarioDisponivelDelete(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
     model = HorarioDisponivel
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_horarios')
     extra_context = {'titulo': 'Excluir Horário', 'botao': 'Excluir'}
+
+    def get_success_message(self, cleaned_data):
+        barbeiro_nome = self.object.barbeiro.nome if getattr(self.object, 'barbeiro', None) else 'Barbeiro'
+        horario_str = self.object.horario.strftime('%H:%M') if getattr(self.object, 'horario', None) else ''
+        return f'Horário {horario_str} do barbeiro {barbeiro_nome} excluído com sucesso!'
 
 
 class HorarioDisponivelList(LoginRequiredMixin, AdminStaffRequiredMixin, ListView):
@@ -1674,27 +1749,58 @@ class HorarioDisponivelDetail(LoginRequiredMixin, AdminStaffRequiredMixin, Detai
     context_object_name = 'horario'
 
 
-class AgendamentoCreate(LoginRequiredMixin, AdminStaffRequiredMixin, CreateView):
+class AgendamentoCreate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, CreateView):
     model = Agendamento
     form_class = AgendamentoForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_agendamentos')
     extra_context = {'titulo': 'Cadastrar Agendamento', 'botao': 'Cadastrar'}
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if self.object.servico and not self.object.itens.exists():
+            ItemAgendamento.objects.create(
+                agendamento=self.object,
+                servico=self.object.servico,
+                preco_snapshot=self.object.servico.preco,
+                duracao_snapshot=self.object.servico.duracao_minutos,
+                coberto_por_assinatura=False
+            )
+        return response
 
-class AgendamentoUpdate(LoginRequiredMixin, AdminStaffRequiredMixin, UpdateView):
+    def get_success_message(self, cleaned_data):
+        cliente_nome = self.object.cliente.nome if self.object.cliente else 'Cliente'
+        servico_nome = self.object.servico.nome if self.object.servico else 'Serviço'
+        data_str = self.object.data.strftime('%d/%m/%Y') if getattr(self.object, 'data', None) else ''
+        hora_str = self.object.horario.strftime('%H:%M') if getattr(self.object, 'horario', None) else ''
+        return f'Agendamento de {cliente_nome} ({servico_nome}) para {data_str} às {hora_str} cadastrado com sucesso!'
+
+
+class AgendamentoUpdate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, UpdateView):
     model = Agendamento
     form_class = AgendamentoForm
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_agendamentos')
     extra_context = {'titulo': 'Editar Agendamento', 'botao': 'Salvar alterações'}
 
+    def get_success_message(self, cleaned_data):
+        cliente_nome = self.object.cliente.nome if self.object.cliente else 'Cliente'
+        servico_nome = self.object.servico.nome if self.object.servico else 'Serviço'
+        data_str = self.object.data.strftime('%d/%m/%Y') if getattr(self.object, 'data', None) else ''
+        return f'Agendamento de {cliente_nome} ({servico_nome}) para {data_str} atualizado com sucesso!'
 
-class AgendamentoDelete(LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
+
+class AgendamentoDelete(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
     model = Agendamento
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_agendamentos')
     extra_context = {'titulo': 'Excluir Agendamento', 'botao': 'Excluir'}
+
+    def get_success_message(self, cleaned_data):
+        cliente_nome = self.object.cliente.nome if getattr(self.object, 'cliente', None) else 'Cliente'
+        servico_nome = self.object.servico.nome if getattr(self.object, 'servico', None) else 'Serviço'
+        data_str = self.object.data.strftime('%d/%m/%Y') if getattr(self.object, 'data', None) else ''
+        return f'Agendamento de {cliente_nome} ({servico_nome}) para {data_str} cancelado e excluído com sucesso!'
 
 
 class AgendamentoList(LoginRequiredMixin, AdminStaffRequiredMixin, ListView):
@@ -1728,11 +1834,15 @@ class MensagemContatoDetail(LoginRequiredMixin, AdminStaffRequiredMixin, DetailV
         return obj
 
 
-class MensagemContatoDelete(LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
+class MensagemContatoDelete(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
     model = MensagemContato
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_mensagens')
     extra_context = {'titulo': 'Excluir Mensagem', 'botao': 'Excluir'}
+
+    def get_success_message(self, cleaned_data):
+        nome = getattr(self.object, 'nome', None) or 'Contato'
+        return f'Mensagem de contato de "{nome}" excluída com sucesso!'
 
 
 # ==============================================================================
@@ -1742,6 +1852,10 @@ class MensagemContatoDelete(LoginRequiredMixin, AdminStaffRequiredMixin, DeleteV
 def horarios_disponiveis_api(request):
     barbeiro_id = request.GET.get('barbeiro_id')
     data_str = request.GET.get('data')
+    servico_id = request.GET.get('servico_id')
+    servicos_ids = request.GET.get('servicos_ids') or request.GET.getlist('servicos_ids[]')
+    plano_id = request.GET.get('plano_id')
+    duracao_minutos = request.GET.get('duracao')
 
     if not barbeiro_id or not data_str:
         return JsonResponse({'horarios': []})
@@ -1751,23 +1865,50 @@ def horarios_disponiveis_api(request):
     except (ValueError, TypeError):
         return JsonResponse({'horarios': []})
 
-    horarios_ativos = HorarioDisponivel.objects.filter(
-        barbeiro_id=barbeiro_id,
-        ativo=True,
-    ).values_list('horario', flat=True)
+    barbeiro = Barbeiro.objects.filter(pk=barbeiro_id, ativo=True).first()
+    if not barbeiro:
+        return JsonResponse({'horarios': []})
 
-    agendamentos = Agendamento.objects.filter(
-        barbeiro_id=barbeiro_id,
-        data=data_agendamento,
-    ).exclude(status=Agendamento.Status.CANCELADO).values_list('horario', flat=True)
+    # Resolução de serviços / plano / duração
+    servico = None
+    servicos_list = []
+    plano = None
 
-    ocupados = set(agendamentos)
+    if plano_id:
+        plano = PlanoAssinatura.objects.filter(pk=plano_id, ativo=True).first()
+
+    if servicos_ids:
+        if isinstance(servicos_ids, str):
+            s_ids = [s.strip() for s in servicos_ids.split(',') if s.strip()]
+        else:
+            s_ids = servicos_ids
+        servicos_list = list(Servico.objects.filter(pk__in=s_ids, ativo=True))
+
+    if servico_id and not servicos_list and not plano:
+        servico = Servico.objects.filter(pk=servico_id, ativo=True).first()
+
+    cliente = None
+    if request.user.is_authenticated:
+        cliente = Cliente.objects.filter(usuario=request.user).first()
+
+    slots = AgendaInteligenteService.obter_horarios_com_score(
+        data_agendamento=data_agendamento,
+        servico=servico,
+        barbeiro=barbeiro,
+        cliente=cliente,
+        servicos=servicos_list,
+        plano=plano,
+        duracao_minutos=int(duracao_minutos) if duracao_minutos else None
+    )
 
     resultado = []
-    for h in sorted(horarios_ativos):
+    for slot in slots:
         resultado.append({
-            'horario': h.strftime('%H:%M'),
-            'disponivel': h not in ocupados,
+            'horario': slot['horario'],
+            'disponivel': True,
+            'score': slot.get('score', 70),
+            'recomendado': slot.get('recomendado', False),
+            'duracao': slot.get('duracao', 30),
         })
 
     return JsonResponse({'horarios': resultado})

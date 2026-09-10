@@ -67,7 +67,7 @@ class AgendamentoService:
         agendamento.save(update_fields=['status', 'fim_real', 'duracao_real_minutos', 'atualizado_em'])
 
         # 1. Barber Club: tenta consumir crédito se elegível
-        credito_consumido = SubscriptionService.consumir_credito(
+        credito_consumido, valor_abatido = SubscriptionService.consumir_credito(
             cliente=agendamento.cliente,
             servico=agendamento.servico,
             agendamento=agendamento
@@ -78,32 +78,46 @@ class AgendamentoService:
 
         # 3. Comanda & PDV
         if not comanda:
+            preco_inicial = agendamento.get_preco_total() if hasattr(agendamento, 'get_preco_total') else agendamento.servico.preco
             comanda, _ = Comanda.objects.select_for_update().get_or_create(
                 agendamento=agendamento,
                 defaults={
                     'cliente': agendamento.cliente,
                     'barbeiro': agendamento.barbeiro,
-                    'subtotal': agendamento.servico.preco,
-                    'valor_total': agendamento.servico.preco,
+                    'subtotal': preco_inicial,
+                    'valor_total': preco_inicial,
                     'status': Comanda.Status.ABERTA,
                 }
             )
 
-        # Se o item principal de serviço ainda não estiver na comanda, adiciona
-        if not comanda.itens.filter(tipo=ItemComanda.Tipo.SERVICO, servico=agendamento.servico).exists():
-            ItemComanda.objects.create(
-                comanda=comanda,
-                tipo=ItemComanda.Tipo.SERVICO,
-                servico=agendamento.servico,
-                descricao=agendamento.servico.nome,
-                quantidade=1,
-                preco_unitario=agendamento.servico.preco,
-                total=agendamento.servico.preco,
-            )
+        # Garante que os serviços do agendamento estejam como itens da comanda
+        if agendamento.itens.exists():
+            for item_ag in agendamento.itens.all():
+                if not comanda.itens.filter(tipo=ItemComanda.Tipo.SERVICO, servico=item_ag.servico).exists():
+                    ItemComanda.objects.create(
+                        comanda=comanda,
+                        tipo=ItemComanda.Tipo.SERVICO,
+                        servico=item_ag.servico,
+                        descricao=item_ag.servico.nome,
+                        quantidade=1,
+                        preco_unitario=item_ag.preco_snapshot,
+                        total=item_ag.preco_snapshot,
+                    )
+        elif agendamento.servico:
+            if not comanda.itens.filter(tipo=ItemComanda.Tipo.SERVICO, servico=agendamento.servico).exists():
+                ItemComanda.objects.create(
+                    comanda=comanda,
+                    tipo=ItemComanda.Tipo.SERVICO,
+                    servico=agendamento.servico,
+                    descricao=agendamento.servico.nome,
+                    quantidade=1,
+                    preco_unitario=agendamento.servico.preco,
+                    total=agendamento.servico.preco,
+                )
 
-        # Se usou crédito de assinatura, aplica abatimento integral no serviço
-        if credito_consumido:
-            comanda.creditos_abatidos = agendamento.servico.preco
+        # Se usou crédito de assinatura, aplica abatimento dos serviços cobertos
+        if credito_consumido and valor_abatido > Decimal('0.00'):
+            comanda.creditos_abatidos = valor_abatido
 
         # Abate estoque de todos os produtos na comanda que ainda não foram movimentados
         for item in comanda.itens.filter(tipo=ItemComanda.Tipo.PRODUTO):

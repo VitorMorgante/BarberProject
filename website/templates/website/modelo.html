@@ -126,19 +126,37 @@
       </nav>
     </header>
 
-    <!-- DJANGO SYSTEM MESSAGES / ALERTS -->
-    {% if messages %}
-    <div class="container mt-3">
-      {% for message in messages %}
-      <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %} alert-dismissible fade show border-0 shadow-sm" role="alert"
-           style="background-color: {% if message.tags == 'error' %}rgba(239,68,68,0.18){% elif message.tags == 'success' %}rgba(16,185,129,0.18){% elif message.tags == 'warning' %}rgba(245,158,11,0.18){% else %}rgba(14,165,233,0.18){% endif %}; color: #f8fafc; border-left: 4px solid {% if message.tags == 'error' %}#ef4444{% elif message.tags == 'success' %}#10b981{% elif message.tags == 'warning' %}#f59e0b{% else %}#0ea5e9{% endif %} !important;">
-        <i class="bi {% if message.tags == 'error' %}bi-x-circle-fill text-danger{% elif message.tags == 'success' %}bi-check-circle-fill text-success{% elif message.tags == 'warning' %}bi-exclamation-triangle-fill text-warning{% else %}bi-info-circle-fill text-info{% endif %} me-2"></i>
-        {{ message }}
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    <!-- DJANGO MESSAGES TOAST CONTAINER (CENTRO SUPERIOR RESPONSIVO) -->
+    <div aria-live="polite" aria-atomic="true" class="toast-messages-wrapper">
+      <div id="django-toast-container" class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" role="region" aria-label="Notificações do sistema">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="toast custom-toast custom-toast-{{ message.tags|default:'info' }} shadow-lg border-0 mb-2"
+                 role="alert"
+                 aria-live="assertive"
+                 aria-atomic="true"
+                 data-bs-autohide="true"
+                 data-bs-delay="3000">
+              <div class="toast-header custom-toast-header">
+                <i class="bi {% if message.tags == 'error' %}bi-x-circle-fill text-danger{% elif message.tags == 'success' %}bi-check-circle-fill text-success{% elif message.tags == 'warning' %}bi-exclamation-triangle-fill text-warning{% else %}bi-info-circle-fill text-info{% endif %} me-2 fs-5"></i>
+                <strong class="me-auto text-uppercase toast-title">
+                  {% if message.tags == 'error' %}Atenção
+                  {% elif message.tags == 'success' %}Sucesso
+                  {% elif message.tags == 'warning' %}Aviso
+                  {% else %}{{ BARBER_SHORT_NAME }}
+                  {% endif %}
+                </strong>
+                <small class="toast-time text-muted-custom">Agora</small>
+                <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="toast" aria-label="Fechar notificação"></button>
+              </div>
+              <div class="toast-body custom-toast-body">
+                {{ message }}
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
       </div>
-      {% endfor %}
     </div>
-    {% endif %}
 
     <!-- MAIN APP CONTENT -->
     <main class="min-vh-100 pb-5">
@@ -319,6 +337,23 @@
 
     <!-- Custom Interactive JS -->
     <script src="{% static 'website/js/main.js' %}"></script>
+    
+    <!-- Bootstrap Toast Automatic Initialization Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var toastContainer = document.getElementById('django-toast-container');
+        if (toastContainer) {
+          var toastElements = toastContainer.querySelectorAll('.toast');
+          toastElements.forEach(function (toastEl) {
+            var toastInstance = bootstrap.Toast.getOrCreateInstance(toastEl, {
+              autohide: true,
+              delay: 3000
+            });
+            toastInstance.show();
+          });
+        }
+      });
+    </script>
     
     <!-- PWA Service Worker Registration -->
     <script>

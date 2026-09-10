@@ -72,6 +72,7 @@ class Command(BaseCommand):
         # 4. Agendamentos de Hoje (Para Cockpit, TV e Recepção brilharem)
         hoje = timezone.localtime().date()
         servicos = list(Servico.objects.filter(ativo=True))
+        from website.models import ItemAgendamento
         
         status_fluxo = [
             (time(8, 30), danilo, Agendamento.Status.CONCLUIDO, True),
@@ -86,7 +87,7 @@ class Command(BaseCommand):
         agendamentos_criados = []
         for i, (horario, barb, stat, checkin) in enumerate(status_fluxo):
             cli = clientes_objs[i % len(clientes_objs)]
-            serv = servicos[i % len(servicos)]
+            serv = servicos[i % len(servicos)] if servicos else None
 
             checkin_dt = timezone.now() - timedelta(minutes=20) if checkin else None
             ag, created = Agendamento.objects.get_or_create(
@@ -101,6 +102,14 @@ class Command(BaseCommand):
                     'observacoes': 'Preferência por degradê alinhado e navalha quente.'
                 }
             )
+            if serv and not ag.itens.exists():
+                ItemAgendamento.objects.create(
+                    agendamento=ag,
+                    servico=serv,
+                    preco_snapshot=serv.preco,
+                    duracao_snapshot=serv.duracao_minutos,
+                    coberto_por_assinatura=False
+                )
             agendamentos_criados.append(ag)
 
         self.stdout.write(self.style.SUCCESS('  [OK] Agendamentos de hoje estruturados para simulação ao vivo.'))

@@ -18,8 +18,28 @@ O sistema atende a todos os pilares da operação:
 
 ## 💈 Equipe de Especialistas
 
-- **Danilo Delacruz**: Barbeiro especialista em cortes masculinos clássicos, visagismo e acabamentos cirúrgicos na navalha.
-- **Heitor Pontes**: Sócio-fundador e barbeiro master, especialista em tendências contemporâneas, barboterapia relaxante e visagismo personalizado.
+- **Heitor Pontes**: Sócio-fundador e barbeiro master ([@barber.heitorr](https://www.instagram.com/barber.heitorr/)), especialista em cortes masculinos contemporâneos, barba e finalizações de alto padrão.
+- **Danilo Delacruz**: Barbeiro especialista em cortes masculinos clássicos, alinhamento de barba e acabamentos cirúrgicos na navalha.
+
+---
+
+## ✂️ Catálogo Oficial & Planos de Assinatura (Barber Heitor)
+
+### Serviços Confirmados
+- **Cabelo**: R$ 30,00 (30 min) — Código: `cabelo`
+- **Barba**: R$ 20,00 (20 min) — Código: `barba`
+- **Cavanhaque**: R$ 15,00 (15 min) — Código: `cavanhaque`
+- **Sobrancelha**: R$ 5,00 (10 min) — Código: `sobrancelha`
+
+### Produtos de Venda Balcão
+- **Pomada Fox**: R$ 20,00 (Código: `POM-FOX` / SKU: `HEITOR-POMADA-FOX`)
+- **Pomada em Pó**: R$ 30,00 (Código: `POM-PO` / SKU: `HEITOR-POMADA-PO`)
+- **Shampoo Anticaspa**: R$ 30,00 (Código: `SHAMP-ANTICASPA` / SKU: `HEITOR-SHAMPOO-ANTICASPA`)
+
+### Clube de Assinaturas (Barber Club)
+- **Plano Normal**: R$ 80,00 / mês (Modalidade Limitada: 4 cortes/mês — Cabelo + Sobrancelha)
+- **Plano com Barba**: R$ 120,00 / mês (Modalidade Limitada: 4 cortes/mês — Cabelo + Sobrancelha + Barba)
+- **Plano Cortes Infinitos**: R$ 100,00 / mês (Modalidade Ilimitada — Cabelo + Sobrancelha)
 
 ---
 
@@ -74,9 +94,16 @@ copy .env.example .env
 python manage.py migrate
 ```
 
-### 5. Popular Base Comercial Demo (Apresentação Imediata)
-Para carregar dados completos com barbeiros, catálogo de serviços, produtos, comandas, clientes e agendamentos ao vivo para a data de hoje:
+### 5. Popular Base Comercial Real (Barber Heitor) ou Demo
+Para aplicar o catálogo canônico de serviços, produtos, planos de assinatura e a escala oficial de Heitor e Danilo:
 ```bash
+# Sincronização canônica oficial (idempotente):
+python manage.py seed_heitor_real
+
+# Para simular alterações antes de persistir:
+python manage.py seed_heitor_real --dry-run
+
+# Ou carregar base demonstrativa ampliada para hoje:
 python manage.py seed_demo
 ```
 
@@ -102,7 +129,14 @@ Acesse a aplicação em `http://127.0.0.1:8000/`.
 ## 🧪 Execução de Testes Automatizados
 
 ```bash
-python manage.py test
+# Executar a suíte completa de conformidade com Barber Heitor:
+python manage.py test website.tests_heitor_real --keepdb
+
+# Executar a suíte de regressão geral do sistema:
+python manage.py test website.tests --keepdb
+
+# Executar todos os testes:
+python manage.py test --keepdb
 ```
 
 ---

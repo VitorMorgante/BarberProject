@@ -82,15 +82,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const confirmBtn = document.getElementById('btn-confirm-appointment');
 
   if (idServicoInput && idBarbeiroInput && idDataInput) {
+    const idServicosSelecionadosInput = document.getElementById('id_servicos_selecionados');
+
     const bookingState = {
-      serviceId: '',
+      services: [],
+      serviceId: null,
       serviceName: '',
       servicePrice: 0,
       serviceDuration: '',
-      barberId: '',
+      barberId: null,
       barberName: '',
-      date: '',
-      time: '',
+      date: null,
+      time: null,
       customer: {
         name: '',
         phone: '',
@@ -118,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (sumService) sumService.textContent = bookingState.serviceName || 'Não selecionado';
       if (sumBarber) sumBarber.textContent = bookingState.barberName || 'Não selecionado';
-      if (sumDuration) sumDuration.textContent = bookingState.serviceDuration || 'Não selecionada';
+      if (sumDuration) sumDuration.textContent = bookingState.serviceDuration || '--';
 
       if (sumDate) {
         if (bookingState.date) {
@@ -140,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (confirmBtn) {
-        const isValid = bookingState.serviceId &&
+        const isValid = bookingState.services.length > 0 &&
                         bookingState.barberId &&
                         bookingState.date &&
                         bookingState.time &&
@@ -151,60 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    const selectService = (id, name, price, duration) => {
-      bookingState.serviceId = id;
-      bookingState.serviceName = name;
-      bookingState.servicePrice = parseFloat(price) || 0;
-      bookingState.serviceDuration = duration;
-      idServicoInput.value = id;
-
-      document.querySelectorAll('.service-select-item').forEach(el => {
-        if (el.getAttribute('data-service-id') === String(id)) {
-          el.classList.add('selected');
-        } else {
-          el.classList.remove('selected');
-        }
-      });
-      updateSummary();
-    };
-
-    document.querySelectorAll('.service-select-item').forEach(el => {
-      el.addEventListener('click', () => {
-        const id = el.getAttribute('data-service-id');
-        const name = el.getAttribute('data-service-name');
-        const price = el.getAttribute('data-service-price');
-        const dur = el.getAttribute('data-service-duration');
-        selectService(id, name, price, dur);
-      });
-    });
-
-    const selectBarber = (id, name) => {
-      bookingState.barberId = id;
-      bookingState.barberName = name;
-      idBarbeiroInput.value = id;
-
-      document.querySelectorAll('.barber-select-item').forEach(el => {
-        if (el.getAttribute('data-barber-id') === String(id)) {
-          el.classList.add('selected');
-        } else {
-          el.classList.remove('selected');
-        }
-      });
-      updateSummary();
-      loadAvailableTimes();
-    };
-
-    document.querySelectorAll('.barber-select-item').forEach(el => {
-      el.addEventListener('click', () => {
-        const id = el.getAttribute('data-barber-id');
-        const name = el.getAttribute('data-barber-name');
-        selectBarber(id, name);
-      });
-    });
-
+    let currentSlotRequestId = 0;
     const loadAvailableTimes = () => {
       const barberId = idBarbeiroInput.value;
       const dateVal = idDataInput.value;
+      const selectedIds = bookingState.services.map(s => s.id);
+      const totalDuration = bookingState.services.reduce((acc, s) => acc + s.duration, 0) || 30;
 
       if (!barberId || !dateVal) {
         if (timeStepCard) timeStepCard.classList.add('d-none');
@@ -216,9 +171,12 @@ document.addEventListener('DOMContentLoaded', () => {
         timeSlotsContainer.innerHTML = '<p class="text-secondary py-3 w-100 text-center small"><i class="bi bi-arrow-repeat spin me-2"></i>Consultando horários disponíveis...</p>';
       }
 
-      fetch(`/api/horarios-disponiveis/?barbeiro_id=${barberId}&data=${dateVal}`)
+      const thisRequestId = ++currentSlotRequestId;
+      const sIdsQuery = selectedIds.length > 0 ? selectedIds.join(',') : (idServicoInput.value || '');
+      fetch(`/api/horarios-disponiveis/?barbeiro_id=${barberId}&data=${dateVal}&servicos_ids=${sIdsQuery}&duracao=${totalDuration}`)
         .then(res => res.json())
         .then(data => {
+          if (thisRequestId !== currentSlotRequestId) return; // Resposta obsoleta ignorada
           if (!timeSlotsContainer) return;
           timeSlotsContainer.innerHTML = '';
           if (data.horarios && data.horarios.length > 0) {
@@ -226,7 +184,12 @@ document.addEventListener('DOMContentLoaded', () => {
               const btn = document.createElement('button');
               btn.type = 'button';
               btn.className = 'time-slot-btn';
-              btn.textContent = slot.horario;
+              if (slot.recomendado) {
+                btn.classList.add('recommended');
+                btn.innerHTML = `${slot.horario} <span class="badge rounded-pill bg-warning text-dark ms-1" style="font-size:0.65rem;">⭐ Encaixe</span>`;
+              } else {
+                btn.textContent = slot.horario;
+              }
 
               if (!slot.disponivel) {
                 btn.disabled = true;
@@ -246,16 +209,111 @@ document.addEventListener('DOMContentLoaded', () => {
               timeSlotsContainer.appendChild(btn);
             });
           } else {
-            timeSlotsContainer.innerHTML = '<p class="text-secondary py-3 w-100 text-center small">Nenhum horário livre nesta data. Tente outro dia.</p>';
+            timeSlotsContainer.innerHTML = '<p class="text-secondary py-3 w-100 text-center small">Nenhum horário livre nesta data para a duração solicitada. Tente outro dia.</p>';
           }
           updateSummary();
         })
         .catch(err => {
+          if (thisRequestId !== currentSlotRequestId) return;
           if (timeSlotsContainer) {
             timeSlotsContainer.innerHTML = '<p class="text-danger py-3 w-100 text-center small">Erro ao carregar horários. Tente novamente.</p>';
           }
         });
     };
+
+    const toggleService = (id, name, price, duration) => {
+      const parsedDur = parseInt(duration) || 30;
+      const parsedPrice = parseFloat(price) || 0;
+      const existingIdx = bookingState.services.findIndex(s => String(s.id) === String(id));
+
+      if (existingIdx >= 0) {
+        if (bookingState.services.length > 1) {
+          bookingState.services.splice(existingIdx, 1);
+        }
+      } else {
+        bookingState.services.push({
+          id: id,
+          name: name,
+          price: parsedPrice,
+          duration: parsedDur
+        });
+      }
+
+      document.querySelectorAll('.service-select-item').forEach(el => {
+        const elId = el.getAttribute('data-service-id');
+        const isSel = bookingState.services.some(s => String(s.id) === String(elId));
+        if (isSel) {
+          el.classList.add('selected');
+        } else {
+          el.classList.remove('selected');
+        }
+      });
+
+      if (bookingState.services.length > 0) {
+        bookingState.serviceId = bookingState.services[0].id;
+        bookingState.serviceName = bookingState.services.map(s => s.name).join(' + ');
+        bookingState.servicePrice = bookingState.services.reduce((acc, s) => acc + s.price, 0);
+        const totalDur = bookingState.services.reduce((acc, s) => acc + s.duration, 0);
+        bookingState.serviceDuration = `${totalDur} min`;
+        idServicoInput.value = bookingState.serviceId;
+        if (idServicosSelecionadosInput) {
+          idServicosSelecionadosInput.value = bookingState.services.map(s => s.id).join(',');
+        }
+      }
+
+      // Limpa horário anterior pois duração mudou
+      bookingState.time = null;
+      idHorarioInput.value = '';
+      updateSummary();
+      loadAvailableTimes();
+    };
+
+    document.querySelectorAll('.service-select-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.getAttribute('data-service-id');
+        const name = el.getAttribute('data-service-name');
+        const price = el.getAttribute('data-service-price');
+        const dur = el.getAttribute('data-service-duration');
+        toggleService(id, name, price, dur);
+      });
+    });
+
+    const selectBarber = (id, name) => {
+      bookingState.barberId = id;
+      bookingState.barberName = name;
+      idBarbeiroInput.value = id;
+
+      document.querySelectorAll('.barber-select-item').forEach(el => {
+        if (el.getAttribute('data-barber-id') === String(id)) {
+          el.classList.add('selected');
+        } else {
+          el.classList.remove('selected');
+        }
+      });
+      // Limpa horário anterior
+      bookingState.time = null;
+      idHorarioInput.value = '';
+      updateSummary();
+      loadAvailableTimes();
+    };
+
+    document.querySelectorAll('.barber-select-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.getAttribute('data-barber-id');
+        const name = el.getAttribute('data-barber-name');
+        selectBarber(id, name);
+      });
+    });
+
+    // Pré-seleciona o primeiro serviço se nenhum estiver selecionado
+    const firstServiceEl = document.querySelector('.service-select-item');
+    if (firstServiceEl && bookingState.services.length === 0) {
+      const id = firstServiceEl.getAttribute('data-service-id');
+      const name = firstServiceEl.getAttribute('data-service-name');
+      const price = firstServiceEl.getAttribute('data-service-price');
+      const dur = firstServiceEl.getAttribute('data-service-duration');
+      toggleService(id, name, price, dur);
+    }
 
     idDataInput.addEventListener('change', (e) => {
       bookingState.date = e.target.value;

@@ -53,9 +53,7 @@ class AIAssistantService:
             if cliente and cliente.servico_preferido:
                 servico_escolhido = cliente.servico_preferido
             else:
-                servico_escolhido = servicos.first() or Servico.objects.create(
-                    nome='Corte Tradicional', preco=Decimal('45.00'), duracao_minutos=35
-                )
+                servico_escolhido = servicos.first()
 
         # 3. Identifica barbeiro
         barbeiros = Barbeiro.objects.filter(ativo=True)

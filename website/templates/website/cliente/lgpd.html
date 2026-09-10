@@ -15,7 +15,6 @@
           <a class="nav-link text-light" href="{% url 'historico_cliente' %}"><i class="bi bi-clock-history me-2"></i> Histórico</a>
           <a class="nav-link text-light" href="{% url 'cliente_club' %}"><i class="bi bi-gem me-2"></i> Barber Club</a>
           <a class="nav-link text-light" href="{% url 'cliente_fidelidade' %}"><i class="bi bi-award me-2"></i> Fidelidade</a>
-          <a class="nav-link text-light" href="{% url 'cliente_estilo' %}"><i class="bi bi-camera me-2"></i> IA Visagismo</a>
           <a class="nav-link active bg-brand text-dark fw-bold" href="{% url 'central_lgpd' %}"><i class="bi bi-shield-check me-2"></i> Privacidade & LGPD</a>
         </div>
       </div>
@@ -47,14 +46,6 @@
               <label class="form-check-label text-light" for="fotosPortfolio">
                 <strong>Autorizar divulgação de fotos em portfólio / redes</strong>
                 <span class="d-block text-secondary small">Permite publicação de fotos do resultado nos perfis públicos da Barber Heitor.</span>
-              </label>
-            </div>
-
-            <div class="form-check form-switch mb-3">
-              <input class="form-check-input" type="checkbox" name="ia_visagismo" id="iaVisagismo" {% if consentimento.ia_visagismo %}checked{% endif %}>
-              <label class="form-check-label text-light" for="iaVisagismo">
-                <strong>Análise facial e IA de Visagismo</strong>
-                <span class="d-block text-secondary small">Permite processamento da geometria do rosto para recomendação de corte por inteligência artificial.</span>
               </label>
             </div>
 

@@ -36,6 +36,7 @@ class UnidadeBarbearia(models.Model):
 # ==============================================================================
 
 class Servico(models.Model):
+    codigo = models.CharField(max_length=50, unique=True, null=True, blank=True, help_text="Identificador único (ex: cabelo, barba, cavanhaque, sobrancelha)")
     usuario = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
     nome = models.CharField(max_length=200)
     descricao = models.TextField()
@@ -329,10 +330,53 @@ class Agendamento(models.Model):
 
     def __str__(self):
         nome_atendido = self.dependente.nome if self.dependente else self.cliente.nome
+        servicos_desc = self.get_servicos_nomes() or (self.servico.nome if self.servico_id else "Atendimento")
         return (
-            f'{nome_atendido} - {self.servico.nome} com {self.barbeiro.nome} '
+            f'{nome_atendido} - {servicos_desc} com {self.barbeiro.nome} '
             f'em {self.data.strftime("%d/%m/%Y")} às {self.horario.strftime("%H:%M")} [{self.status}]'
         )
+
+    def get_duracao_total(self):
+        """Retorna a duração total em minutos somando os itens ou a FK legada."""
+        total_itens = sum(item.duracao_snapshot for item in self.itens.all())
+        if total_itens > 0:
+            return total_itens
+        if self.servico_id:
+            return self.servico.duracao_minutos
+        return 30
+
+    def get_preco_total(self):
+        """Retorna o valor bruto total dos serviços."""
+        total_itens = sum(item.preco_snapshot for item in self.itens.all())
+        if total_itens > 0:
+            return total_itens
+        if self.servico_id:
+            return self.servico.preco
+        return Decimal('0.00')
+
+    def get_servicos_nomes(self):
+        """Retorna os nomes dos serviços do agendamento."""
+        nomes = [item.servico.nome for item in self.itens.all()]
+        if nomes:
+            return " + ".join(nomes)
+        return self.servico.nome if self.servico_id else ""
+
+
+class ItemAgendamento(models.Model):
+    agendamento = models.ForeignKey(Agendamento, on_delete=models.CASCADE, related_name='itens')
+    servico = models.ForeignKey(Servico, on_delete=models.PROTECT, related_name='itens_agendamento')
+    preco_snapshot = models.DecimalField(max_digits=8, decimal_places=2, help_text="Preço congelado no momento da reserva")
+    duracao_snapshot = models.PositiveIntegerField(help_text="Duração em minutos congelada no momento da reserva")
+    coberto_por_assinatura = models.BooleanField(default=False, help_text="Item coberto por plano/assinatura")
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Item de Agendamento'
+        verbose_name_plural = 'Itens de Agendamento'
+        ordering = ['id']
+
+    def __str__(self):
+        return f"{self.servico.nome} ({self.duracao_snapshot}min - R$ {self.preco_snapshot})"
 
 
 class MensagemContato(models.Model):
@@ -450,12 +494,20 @@ class FotoTrabalho(models.Model):
 # ==============================================================================
 
 class PlanoAssinatura(models.Model):
+    class Modalidade(models.TextChoices):
+        LIMITADO = 'limitado', 'Limitado (X atendimentos/mês)'
+        ILIMITADO = 'ilimitado', 'Ilimitado (Sem limite mensal)'
+
+    codigo = models.CharField(max_length=50, unique=True, null=True, blank=True, help_text="Identificador único (ex: plano-normal, plano-com-barba, plano-cortes-infinitos)")
     nome = models.CharField(max_length=200)
     descricao = models.TextField()
     preco_mensal = models.DecimalField(max_digits=8, decimal_places=2)
-    quantidade_creditos = models.PositiveIntegerField(default=4, help_text="Cortes/serviços inclusos por mês")
+    modalidade = models.CharField(max_length=20, choices=Modalidade.choices, default=Modalidade.LIMITADO)
+    limite_mensal = models.PositiveIntegerField(null=True, blank=True, default=4, help_text="Limite de atendimentos/visitas por mês (nulo se ilimitado)")
+    quantidade_creditos = models.PositiveIntegerField(default=4, help_text="Cortes/serviços inclusos por mês (legado)")
     servicos = models.ManyToManyField(Servico, related_name='planos_assinatura', blank=True)
-    desconto_produtos = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('10.00'), help_text="% de desconto em produtos")
+    servicos_inclusos = models.ManyToManyField(Servico, related_name='planos_onde_incluso', blank=True, help_text="Serviços cobertos no atendimento deste plano")
+    desconto_produtos = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'), help_text="% de desconto em produtos")
     permite_acumular = models.BooleanField(default=False)
     validade_dias = models.PositiveIntegerField(default=30)
     ativo = models.BooleanField(default=True)
@@ -469,7 +521,22 @@ class PlanoAssinatura(models.Model):
         ordering = ['preco_mensal']
 
     def __str__(self):
-        return f"{self.nome} - R$ {self.preco_mensal}/mês ({self.quantidade_creditos} créditos)"
+        mod_desc = "Ilimitado" if self.modalidade == self.Modalidade.ILIMITADO else f"{self.limite_mensal or 4} atendimentos/mês"
+        return f"{self.nome} - R$ {self.preco_mensal}/mês ({mod_desc})"
+
+    def get_duracao_total_estimada(self):
+        """Retorna a soma das durações dos serviços inclusos no plano."""
+        total = sum(s.duracao_minutos for s in self.servicos_inclusos.all())
+        if total > 0:
+            return total
+        return sum(s.duracao_minutos for s in self.servicos.all()) or 40
+
+    def get_servicos_nomes(self):
+        """Retorna os nomes dos serviços cobertos."""
+        nomes = [s.nome for s in self.servicos_inclusos.all()]
+        if not nomes:
+            nomes = [s.nome for s in self.servicos.all()]
+        return " + ".join(nomes) if nomes else "Cabelo"
 
 
 class AssinaturaCliente(models.Model):
@@ -502,6 +569,19 @@ class AssinaturaCliente(models.Model):
     @property
     def is_active(self):
         return self.status == self.Status.ATIVA
+
+    def pode_utilizar(self, data_referencia=None):
+        """Valida se a assinatura está apta para uso na data indicada."""
+        from datetime import date
+        hoje = data_referencia or date.today()
+        if self.status != self.Status.ATIVA:
+            return False, "A assinatura não está ativa."
+        if self.data_termino and hoje > self.data_termino:
+            return False, "A assinatura está expirada."
+        if self.plano.modalidade == PlanoAssinatura.Modalidade.LIMITADO:
+            if self.creditos_disponiveis <= 0:
+                return False, "Limite mensal de atendimentos atingido para este ciclo."
+        return True, "Assinatura válida."
 
 
 class MovimentacaoCredito(models.Model):

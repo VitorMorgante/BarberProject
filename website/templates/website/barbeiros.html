@@ -35,7 +35,7 @@
             <h4 class="text-white mb-1">{{ barbeiro.nome }}</h4>
             <div class="text-brand small fw-semibold mb-2">{{ barbeiro.especialidade|default:"Cortes Clássicos, Degradê & Barba" }}</div>
             <p class="text-muted-custom small mb-4" style="min-height: 48px;">
-              {{ barbeiro.descricao_curta|default:"Especialista em visagismo masculino e acabamentos de alta definição." }}
+              {{ barbeiro.descricao_curta|default:"Especialista em cortes contemporâneos e acabamentos de alta definição." }}
             </p>
             <a href="{% url 'agendamento' %}?barbeiro={{ barbeiro.pk }}" class="btn btn-brand w-100">
               Agendar com {{ barbeiro.nome|truncatewords:1 }}

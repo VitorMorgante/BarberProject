@@ -4,15 +4,16 @@ Django settings for BarberProject project.
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse, parse_qsl
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Carrega variáveis de ambiente de .env se existir
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(BASE_DIR / '.env')
 except ImportError:
     pass
-
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 if not SECRET_KEY:
@@ -81,21 +82,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'BarberProject.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-# Suporte a PostgreSQL em Produção via DATABASE_URL
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
-    try:
-        import dj_database_url
-        DATABASES['default'] = dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
-    except ImportError:
-        pass
+    tmpPostgres = urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': tmpPostgres.path.replace('/', ''),
+            'USER': tmpPostgres.username,
+            'PASSWORD': tmpPostgres.password,
+            'HOST': tmpPostgres.hostname,
+            'PORT': tmpPostgres.port or 5432,
+            'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -143,9 +150,9 @@ BARBER_SLOGAN = os.getenv('BARBER_SLOGAN', 'Seu estilo. Sua assinatura.')
 BARBER_PHONE = os.getenv('BARBER_PHONE', '(44) 9102-2176')
 BARBER_PHONE_RAW = os.getenv('BARBER_PHONE_RAW', '554491022176')
 BARBER_EMAIL = os.getenv('BARBER_EMAIL', 'contato@barberheitor.com.br')
-BARBER_INSTAGRAM = os.getenv('BARBER_INSTAGRAM', 'barberheitor_oficial')
+BARBER_INSTAGRAM = os.getenv('BARBER_INSTAGRAM', 'barber.heitorr')
 BARBER_ADDRESS = os.getenv('BARBER_ADDRESS', 'Rua Terezinha Fortes Martins, 136, Jardim Progresso, Paranavaí - PR')
-BARBER_HOURS = os.getenv('BARBER_HOURS', 'Seg a Sáb: 08:00 às 21:00')
+BARBER_HOURS = os.getenv('BARBER_HOURS', 'Seg a Sáb: 08:00 às 21:30')
 
 # ==============================================================================
 # CONFIGURAÇÕES DE MÓDULOS, PAGAMENTOS E INTEGRAÇÕES
