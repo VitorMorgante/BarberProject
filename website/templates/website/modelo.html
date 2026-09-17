@@ -30,6 +30,9 @@
     <link rel="stylesheet" href="{% static 'website/css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'website/css/style.css' %}">
 
+    <!-- DataTables Bootstrap 5 CSS (Vídeo #34) -->
+    <link rel="stylesheet" href="{% static 'website/vendor/datatables/dataTables.bootstrap5.min.css' %}">
+
     {% block extra_css %}{% endblock %}
   </head>
   <body>
@@ -62,7 +65,16 @@
                   <li class="nav-item"><a class="nav-link" href="{% url 'cliente_evolucao' %}"><i class="bi bi-images me-1"></i>Minha Evolução</a></li>
                   <li class="nav-item ms-lg-2"><a class="btn btn-brand btn-sm px-3" href="{% url 'agendamento' %}"><i class="bi bi-calendar-plus me-1"></i>Agendar</a></li>
 
-                {% elif is_barbeiro %}
+                {% elif is_recepcionista %}
+                  <!-- Recepcionista Menu -->
+                  <li class="nav-item"><a class="nav-link" href="{% url 'modo_recepcao' %}"><i class="bi bi-person-workspace text-brand me-1"></i>Recepção</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{% url 'listar_clientes' %}"><i class="bi bi-people me-1"></i>Clientes</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{% url 'admin_waitlist' %}"><i class="bi bi-hourglass-split me-1"></i>Lista de Espera</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{% url 'admin_caixa' %}"><i class="bi bi-cash-stack me-1"></i>Caixa Diário</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{% url 'modo_tv' %}" target="_blank"><i class="bi bi-tv me-1"></i>Modo TV</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{% url 'cardapio_digital' %}" target="_blank"><i class="bi bi-qr-code-scan me-1"></i>Cardápio</a></li>
+
+                {% elif is_barbeiro and not is_admin %}
                   <!-- Barbeiro Menu -->
                   <li class="nav-item"><a class="nav-link" href="{% url 'area_barbeiro' %}"><i class="bi bi-speedometer2 me-1"></i>Meu Painel</a></li>
                   <li class="nav-item"><a class="nav-link" href="{% url 'agendamentos_barbeiro' %}"><i class="bi bi-calendar-check me-1"></i>Atendimentos</a></li>
@@ -71,8 +83,11 @@
                   <li class="nav-item"><a class="nav-link" href="{% url 'fotos_barbeiro' %}"><i class="bi bi-camera me-1"></i>Portfólio</a></li>
 
                 {% elif is_admin %}
-                  <!-- Admin Menu -->
+                  <!-- Admin Menu (Heitor / Dono) -->
                   <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>Cockpit</a></li>
+                  {% if is_barbeiro %}
+                    <li class="nav-item"><a class="nav-link text-warning fw-semibold" href="{% url 'area_barbeiro' %}" title="Acessar minha cadeira de atendimento"><i class="bi bi-scissors me-1"></i>Minha Cadeira</a></li>
+                  {% endif %}
                   <li class="nav-item"><a class="nav-link" href="{% url 'admin_financeiro' %}"><i class="bi bi-cash-coin text-brand me-1"></i>Financeiro</a></li>
                   <li class="nav-item"><a class="nav-link" href="{% url 'admin_comissoes' %}"><i class="bi bi-percent me-1"></i>Comissões</a></li>
                   <li class="nav-item dropdown">
@@ -86,6 +101,7 @@
                       <li><hr class="dropdown-divider"></li>
                       <li><a class="dropdown-item" href="{% url 'listar_servicos' %}"><i class="bi bi-scissors me-2 text-brand"></i>Serviços</a></li>
                       <li><a class="dropdown-item" href="{% url 'listar_barbeiros' %}"><i class="bi bi-person-badge me-2 text-brand"></i>Equipe de Barbeiros</a></li>
+                      <li><a class="dropdown-item" href="{% url 'listar_recepcionistas' %}"><i class="bi bi-person-lines-fill me-2 text-brand"></i>Equipe de Recepção</a></li>
                       <li><a class="dropdown-item" href="{% url 'listar_clientes' %}"><i class="bi bi-people me-2 text-brand"></i>Base de Clientes</a></li>
                       <li><a class="dropdown-item" href="{% url 'listar_produtos' %}"><i class="bi bi-box-seam me-2 text-brand"></i>Produtos (PDV)</a></li>
                       <li><a class="dropdown-item" href="{% url 'admin_estoque' %}"><i class="bi bi-arrow-left-right me-2 text-brand"></i>Controle de Estoque</a></li>
@@ -198,7 +214,29 @@
             <span>Minha Área</span>
           </a>
 
-        {% elif is_barbeiro %}
+        {% elif is_recepcionista %}
+          <!-- Recepcionista Mobile Bottom Nav -->
+          <a href="{% url 'modo_recepcao' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'modo_recepcao' %}active{% endif %}">
+            <i class="bi bi-person-workspace"></i>
+            <span>Recepção</span>
+          </a>
+          <a href="{% url 'listar_clientes' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'listar_clientes' %}active{% endif %}">
+            <i class="bi bi-people"></i>
+            <span>Clientes</span>
+          </a>
+          <a href="{% url 'modo_recepcao' %}" class="nav-fab-mobile" aria-label="Recepção">
+            <i class="bi bi-qr-code-scan"></i>
+          </a>
+          <a href="{% url 'admin_waitlist' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'admin_waitlist' %}active{% endif %}">
+            <i class="bi bi-hourglass-split"></i>
+            <span>Espera</span>
+          </a>
+          <a href="{% url 'admin_caixa' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'admin_caixa' %}active{% endif %}">
+            <i class="bi bi-cash-stack"></i>
+            <span>Caixa</span>
+          </a>
+
+        {% elif is_barbeiro and not is_admin %}
           <!-- Barbeiro Mobile Bottom Nav -->
           <a href="{% url 'area_barbeiro' %}" class="nav-item-mobile {% if request.resolver_match.url_name == 'area_barbeiro' %}active{% endif %}">
             <i class="bi bi-speedometer2"></i>
@@ -276,9 +314,8 @@
               <span class="text-brand fs-4"><i class="bi bi-scissors"></i></span>
               <span class="brand-font fw-bold text-uppercase text-light fs-4">BARBER <span class="text-brand">HEITOR</span></span>
             </a>
-            <p class="text-muted-custom mb-3" style="font-size: 0.9rem; max-width: 320px; line-height: 1.6;">
-              {{ BARBER_SLOGAN }}<br>
-              Corte cirúrgico, barba alinhada, Barber Club exclusivo e atendimento de alto padrão em Paranavaí.
+            <p class="text-muted-custom mb-3" style="font-size: 0.95rem; line-height: 1.7;">
+              Corte na régua, barba alinhada, Barber Club exclusivo e atendimento de alto padrão em Paranavaí.
             </p>
             <div class="d-flex gap-2">
               <a href="https://instagram.com/{{ BARBER_INSTAGRAM }}" target="_blank" rel="noopener noreferrer" class="footer-social-pill" aria-label="Instagram Oficial"><i class="bi bi-instagram fs-5"></i></a>
@@ -377,6 +414,76 @@
       }
     </script>
     
+    <!-- jQuery Core (Pré-requisito dos plugins) -->
+    <script src="{% static 'website/vendor/jquery/jquery.min.js' %}"></script>
+
+    <!-- Plugin 1: jQuery Mask Plugin (Vídeo #33) -->
+    <script src="{% static 'website/vendor/jquery/jquery.mask.min.js' %}"></script>
+
+    <!-- Plugin 2: DataTables Plugin (Vídeo #34) -->
+    <script src="{% static 'website/vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'website/vendor/datatables/dataTables.bootstrap5.min.js' %}"></script>
+
+    <!-- Plugin 3: Bootbox.js (Diálogos Modais de Confirmação) -->
+    <script src="{% static 'website/vendor/bootbox/bootbox.all.min.js' %}"></script>
+
+    <!-- Inicialização dos Plugins jQuery (Vídeos #33 e #34) -->
+    <script>
+      $(document).ready(function () {
+        // === PLUGIN 1: MÁSCARAS JQUERY (Vídeo #33) ===
+        var telMaskBehavior = function (val) {
+          return val.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00009';
+        };
+        var telOptions = {
+          onKeyPress: function (val, e, field, options) {
+            field.mask(telMaskBehavior.apply({}, arguments), options);
+          }
+        };
+
+        // Aplica máscaras nos campos de formulários
+        $('input[name*="telefone"], input[type="tel"], #id_telefone, .mask-telefone').mask(telMaskBehavior, telOptions);
+        $('input[name*="cpf"], #id_cpf, .mask-cpf').mask('000.000.000-00', {reverse: true});
+        $('input[name*="cnpj"], #id_cnpj, .mask-cnpj').mask('00.000.000/0000-00', {reverse: true});
+        $('input[name*="cep"], #id_cep, .mask-cep').mask('00000-000');
+        $('input[name*="data_nascimento"]:not([type="date"]), .mask-data').mask('00/00/0000');
+        $('input[name*="horario"]:not([type="time"]), input[name*="hora"]:not([type="time"]), .mask-hora').mask('00:00');
+        $('input[name*="preco"], input[name*="valor"], #id_preco, .mask-money').mask('#.##0,00', {reverse: true});
+
+        // === PLUGIN 2: DATATABLES JQUERY (Vídeo #34) ===
+        if ($.fn.DataTable) {
+          $('.datatable-custom, #tabela-listar, .tabela-listar').each(function () {
+            if (!$.fn.DataTable.isDataTable(this)) {
+              $(this).DataTable({
+                responsive: true,
+                language: {
+                  sEmptyTable: "Nenhum registro encontrado",
+                  sInfo: "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                  sInfoEmpty: "Mostrando 0 até 0 de 0 registros",
+                  sInfoFiltered: "(filtrado de _MAX_ registros no total)",
+                  sInfoThousands: ".",
+                  sLengthMenu: "Exibir _MENU_ registros por página",
+                  sLoadingRecords: "Carregando...",
+                  sProcessing: "Processando...",
+                  sZeroRecords: "Nenhum registro correspondente encontrado",
+                  sSearch: "Filtrar na tabela:",
+                  oPaginate: {
+                    sNext: "Próximo",
+                    sPrevious: "Anterior",
+                    sFirst: "Primeiro",
+                    sLast: "Último"
+                  },
+                  oAria: {
+                    sSortAscending: ": Ordenar colunas de forma ascendente",
+                    sSortDescending: ": Ordenar colunas de forma descendente"
+                  }
+                }
+              });
+            }
+          });
+        }
+      });
+    </script>
+
     {% block extra_js %}{% endblock %}
   </body>
 </html>

@@ -19,7 +19,7 @@ O sistema atende a todos os pilares da operação:
 ## 💈 Equipe de Especialistas
 
 - **Heitor Pontes**: Sócio-fundador e barbeiro master ([@barber.heitorr](https://www.instagram.com/barber.heitorr/)), especialista em cortes masculinos contemporâneos, barba e finalizações de alto padrão.
-- **Danilo Delacruz**: Barbeiro especialista em cortes masculinos clássicos, alinhamento de barba e acabamentos cirúrgicos na navalha.
+- **Danilo Delacruz**: Barbeiro especialista em cortes masculinos clássicos, alinhamento de barba e acabamentos na régua e navalha.
 
 ---
 

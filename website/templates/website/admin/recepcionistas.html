@@ -1,0 +1,180 @@
+{% extends 'website/modelo.html' %}
+{% load static %}
+
+{% block titulo %}Equipe de Recepção | Barber Heitor{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+  <div class="container py-3">
+    
+    <!-- Breadcrumb & Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <a href="{% url 'dashboard' %}" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i> Cockpit</a>
+          <span class="text-muted small">•</span>
+          <span class="text-brand small">Operação</span>
+        </div>
+        <h2 class="brand-font text-white fw-bold mb-0">
+          <i class="bi bi-person-lines-fill text-brand me-2"></i> Equipe de <span class="text-brand">Recepção</span>
+        </h2>
+        <p class="text-secondary small mb-0">Gerencie os colaboradores autorizados a operar a recepção, fila ao vivo, check-in e caixa diário.</p>
+      </div>
+
+      <div class="d-flex gap-2">
+        <a href="{% url 'modo_recepcao' %}" class="btn btn-outline-brand btn-sm">
+          <i class="bi bi-person-workspace me-1"></i> Abrir Recepção
+        </a>
+        <button type="button" class="btn btn-brand btn-sm shadow-sm fw-bold px-3" data-bs-toggle="modal" data-bs-target="#modalNovoRecepcionista">
+          <i class="bi bi-person-plus-fill me-1"></i> + Novo Recepcionista
+        </button>
+      </div>
+    </div>
+
+    <!-- Info Box: Escopo do Perfil Recepcionista -->
+    <div class="card surface-card p-3 mb-4 border-secondary border-opacity-25">
+      <div class="d-flex align-items-start gap-3">
+        <div class="p-2 bg-dark rounded-circle text-brand fs-4">
+          <i class="bi bi-shield-check"></i>
+        </div>
+        <div>
+          <h6 class="text-white fw-semibold mb-1">Escopo de Acesso da Recepção</h6>
+          <p class="text-muted small mb-0">
+            Recepcionistas possuem acesso exclusivo à operação de atendimento: 
+            <strong class="text-light">Check-in, Fila ao vivo, Encaixes Walk-in, Lista de Espera, Consulta de Clientes e Caixa Diário</strong>. 
+            Dados estratégicos como faturamento geral da barbearia, lucros e comissões permanecem restritos à administração.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Recepcionistas -->
+    <div class="card surface-card shadow-sm border-0">
+      <div class="card-header bg-transparent border-secondary border-opacity-25 py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-white fs-6 fw-bold">
+          <i class="bi bi-people text-brand me-2"></i> Colaboradores Cadastrados ({{ recepcionistas.count }})
+        </h5>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-dark table-hover border-secondary border-opacity-10 align-middle mb-0">
+          <thead>
+            <tr class="text-secondary small text-uppercase">
+              <th>Colaborador</th>
+              <th>Login / Usuário</th>
+              <th>E-mail</th>
+              <th>Telefone</th>
+              <th>Data de Cadastro</th>
+              <th>Status</th>
+              <th class="text-center" style="width: 130px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in recepcionistas %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-circle bg-dark border border-secondary border-opacity-50 text-brand fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                      {{ r.usuario.first_name|default:r.usuario.username|slice:":1"|upper }}
+                    </div>
+                    <div>
+                      <span class="text-white fw-bold d-block">{{ r.usuario.get_full_name|default:r.usuario.username }}</span>
+                      <small class="text-muted">Perfil: Recepcionista</small>
+                    </div>
+                  </div>
+                </td>
+                <td class="font-monospace text-brand">@{{ r.usuario.username }}</td>
+                <td class="small text-secondary">{{ r.usuario.email|default:"-" }}</td>
+                <td class="small">{{ r.telefone|default:"-" }}</td>
+                <td class="small text-muted">{{ r.criado_em|date:"d/m/Y" }}</td>
+                <td>
+                  {% if r.usuario.is_active %}
+                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">
+                      <i class="bi bi-check-circle me-1"></i> Ativo
+                    </span>
+                  {% else %}
+                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25">
+                      <i class="bi bi-x-circle me-1"></i> Inativo
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <form method="post" action="{% url 'toggle_status_recepcionista' r.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    {% if r.usuario.is_active %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Desativar acesso">
+                        <i class="bi bi-person-slash me-1"></i> Desativar
+                      </button>
+                    {% else %}
+                      <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2" title="Reativar acesso">
+                        <i class="bi bi-person-check me-1"></i> Ativar
+                      </button>
+                    {% endif %}
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary"></i>
+                  Nenhum recepcionista cadastrado até o momento.<br>
+                  Clique no botão acima para adicionar membros à equipe de recepção.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal Cadastrar Novo Recepcionista -->
+  <div class="modal fade" id="modalNovoRecepcionista" tabindex="-1" aria-labelledby="modalNovoRecepcionistaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content surface-card border-warning border-opacity-30">
+        <div class="modal-header border-secondary border-opacity-25">
+          <h5 class="modal-title text-white fw-bold" id="modalNovoRecepcionistaLabel">
+            <i class="bi bi-person-plus-fill text-brand me-2"></i> Cadastrar Recepcionista
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <form method="post" action="{% url 'cadastrar_recepcionista' %}">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label text-white small fw-bold">Nome Completo</label>
+              {{ form.nome }}
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-md-6">
+                <label class="form-label text-white small fw-bold">Login (Nome de Usuário)</label>
+                {{ form.username }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label text-white small fw-bold">Telefone / WhatsApp</label>
+                {{ form.telefone }}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label text-white small fw-bold">E-mail</label>
+              {{ form.email }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label text-white small fw-bold">Senha de Acesso</label>
+              {{ form.password }}
+              <small class="text-muted">A recepcionista usará este login e senha para entrar no sistema.</small>
+            </div>
+          </div>
+          <div class="modal-footer border-secondary border-opacity-25">
+            <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-brand btn-sm px-4 fw-bold shadow-sm">Criar Acesso</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

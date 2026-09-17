@@ -48,23 +48,45 @@ class Command(BaseCommand):
         )
         self.stdout.write(self.style.SUCCESS('  [OK] Barbeiro Login: danilo / barbeiro123'))
 
-        # 3. Usuário Barbeiro (Heitor Pontes)
+        # 3. Usuário Heitor Pontes — Dono & Admin (também barbeiro)
         heitor_user, created_h = User.objects.get_or_create(
             username='heitor.pontes',
             defaults={
                 'email': 'heitor.pontes@barberheitor.com.br',
                 'first_name': 'Heitor',
-                'last_name': 'Pontes'
+                'last_name': 'Pontes',
+                'is_staff': True,
+                'is_superuser': True,
             }
         )
         if created_h:
             heitor_user.set_password('barbeiro123')
             heitor_user.save()
-        PerfilUsuario.objects.get_or_create(
+        # Garante flags de admin mesmo se o usuário já existia
+        if not heitor_user.is_staff or not heitor_user.is_superuser:
+            heitor_user.is_staff = True
+            heitor_user.is_superuser = True
+            heitor_user.save(update_fields=['is_staff', 'is_superuser'])
+        perfil_h, _ = PerfilUsuario.objects.get_or_create(
             usuario=heitor_user,
-            defaults={'tipo_usuario': 'barbeiro', 'telefone': '4491022176'}
+            defaults={
+                'tipo_usuario': 'administrador',
+                'telefone': '4491022176',
+                'pode_ver_financeiro': True,
+                'pode_aplicar_desconto': True,
+                'pode_estornar': True,
+                'pode_ajustar_estoque': True,
+            }
         )
-        self.stdout.write(self.style.SUCCESS('  [OK] Barbeiro Login: heitor.pontes / barbeiro123'))
+        # Corrige perfil caso já existisse como barbeiro
+        if perfil_h.tipo_usuario != 'administrador':
+            perfil_h.tipo_usuario = 'administrador'
+            perfil_h.pode_ver_financeiro = True
+            perfil_h.pode_aplicar_desconto = True
+            perfil_h.pode_estornar = True
+            perfil_h.pode_ajustar_estoque = True
+            perfil_h.save()
+        self.stdout.write(self.style.SUCCESS('  [OK] Admin/Barbeiro Login: heitor.pontes / barbeiro123'))
 
         # 4. Usuário Cliente Demonstrativo
         cliente_user, created_c = User.objects.get_or_create(
@@ -94,7 +116,7 @@ class Command(BaseCommand):
             nome='Danilo Delacruz',
             defaults={
                 'cargo': 'Barbeiro Especialista',
-                'especialidade': 'Cortes clássicos, degradê navalhado e acabamento preciso',
+                'especialidade': 'Cortes clássicos, degradê navalhado e acabamento na régua',
                 'descricao_curta': 'Mestre barbeiro com vasta experiência em cortes masculinos clássicos e modernos.',
                 'ativo': True,
                 'usuario': barbeiro_user,
@@ -119,17 +141,17 @@ class Command(BaseCommand):
         heitor, _ = Barbeiro.objects.get_or_create(
             nome='Heitor Pontes',
             defaults={
-                'cargo': 'Barbeiro Master & Visagista',
-                'especialidade': 'Cortes modernos, barboterapia e consultoria visagista',
-                'descricao_curta': 'Sócio-fundador da Barber Heitor, especialista em design de barba e visagismo.',
+                'cargo': 'Mestre Barbeiro',
+                'especialidade': 'Cortes modernos, barboterapia e design de barba',
+                'descricao_curta': 'Sócio-fundador da Barber Heitor, especialista em cortes modernos e design de barba.',
                 'imagem_url': '/static/website/img/barbeiros/heitor_pontes.jpg',
                 'ativo': True,
                 'usuario': heitor_user,
             },
         )
-        if not heitor.usuario or heitor.cargo != 'Barbeiro Master & Visagista' or not heitor.imagem_url:
+        if not heitor.usuario or heitor.cargo != 'Mestre Barbeiro' or not heitor.imagem_url:
             heitor.usuario = heitor_user
-            heitor.cargo = 'Barbeiro Master & Visagista'
+            heitor.cargo = 'Mestre Barbeiro'
             heitor.imagem_url = '/static/website/img/barbeiros/heitor_pontes.jpg'
             heitor.save(update_fields=['usuario', 'cargo', 'imagem_url'])
         RegraComissao.objects.get_or_create(

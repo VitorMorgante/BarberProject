@@ -99,7 +99,7 @@
                         R$ {{ c.saldo_dinheiro_informado }}
                         {% if c.diferenca_quebra != 0 %}
                           <span class="badge {% if c.diferenca_quebra > 0 %}bg-info{% else %}bg-danger{% endif %} ms-1">
-                            {{ c.diferenca_quebra:+0.2f }}
+                            {% if c.diferenca_quebra > 0 %}+{% endif %}{{ c.diferenca_quebra|floatformat:2 }}
                           </span>
                         {% endif %}
                       {% else %}

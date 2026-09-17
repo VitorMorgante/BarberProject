@@ -343,18 +343,38 @@ class Command(BaseCommand):
                     'email': 'heitor.pontes@barberheitor.com.br',
                     'first_name': 'Heitor',
                     'last_name': 'Pontes',
-                    'is_staff': False,
-                    'is_superuser': False,
+                    'is_staff': True,
+                    'is_superuser': True,
                     'is_active': True,
                 }
             )
+            # Garante flags de admin independente de quando o usuário foi criado
+            if not user_heitor.is_staff or not user_heitor.is_superuser:
+                user_heitor.is_staff = True
+                user_heitor.is_superuser = True
+                user_heitor.save(update_fields=['is_staff', 'is_superuser'])
             if not user_heitor.has_usable_password():
                 user_heitor.set_password('barbeiro123')
                 user_heitor.save()
-            PerfilUsuario.objects.get_or_create(
+            perfil_h, _ = PerfilUsuario.objects.get_or_create(
                 usuario=user_heitor,
-                defaults={'tipo_usuario': 'barbeiro', 'telefone': '(44) 99190-0997'}
+                defaults={
+                    'tipo_usuario': 'administrador',
+                    'telefone': '(44) 9102-2176',
+                    'pode_ver_financeiro': True,
+                    'pode_aplicar_desconto': True,
+                    'pode_estornar': True,
+                    'pode_ajustar_estoque': True,
+                }
             )
+            # Corrige perfil caso já existisse como barbeiro
+            if perfil_h.tipo_usuario != 'administrador':
+                perfil_h.tipo_usuario = 'administrador'
+                perfil_h.pode_ver_financeiro = True
+                perfil_h.pode_aplicar_desconto = True
+                perfil_h.pode_estornar = True
+                perfil_h.pode_ajustar_estoque = True
+                perfil_h.save()
 
             if not heitor:
                 heitor = Barbeiro.objects.create(

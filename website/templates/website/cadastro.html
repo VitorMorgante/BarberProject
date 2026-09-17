@@ -1,35 +1,185 @@
 {% extends "website/modelo.html" %}
-{% load crispy_forms_tags %}
 
 {% block titulo %}Criar Conta | {{ BARBER_NAME }}{% endblock %}
 
 {% block conteudo %}
-<section class="py-5" style="background-color: var(--color-surface-sunken);">
+<section class="py-5" style="background-color: var(--color-surface-sunken); min-height: 80vh;">
   <div class="container py-4 text-start">
     <div class="row justify-content-center">
-      <div class="col-lg-8 col-md-10">
-        <div class="surface-card p-4 p-md-5 border-brand shadow-lg">
+      <div class="col-lg-7 col-md-9 col-sm-11">
+        <div class="auth-luxury-card p-4 p-md-5 position-relative">
+          
+          <!-- Header Insignia -->
           <div class="text-center mb-4 pb-2 border-bottom border-secondary border-opacity-10">
-            <span class="section-subtitle justify-content-center">Experiência VIP</span>
-            <h1 class="display-3 text-white mb-2">Crie Sua Conta</h1>
-            <p class="text-muted-custom small mb-0">Cadastre-se na {{ BARBER_NAME }} para salvar seus dados, acompanhar seu histórico capilar e acumular cortes no Cartão Fidelidade.</p>
+            <div class="auth-badge-icon mb-3 mx-auto" style="background: linear-gradient(135deg, rgba(13, 95, 87, 0.35), rgba(6, 61, 55, 0.15)); border-color: rgba(52, 211, 153, 0.5); color: #34d399;">
+              <i class="bi bi-person-plus-fill fs-3"></i>
+            </div>
+            <span class="section-subtitle justify-content-center">Novo Cadastro</span>
+            <h1 class="display-3 text-white mb-2 fs-2">Criar Conta</h1>
+            <p class="text-muted-custom small mb-0">Preencha seus dados para criar sua conta, agendar horários e acompanhar seu histórico.</p>
           </div>
 
-          <form method="post" enctype="multipart/form-data">
+          <!-- Alerta de Erros Gerais -->
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger border-0 p-3 mb-4 rounded-3 d-flex align-items-center gap-2" style="background-color: var(--color-danger-dim); color: #fca5a5;">
+              <i class="bi bi-exclamation-triangle-fill fs-5 text-danger flex-shrink-0"></i>
+              <div class="small">
+                {% for err in form.non_field_errors %}
+                  <div>{{ err }}</div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+
+          <form method="post" novalidate>
             {% csrf_token %}
-            {{ form|crispy }}
-            <div class="d-flex flex-column flex-sm-row gap-2 mt-4 justify-content-center pt-2">
-              <button type="submit" class="btn btn-brand px-5 py-3">
-                <i class="bi bi-person-check-fill me-2"></i> Criar Minha Conta
+            {% if request.GET.next %}
+              <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
+
+            <div class="row g-3">
+              <!-- Nome -->
+              <div class="col-md-6">
+                <label for="id_nome" class="form-label text-light small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Nome *</label>
+                <div class="input-luxury-group">
+                  <i class="bi bi-person input-icon"></i>
+                  <input type="text" name="nome" value="{{ form.nome.value|default:'' }}" maxlength="150" required id="id_nome" class="form-control {% if form.nome.errors %}is-invalid{% endif %}" placeholder="Ex: Carlos">
+                </div>
+                {% if form.nome.errors %}
+                  <small class="text-danger d-block mt-1">{{ form.nome.errors.0 }}</small>
+                {% endif %}
+              </div>
+
+              <!-- Sobrenome -->
+              <div class="col-md-6">
+                <label for="id_sobrenome" class="form-label text-light small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Sobrenome *</label>
+                <div class="input-luxury-group">
+                  <i class="bi bi-person-badge input-icon"></i>
+                  <input type="text" name="sobrenome" value="{{ form.sobrenome.value|default:'' }}" maxlength="150" required id="id_sobrenome" class="form-control {% if form.sobrenome.errors %}is-invalid{% endif %}" placeholder="Ex: Oliveira">
+                </div>
+                {% if form.sobrenome.errors %}
+                  <small class="text-danger d-block mt-1">{{ form.sobrenome.errors.0 }}</small>
+                {% endif %}
+              </div>
+
+              <!-- Usuário -->
+              <div class="col-md-6">
+                <label for="id_usuario" class="form-label text-light small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Nome de Usuário (Login) *</label>
+                <div class="input-luxury-group">
+                  <i class="bi bi-at input-icon"></i>
+                  <input type="text" name="usuario" value="{{ form.usuario.value|default:'' }}" maxlength="150" required id="id_usuario" class="form-control {% if form.usuario.errors %}is-invalid{% endif %}" placeholder="Ex: carlos.oliveira">
+                </div>
+                {% if form.usuario.errors %}
+                  <small class="text-danger d-block mt-1">{{ form.usuario.errors.0 }}</small>
+                {% endif %}
+              </div>
+
+              <!-- E-mail -->
+              <div class="col-md-6">
+                <label for="id_email" class="form-label text-light small fw-bold text-uppercase" style="letter-spacing: 0.5px;">E-mail *</label>
+                <div class="input-luxury-group">
+                  <i class="bi bi-envelope input-icon"></i>
+                  <input type="email" name="email" value="{{ form.email.value|default:'' }}" required id="id_email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" placeholder="seuemail@exemplo.com">
+                </div>
+                {% if form.email.errors %}
+                  <small class="text-danger d-block mt-1">{{ form.email.errors.0 }}</small>
+                {% endif %}
+              </div>
+
+              <!-- Telefone / WhatsApp -->
+              <div class="col-12">
+                <label for="id_telefone" class="form-label text-light small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Telefone / WhatsApp *</label>
+                <div class="input-luxury-group">
+                  <i class="bi bi-whatsapp input-icon text-success"></i>
+                  <input type="tel" name="telefone" value="{{ form.telefone.value|default:'' }}" maxlength="20" required id="id_telefone" class="form-control {% if form.telefone.errors %}is-invalid{% endif %}" placeholder="(00) 00000-0000">
+                </div>
+                {% if form.telefone.errors %}
+                  <small class="text-danger d-block mt-1">{{ form.telefone.errors.0 }}</small>
+                {% endif %}
+              </div>
+
+              <!-- Senha -->
+              <div class="col-md-6">
+                <label for="id_senha" class="form-label text-light small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Senha *</label>
+                <div class="input-luxury-group">
+                  <i class="bi bi-key-fill input-icon"></i>
+                  <input type="password" name="senha" required id="id_senha" class="form-control pe-5 {% if form.senha.errors %}is-invalid{% endif %}" placeholder="Crie uma senha forte">
+                  <button type="button" class="password-toggle-btn" onclick="toggleCadastroPassword('id_senha', this)" title="Exibir/Ocultar Senha" tabindex="-1">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+                {% if form.senha.errors %}
+                  <small class="text-danger d-block mt-1">{{ form.senha.errors.0 }}</small>
+                {% endif %}
+              </div>
+
+              <!-- Confirmar Senha -->
+              <div class="col-md-6">
+                <label for="id_confirmar_senha" class="form-label text-light small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Confirmar Senha *</label>
+                <div class="input-luxury-group">
+                  <i class="bi bi-shield-check input-icon"></i>
+                  <input type="password" name="confirmar_senha" required id="id_confirmar_senha" class="form-control pe-5 {% if form.confirmar_senha.errors %}is-invalid{% endif %}" placeholder="Repita a senha digitada">
+                  <button type="button" class="password-toggle-btn" onclick="toggleCadastroPassword('id_confirmar_senha', this)" title="Exibir/Ocultar Senha" tabindex="-1">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+                {% if form.confirmar_senha.errors %}
+                  <small class="text-danger d-block mt-1">{{ form.confirmar_senha.errors.0 }}</small>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Botão de Cadastro Diferenciado (btn-cadastro-luxury) -->
+            <div class="mt-4 pt-2">
+              <button type="submit" class="btn btn-cadastro-luxury w-100 py-3 fw-bold fs-6 shadow-sm">
+                <i class="bi bi-person-check-fill me-2"></i> Criar Conta
               </button>
-              <a href="{% url 'login' %}" class="btn btn-surface px-4 py-3">
-                Já possuo conta
+            </div>
+
+            <!-- Divisor -->
+            <div class="d-flex align-items-center my-4">
+              <hr class="flex-grow-1 border-secondary opacity-25 m-0">
+              <span class="px-3 text-muted-custom small text-uppercase fw-semibold" style="letter-spacing: 1px; font-size: 0.75rem;">Já tem cadastro?</span>
+              <hr class="flex-grow-1 border-secondary opacity-25 m-0">
+            </div>
+
+            <!-- Botão de Login Dourado (btn-outline-brand) -->
+            <a href="{% url 'login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="btn btn-outline-brand w-100 py-3 fw-bold fs-6">
+              <i class="bi bi-box-arrow-in-right me-2"></i> Já possuo conta (Fazer Login)
+            </a>
+
+            <!-- Link de Retorno -->
+            <div class="text-center mt-4">
+              <a href="{% url 'pagina_inicial' %}" class="text-muted-custom small text-decoration-none hover-gold transition-fast">
+                <i class="bi bi-arrow-left me-1"></i> Voltar à Página Inicial
               </a>
             </div>
           </form>
+
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<script>
+function toggleCadastroPassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const icon = btn.querySelector('i');
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (icon) {
+      icon.classList.remove('bi-eye');
+      icon.classList.add('bi-eye-slash');
+    }
+  } else {
+    input.type = 'password';
+    if (icon) {
+      icon.classList.remove('bi-eye-slash');
+      icon.classList.add('bi-eye');
+    }
+  }
+}
+</script>
 {% endblock %}

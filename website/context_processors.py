@@ -10,28 +10,41 @@ def user_roles(request):
     
     user = request.user
     
-    # Check Admin: Superuser, Staff or PerfilUsuario.tipo_usuario == 'administrador'
+    # Heitor é o dono e barbeiro: possui capacidades totais de administrador
+    is_heitor = (
+        'heitor' in user.username.lower() or
+        Barbeiro.objects.filter(usuario=user, nome__icontains='heitor').exists() or
+        user.email.lower() == 'heitor.pontes@barberheitor.com.br'
+    )
+
+    # Check Admin: Superuser, Staff, PerfilUsuario.tipo_usuario == 'administrador' ou Heitor
     is_admin = user.is_superuser or user.is_staff or (
         hasattr(user, 'perfil') and user.perfil.tipo_usuario.lower() == 'administrador'
-    )
+    ) or is_heitor
     
-    # Check Barbeiro: PerfilUsuario.tipo_usuario == 'barbeiro' OR has a related Barbeiro record
+    # Check Barbeiro: PerfilUsuario.tipo_usuario == 'barbeiro' OR has a related Barbeiro record OR is_heitor
     is_barbeiro = False
     barbeiro_logado = None
     if hasattr(user, 'perfil') and user.perfil.tipo_usuario.lower() == 'barbeiro':
         is_barbeiro = True
         barbeiro_logado = Barbeiro.objects.filter(usuario=user).first()
-    elif Barbeiro.objects.filter(usuario=user).exists():
+    elif Barbeiro.objects.filter(usuario=user).exists() or is_heitor:
         is_barbeiro = True
-        barbeiro_logado = Barbeiro.objects.filter(usuario=user).first()
+        barbeiro_logado = Barbeiro.objects.filter(usuario=user).first() or Barbeiro.objects.filter(nome__icontains='heitor').first()
         
-    # Check Cliente: if not admin and not barber, defaults to client
-    is_cliente = not is_admin and not is_barbeiro
+    # Check Recepcionista: PerfilUsuario.tipo_usuario == 'recepcionista'
+    is_recepcionista = False
+    if hasattr(user, 'perfil') and user.perfil.tipo_usuario.lower() == 'recepcionista':
+        is_recepcionista = True
+
+    # Check Cliente: if not admin, not barber and not receptionist, defaults to client
+    is_cliente = not is_admin and not is_barbeiro and not is_recepcionista
     
     return {
         'is_cliente': is_cliente,
         'is_barbeiro': is_barbeiro,
         'is_admin': is_admin,
+        'is_recepcionista': is_recepcionista,
         'barbeiro_logado': barbeiro_logado
     }
 

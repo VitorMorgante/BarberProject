@@ -248,6 +248,35 @@ class SubscriptionService:
         return True
 
     @staticmethod
+    @transaction.atomic
+    def cancelar_assinatura(cliente: Cliente, motivo: str = 'Solicitado pelo cliente') -> AssinaturaCliente:
+        """
+        Cancela a assinatura ativa ou pendente do cliente no Barber Club.
+        Mantém o histórico de créditos e atualiza o status para CANCELADA.
+        """
+        assinatura = AssinaturaCliente.objects.select_for_update().filter(
+            cliente=cliente,
+            status__in=[AssinaturaCliente.Status.ATIVA, AssinaturaCliente.Status.PENDENTE, AssinaturaCliente.Status.ATRASADA]
+        ).first()
+
+        if not assinatura:
+            raise ValidationError("Nenhuma assinatura ativa encontrada para este cliente.")
+
+        assinatura.status = AssinaturaCliente.Status.CANCELADA
+        assinatura.data_termino = timezone.now().date()
+        assinatura.save(update_fields=['status', 'data_termino', 'atualizado_em'])
+
+        MovimentacaoCredito.objects.create(
+            assinatura=assinatura,
+            tipo=MovimentacaoCredito.Tipo.AJUSTE,
+            quantidade=0,
+            saldo_anterior=assinatura.creditos_disponiveis,
+            saldo_posterior=assinatura.creditos_disponiveis,
+            descricao=f"Cancelamento de plano solicitado. Motivo: {motivo}"
+        )
+        return assinatura
+
+    @staticmethod
     def get_resumo_cliente(cliente: Cliente):
         """Retorna informações da assinatura para a Área do Cliente."""
         assinatura = AssinaturaCliente.objects.filter(
@@ -270,5 +299,7 @@ class SubscriptionService:
             'utilizados': assinatura.creditos_utilizados,
             'renovacao': assinatura.data_renovacao,
             'status': assinatura.status,
+            'is_ativa': assinatura.status == AssinaturaCliente.Status.ATIVA,
+            'is_cancelada': assinatura.status == AssinaturaCliente.Status.CANCELADA,
         }
 

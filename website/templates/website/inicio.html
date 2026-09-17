@@ -28,7 +28,7 @@
         <!-- Slogan / Subheadline -->
         <p class="hero-description">
           {{ BARBER_SLOGAN }}<br>
-          Corte cirúrgico, barba alinhada à navalha e uma experiência de cuidado masculino elevada ao mais alto rigor técnico contemporâneo.
+          Corte na régua, barba alinhada à navalha e uma experiência de cuidado masculino elevada ao mais alto nível contemporâneo.
         </p>
 
         <!-- CTAs -->
@@ -36,8 +36,8 @@
           <a href="{% url 'agendamento' %}" class="btn btn-brand btn-lg px-4 py-3">
             <i class="bi bi-calendar-plus me-2"></i> Agendar Horário
           </a>
-          <a href="#experiencia" class="btn btn-surface btn-lg px-4 py-3">
-            Conhecer Experiência
+          <a href="#galeria" class="btn btn-surface btn-lg px-4 py-3">
+            <i class="bi bi-images me-2"></i> Ver Portfólio
           </a>
         </div>
 
@@ -59,27 +59,51 @@
 
       </div>
 
-      <!-- Hero Visual Composition Card -->
+      <!-- Hero Visual Composition: Apresentação de Slide Contínua (Fotos do Portfólio Barber Heitor) -->
       <div class="col-lg-5">
         <div class="position-relative">
-          <div class="surface-card p-4 shadow-lg border-brand">
-            <div class="position-relative overflow-hidden rounded-3 mb-3" style="height: 340px;">
-              <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800" 
-                   alt="Ambiente {{ BARBER_NAME }}" 
-                   class="w-100 h-100 object-fit-cover">
-              <div class="position-absolute bottom-0 start-0 end-0 p-3 bg-gradient-to-t" style="background: linear-gradient(to top, rgba(6,8,13,0.95), transparent);">
-                <span class="badge bg-dark border border-warning text-brand px-3 py-2 text-uppercase fw-bold" style="font-size: 0.75rem;">
-                  Lounge Exclusivo
-                </span>
+          <div class="surface-card p-3 p-md-4 shadow-lg border-brand">
+            <div id="loungePortfolioCarousel" class="carousel slide carousel-fade position-relative overflow-hidden rounded-3 mb-3" data-bs-ride="carousel" data-bs-interval="1500" data-bs-pause="false" style="height: 360px;">
+              <div class="carousel-inner h-100">
+                <div class="carousel-item active h-100">
+                  <img src="{% static 'website/portfolio/heitor/fotos/corte-01.jpg' %}" 
+                       alt="Portfólio Barber Heitor - Corte 1" 
+                       class="w-100 h-100 object-fit-cover">
+                </div>
+                <div class="carousel-item h-100">
+                  <img src="{% static 'website/portfolio/heitor/fotos/corte-02.jpg' %}" 
+                       alt="Portfólio Barber Heitor - Corte 2" 
+                       class="w-100 h-100 object-fit-cover">
+                </div>
+                <div class="carousel-item h-100">
+                  <img src="{% static 'website/portfolio/heitor/fotos/corte-03.jpg' %}" 
+                       alt="Portfólio Barber Heitor - Corte 3" 
+                       class="w-100 h-100 object-fit-cover">
+                </div>
+                <div class="carousel-item h-100">
+                  <img src="{% static 'website/portfolio/heitor/fotos/corte-04.jpg' %}" 
+                       alt="Portfólio Barber Heitor - Corte 4" 
+                       class="w-100 h-100 object-fit-cover">
+                </div>
+                <div class="carousel-item h-100">
+                  <img src="{% static 'website/portfolio/heitor/fotos/corte-05.jpg' %}" 
+                       alt="Portfólio Barber Heitor - Corte 5" 
+                       class="w-100 h-100 object-fit-cover">
+                </div>
+                <div class="carousel-item h-100">
+                  <img src="{% static 'website/portfolio/heitor/fotos/corte-06.jpg' %}" 
+                       alt="Portfólio Barber Heitor - Corte 6" 
+                       class="w-100 h-100 object-fit-cover">
+                </div>
               </div>
             </div>
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center px-1">
               <div>
-                <h5 class="text-white mb-1">Cadeiras Vintage & Acabamento Navalha</h5>
-                <p class="text-muted-custom small mb-0">Café especial, cerveja gelada e climatização premium.</p>
+                <h5 class="text-white mb-1">Galeria em Destaque</h5>
+                <p class="text-muted-custom small mb-0">Trabalhos reais e cortes executados na barbearia.</p>
               </div>
-              <a href="{% url 'cardapio_digital' %}" class="btn btn-outline-brand btn-sm" title="Ver Cardápio de Serviços">
-                <i class="bi bi-qr-code"></i>
+              <a href="{% url 'galeria' %}" class="btn btn-outline-brand btn-sm" title="Ver Portfólio Completo">
+                <i class="bi bi-images me-1"></i> Ver Galeria
               </a>
             </div>
           </div>
@@ -94,8 +118,8 @@
           <div class="highlight-icon">
             <i class="bi bi-scissors"></i>
           </div>
-          <h5 class="text-white mb-2">Corte Cirúrgico</h5>
-          <p class="text-muted-custom small mb-0">Técnica clássica e moderna aplicada a cada acabamento e textura de fio.</p>
+          <h5 class="text-white mb-2">Corte na Régua</h5>
+          <p class="text-muted-custom small mb-0">Técnica clássica e moderna para um degradê limpo e alinhamento impecável.</p>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3">
@@ -137,7 +161,7 @@
   <div class="container py-5">
     
     <div class="text-center mb-5">
-      <span class="section-subtitle">Alta Precisão & Acabamento</span>
+      <span class="section-subtitle">Estilo & Alinhamento</span>
       <h2 class="display-3 text-white mb-3">Nossos Serviços</h2>
       <p class="text-muted-custom max-width-600 mx-auto" style="max-width: 600px;">
         Combinamos a tradição da barbearia clássica com as técnicas contemporâneas de acabamento masculino.
@@ -153,7 +177,7 @@
               <div class="highlight-icon mb-0" style="width: 40px; height: 40px; font-size: 1.2rem;">
                 <i class="bi bi-{{ servico.icone|default:'scissors' }}"></i>
               </div>
-              <span class="badge bg-dark border border-secondary border-opacity-50 text-muted-custom">
+              <span class="badge bg-secondary">
                 <i class="bi bi-clock me-1"></i> {{ servico.duracao_minutos }} min
               </span>
             </div>
@@ -189,66 +213,6 @@
 </section>
 
 <!-- ==============================================================================
-     3. A EXPERIÊNCIA BARBER HEITOR (FILOSOFIA & AMBIENTE)
-     ============================================================================== -->
-<section class="py-5" id="experiencia">
-  <div class="container py-5 text-start">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6">
-        <div class="position-relative">
-          <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800" 
-               alt="A Experiência {{ BARBER_NAME }}" 
-               class="rounded-3 shadow-lg border border-secondary border-opacity-20 w-100" 
-               style="height: 480px; object-fit: cover;">
-          <div class="position-absolute -bottom-4 -end-4 bg-dark p-4 rounded-3 border border-brand shadow-lg d-none d-md-block" style="max-width: 240px; bottom: 20px; right: 20px;">
-            <span class="brand-font fs-1 text-brand fw-bold d-block">100%</span>
-            <span class="text-white small">Compromisso com o seu estilo individual e pontualidade.</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-lg-6">
-        <span class="section-subtitle">Nossa Filosofia</span>
-        <h2 class="display-3 text-white mb-4">Mais Que Um Corte.<br>Sua Assinatura Pessoal.</h2>
-        
-        <p class="body-text mb-4">
-          Na <strong>{{ BARBER_NAME }}</strong>, entendemos que o cabelo e a barba de um homem comunicam autoridade, confiança e respeito antes mesmo de qualquer palavra ser dita.
-        </p>
-        <p class="text-muted-custom mb-4" style="font-size: 0.95rem; line-height: 1.8;">
-          Combinamos a atmosfera clássica das cadeiras de couro com a conveniência da tecnologia digital: agendamento sem atrito, pagamento transparente via PIX dinâmico, clube de assinaturas e acompanhamento do seu histórico capilar.
-        </p>
-
-        <div class="d-flex flex-column gap-3 mb-4">
-          <div class="d-flex align-items-start gap-3">
-            <div class="highlight-icon flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">
-              <i class="bi bi-shield-check"></i>
-            </div>
-            <div>
-              <h6 class="text-white mb-1">Higiene Clínica Rigorosa</h6>
-              <p class="text-muted-custom small mb-0">Esterilização hospitalar e navalhas 100% descartáveis por cliente.</p>
-            </div>
-          </div>
-
-          <div class="d-flex align-items-start gap-3">
-            <div class="highlight-icon flex-shrink-0" style="width: 36px; height: 36px; font-size: 1rem;">
-              <i class="bi bi-cup-hot"></i>
-            </div>
-            <div>
-              <h6 class="text-white mb-1">Lounge & Conforto</h6>
-              <p class="text-muted-custom small mb-0">Espaço climatizado com Wi-Fi de alta velocidade, café expresso e recepção ágil.</p>
-            </div>
-          </div>
-        </div>
-
-        <a href="{% url 'sobre' %}" class="btn btn-outline-brand">
-          Conhecer Nossa História Completa
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ==============================================================================
      4. EQUIPE DE BARBEIROS PROFISSIONAIS
      ============================================================================== -->
 <section class="py-5" id="barbeiros" style="background-color: var(--color-surface-sunken);">
@@ -275,7 +239,7 @@
               </div>
             {% endif %}
             <div class="position-absolute top-0 end-0 m-3">
-              <span class="badge bg-dark border border-warning text-brand px-3 py-1 text-uppercase fw-bold" style="font-size: 0.75rem;">
+              <span class="badge bg-brand px-3 py-1 text-uppercase fw-bold" style="font-size: 0.75rem;">
                 {{ barbeiro.cargo|default:"Barbeiro Especialista" }}
               </span>
             </div>
@@ -327,7 +291,7 @@
             <i class="bi bi-check2-circle text-brand fs-5"></i> Cartão de fidelidade com acúmulo dobrado
           </div>
         </div>
-        <a href="{% url 'cadastro' %}" class="btn btn-brand">
+        <a href="{% url 'cliente_club' %}" class="btn btn-brand">
           Fazer Parte do Club
         </a>
       </div>
@@ -349,8 +313,8 @@
                   <i class="bi bi-check-lg text-brand me-1"></i> Até <strong>{{ plano.cortes_inclusos }} cortes/mês</strong>
                 </div>
               </div>
-              <a href="{% url 'agendamento' %}" class="btn btn-outline-brand btn-sm w-100">
-                Assinar Plano
+              <a href="{% url 'cliente_club' %}?assinar={{ plano.id }}" class="btn btn-outline-brand btn-sm w-100">
+                <i class="bi bi-shield-check me-1"></i> Assinar Plano
               </a>
             </div>
           </div>

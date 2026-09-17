@@ -235,7 +235,12 @@ class PerfilUpdateForm(forms.Form):
     sobrenome = forms.CharField(max_length=150, label='Sobrenome', widget=forms.TextInput(attrs={'class': 'form-control'}))
     email = forms.EmailField(label='E-mail', widget=forms.EmailInput(attrs={'class': 'form-control'}))
     telefone = forms.CharField(max_length=20, label='Telefone / WhatsApp', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    foto_perfil = forms.ImageField(label='Foto de Perfil', required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    foto_perfil = forms.ImageField(
+        label='Foto de Perfil',
+        required=False,
+        help_text='Formatos recomendados: JPG, PNG ou WEBP (máx. 5MB)',
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'})
+    )
 
 
 class FeedbackForm(forms.ModelForm):
@@ -352,6 +357,79 @@ class MetaBarbeiroForm(forms.ModelForm):
             'meta_atendimentos': forms.NumberInput(attrs={'class': 'form-control'}),
             'meta_produtos': forms.NumberInput(attrs={'class': 'form-control'}),
         }
+
+
+class MetaBarbeiroEditForm(forms.ModelForm):
+    """Formulário para o barbeiro (ou admin) definir/editar sua meta do mês."""
+    class Meta:
+        model = MetaBarbeiro
+        fields = ['meta_faturamento', 'meta_atendimentos', 'meta_produtos']
+        widgets = {
+            'meta_faturamento': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Ex: 5000.00'}),
+            'meta_atendimentos': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 100'}),
+            'meta_produtos': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 20'}),
+        }
+        labels = {
+            'meta_faturamento': 'Meta de Faturamento (R$)',
+            'meta_atendimentos': 'Meta de Cortes/Atendimentos',
+            'meta_produtos': 'Meta de Produtos Vendidos',
+        }
+
+
+class RecepcionistaCadastroForm(forms.Form):
+    """Formulário para a administração cadastrar novos recepcionistas."""
+    nome = forms.CharField(
+        max_length=150,
+        label='Nome Completo',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Maria Oliveira'})
+    )
+    username = forms.CharField(
+        max_length=150,
+        label='Nome de Usuário (Login)',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: recepcao.maria'})
+    )
+    email = forms.EmailField(
+        label='E-mail',
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Ex: maria@barberheitor.com.br'})
+    )
+    telefone = forms.CharField(
+        max_length=20,
+        label='Telefone / WhatsApp',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(44) 99999-9999'})
+    )
+    password = forms.CharField(
+        label='Senha de Acesso',
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Senha segura'})
+    )
+
+    def clean_username(self):
+        username = self.cleaned_data['username'].strip()
+        if User.objects.filter(username__iexact=username).exists():
+            raise ValidationError('Este nome de usuário já está em uso.')
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise ValidationError('Este e-mail já está cadastrado.')
+        return email
+
+    def save(self):
+        user = User.objects.create_user(
+            username=self.cleaned_data['username'],
+            email=self.cleaned_data['email'],
+            password=self.cleaned_data['password'],
+            first_name=self.cleaned_data['nome'].split()[0],
+            last_name=' '.join(self.cleaned_data['nome'].split()[1:]) if len(self.cleaned_data['nome'].split()) > 1 else '',
+            is_staff=False,
+            is_superuser=False
+        )
+        PerfilUsuario.objects.create(
+            usuario=user,
+            tipo_usuario='recepcionista',
+            telefone=self.cleaned_data['telefone']
+        )
+        return user
 
 
 class RepasseComissaoForm(forms.ModelForm):

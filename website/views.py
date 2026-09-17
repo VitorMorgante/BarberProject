@@ -46,7 +46,8 @@ from .forms import (
     AgendamentoForm, MensagemContatoForm, AgendamentoPublicoForm,
     CadastroForm, PerfilUpdateForm, FeedbackForm, FotoTrabalhoForm,
     PlanoAssinaturaForm, ProdutoForm, MovimentacaoEstoqueForm, ItemComandaForm,
-    RegraComissaoForm, MetaBarbeiroForm, RepasseComissaoForm,
+    RegraComissaoForm, MetaBarbeiroForm, MetaBarbeiroEditForm, RepasseComissaoForm,
+    RecepcionistaCadastroForm,
     ConfiguracaoEstabelecimentoForm, ListaEsperaForm, AnaliseEstiloForm,
     HistoricoVisualClienteForm, FichaTecnicaCorteForm, PerfilDependenteForm,
     EscalaBarbeiroForm, BloqueioAgendaForm, DespesaForm, TarefaRecepcaoForm,
@@ -110,6 +111,24 @@ class BarbeiroRequiredMixin(UserPassesTestMixin):
         if not self.request.user.is_authenticated:
             return redirect('login')
         messages.error(self.request, 'Acesso restrito aos barbeiros autorizados.')
+        return redirect('pagina_inicial')
+
+
+class RecepcionistaStaffRequiredMixin(UserPassesTestMixin):
+    """Permite acesso para Recepcionistas, Administradores, Staff e Superusuários (Heitor)."""
+    def test_func(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return False
+        if user.is_superuser or user.is_staff:
+            return True
+        perfil = getattr(user, 'perfil', None)
+        return bool(perfil and perfil.tipo_usuario.lower() in ['administrador', 'recepcionista'])
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return redirect('login')
+        messages.error(self.request, 'Acesso restrito à recepção e administração da Barber Heitor.')
         return redirect('pagina_inicial')
 
 
@@ -263,18 +282,19 @@ class AgendamentoPublicoView(FormView):
             messages.error(self.request, 'Este horário não está disponível ou acabou de ser reservado por outro cliente. Por favor, escolha outro horário.')
             return redirect('agendamento')
 
-        # Cria o agendamento de forma segura contra concorrência
+        # Cria o agendamento de forma segura contra concorrência com savepoint transacional
         try:
-            agendamento = Agendamento.objects.create(
-                usuario=self.request.user if self.request.user.is_authenticated else None,
-                cliente=cliente,
-                servico=servicos_objs[0],
-                barbeiro=barbeiro,
-                data=data_agendamento,
-                horario=horario_agendamento,
-                observacoes=observacoes,
-                status=Agendamento.Status.PENDENTE
-            )
+            with transaction.atomic():
+                agendamento = Agendamento.objects.create(
+                    usuario=self.request.user if self.request.user.is_authenticated else None,
+                    cliente=cliente,
+                    servico=servicos_objs[0],
+                    barbeiro=barbeiro,
+                    data=data_agendamento,
+                    horario=horario_agendamento,
+                    observacoes=observacoes,
+                    status=Agendamento.Status.PENDENTE
+                )
         except IntegrityError:
             messages.error(self.request, 'Este horário acabou de ser reservado por outro cliente. Por favor, escolha outro.')
             return redirect('agendamento')
@@ -341,6 +361,7 @@ class PagamentoPixView(TemplateView):
         pagamento = get_object_or_404(Pagamento, identificador_interno=identificador)
         context['pagamento'] = pagamento
         context['agendamento'] = pagamento.agendamento
+        context['assinatura'] = pagamento.assinatura
         context['config'] = ConfiguracaoEstabelecimento.get_solo()
         context['show_simulation'] = settings.DEBUG and getattr(settings, 'PAYMENT_GATEWAY', 'mock').lower() == 'mock'
         return context
@@ -354,6 +375,13 @@ class PagamentoPixView(TemplateView):
         identificador = self.kwargs.get('identificador')
         pagamento = get_object_or_404(Pagamento, identificador_interno=identificador)
         PaymentService.confirmar_pagamento(pagamento, payload="Confirmação Manual / Mock")
+        if pagamento.assinatura:
+            messages.success(
+                request,
+                f'Assinatura do plano {pagamento.assinatura.plano.nome} confirmada com sucesso! Seus créditos já estão disponíveis.'
+            )
+            return redirect('cliente_club')
+
         messages.success(request, 'Pagamento PIX confirmado com sucesso! Seu horário está garantido.')
         if request.user.is_authenticated:
             return redirect('area_cliente')
@@ -374,11 +402,17 @@ def pagamento_status_api(request, identificador):
             pagamento.agendamento.status = Agendamento.Status.CANCELADO
             pagamento.agendamento.save(update_fields=['status'])
 
+    redirect_url = reverse('cliente_club') if pagamento.assinatura else (
+        reverse('area_cliente') if request.user.is_authenticated else reverse('pagina_inicial')
+    )
     return JsonResponse({
         'status': pagamento.status,
         'pago': pagamento.status == Pagamento.Status.PAGO,
         'expirado': pagamento.status == Pagamento.Status.EXPIRADO,
         'valor': str(pagamento.valor),
+        'tipo': pagamento.tipo,
+        'is_assinatura': bool(pagamento.assinatura),
+        'redirect_url': redirect_url,
     })
 
 
@@ -551,6 +585,9 @@ class CadastroUsuarioView(FormView):
 
         login(self.request, user)
         messages.success(self.request, f'Bem-vindo à Barber Heitor, {nome}! Sua conta foi criada com sucesso.')
+        next_url = self.request.GET.get('next') or self.request.POST.get('next')
+        if next_url:
+            return redirect(next_url)
         return redirect('area_cliente')
 
 
@@ -584,14 +621,14 @@ class AreaClienteView(LoginRequiredMixin, TemplateView):
         }
         context['profile_form'] = PerfilUpdateForm(initial=initial_data)
         
-        # Agendamentos
-        agendamentos = Agendamento.objects.filter(cliente=cliente)
+        # Agendamentos otimizados com select_related para evitar N+1
+        agendamentos = Agendamento.objects.filter(cliente=cliente).select_related('servico', 'barbeiro')
         context['proximos'] = agendamentos.filter(
             status__in=[Agendamento.Status.PENDENTE, Agendamento.Status.CONFIRMADO, Agendamento.Status.EM_ATENDIMENTO],
             data__gte=date.today()
         ).order_by('data', 'horario')
         
-        concluidos = agendamentos.filter(status=Agendamento.Status.CONCLUIDO).order_by('-data', '-horario')
+        concluidos = agendamentos.filter(status=Agendamento.Status.CONCLUIDO).select_related('servico', 'barbeiro', 'feedback').order_by('-data', '-horario')
         context['historico'] = concluidos[:5]
         context['ultimo_servico'] = concluidos.first()
 
@@ -611,7 +648,7 @@ class AreaClienteView(LoginRequiredMixin, TemplateView):
         context['waitlist_ativas'] = ListaEspera.objects.filter(
             cliente=cliente,
             status__in=[ListaEspera.Status.AGUARDANDO, ListaEspera.Status.NOTIFICADO]
-        )
+        ).select_related('servico', 'barbeiro')
 
         return context
 
@@ -692,7 +729,7 @@ class HistoricoClienteView(LoginRequiredMixin, ListView):
         cliente = Cliente.objects.filter(usuario=self.request.user).first()
         if not cliente:
             return Agendamento.objects.none()
-        return Agendamento.objects.filter(cliente=cliente).order_by('-data', '-horario')
+        return Agendamento.objects.filter(cliente=cliente).select_related('servico', 'barbeiro', 'feedback').order_by('-data', '-horario')
 
 
 class FeedbackCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
@@ -783,18 +820,67 @@ class ClienteClubView(LoginRequiredMixin, TemplateView):
             ).order_by('-criado_em')[:15]
         return context
 
+    def get(self, request, *args, **kwargs):
+        plano_id = request.GET.get('assinar')
+        if plano_id:
+            plano = get_object_or_404(PlanoAssinatura, pk=plano_id, ativo=True)
+            cliente, _ = Cliente.objects.get_or_create(
+                usuario=request.user,
+                defaults={
+                    'nome': request.user.get_full_name() or request.user.username,
+                    'email': request.user.email or '',
+                    'telefone': '',
+                }
+            )
+            assinatura = SubscriptionService.solicitar_assinatura(cliente, plano)
+            pagamento = PaymentService.criar_pagamento_assinatura(assinatura)
+            messages.info(
+                request,
+                f'Assinatura do plano {plano.nome} iniciada! Realize o pagamento via PIX para ativar seus créditos imediatamente.'
+            )
+            return redirect('pagamento_pix', identificador=pagamento.identificador_interno)
+        return super().get(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
-        """Assinar ou trocar de plano."""
+        """Assinar ou trocar de plano via PIX."""
         plano_id = request.POST.get('plano_id')
         plano = get_object_or_404(PlanoAssinatura, pk=plano_id, ativo=True)
-        cliente = get_object_or_404(Cliente, usuario=request.user)
+        cliente, _ = Cliente.objects.get_or_create(
+            usuario=request.user,
+            defaults={
+                'nome': request.user.get_full_name() or request.user.username,
+                'email': request.user.email or '',
+                'telefone': '',
+            }
+        )
 
-        SubscriptionService.solicitar_assinatura(cliente, plano)
+        assinatura = SubscriptionService.solicitar_assinatura(cliente, plano)
+        pagamento = PaymentService.criar_pagamento_assinatura(assinatura)
         messages.info(
             request,
-            f'Solicitação do {plano.nome} registrada com status Pendente! '
-            f'A liberação dos benefícios do clube ocorrerá após a confirmação do pagamento na barbearia ou via PIX.'
+            f'Assinatura do plano {plano.nome} iniciada! Realize o pagamento via PIX para ativar seus créditos imediatamente.'
         )
+        return redirect('pagamento_pix', identificador=pagamento.identificador_interno)
+
+
+class CancelarAssinaturaClienteView(LoginRequiredMixin, View):
+    """Permite ao cliente cancelar sua própria assinatura do Barber Club sem atrito."""
+    def post(self, request, *args, **kwargs):
+        cliente = Cliente.objects.filter(usuario=request.user).first()
+        if not cliente:
+            messages.error(request, "Perfil de cliente não encontrado.")
+            return redirect('cliente_club')
+
+        motivo = request.POST.get('motivo', 'Cancelado pelo cliente no painel Barber Club')
+        try:
+            SubscriptionService.cancelar_assinatura(cliente, motivo=motivo)
+            messages.success(
+                request,
+                "Sua assinatura do Barber Club foi cancelada com sucesso. Você não receberá novas renovações ou cobranças."
+            )
+        except Exception as e:
+            messages.error(request, f"Não foi possível cancelar a assinatura: {str(e)}")
+
         return redirect('cliente_club')
 
 
@@ -813,7 +899,7 @@ class ClienteFidelidadeView(LoginRequiredMixin, TemplateView):
 class ClienteEstiloView(LoginRequiredMixin, View):
     """Redirecionamento suave de rota descontinuada de visagismo."""
     def get(self, request, *args, **kwargs):
-        messages.info(request, "O serviço digital de visagismo foi descontinuado. Conheça nossos serviços oficiais.")
+        messages.info(request, "O serviço digital de consultoria de estilo foi descontinuado. Conheça nossos serviços oficiais.")
         return redirect('servicos')
 
     def post(self, request, *args, **kwargs):
@@ -920,6 +1006,12 @@ class AreaBarbeiroView(BarbeiroRequiredMixin, TemplateView):
 
             # Meta Mensal
             context['meta_info'] = ComissaoService.get_progresso_meta(barbeiro)
+            meta_obj = MetaBarbeiro.objects.filter(barbeiro=barbeiro, mes=hoje.month, ano=hoje.year).first()
+            context['meta_form'] = MetaBarbeiroEditForm(initial={
+                'meta_faturamento': meta_obj.meta_faturamento if meta_obj else Decimal('5000.00'),
+                'meta_atendimentos': meta_obj.meta_atendimentos if meta_obj else 100,
+                'meta_produtos': meta_obj.meta_produtos if meta_obj else 20,
+            })
             
             # Feedbacks & Fotos
             context['feedbacks'] = Feedback.objects.filter(barbeiro=barbeiro).order_by('-criado_em')[:5]
@@ -964,7 +1056,7 @@ class AgendamentosBarbeiroView(BarbeiroRequiredMixin, ListView):
                 barbeiro = Barbeiro.objects.first()
             else:
                 return Agendamento.objects.none()
-        return Agendamento.objects.filter(barbeiro=barbeiro).order_by('-data', '-horario')
+        return Agendamento.objects.filter(barbeiro=barbeiro).select_related('cliente', 'servico', 'barbeiro').order_by('-data', '-horario')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1188,17 +1280,89 @@ class BarbeiroGanhosView(BarbeiroRequiredMixin, TemplateView):
 
 
 class BarbeiroMetasView(BarbeiroRequiredMixin, TemplateView):
-    """Painel de metas e performance do barbeiro."""
+    """Painel de metas e performance do barbeiro com edição interativa de metas."""
     template_name = 'website/barbeiro/metas.html'
+
+    def get_barbeiro(self):
+        user = self.request.user
+        barbeiro_id = self.request.GET.get('barbeiro_id') or self.request.POST.get('barbeiro_id')
+        if (user.is_superuser or user.is_staff) and barbeiro_id:
+            return get_object_or_404(Barbeiro, pk=barbeiro_id)
+        barbeiro = Barbeiro.objects.filter(usuario=user).first()
+        if not barbeiro and (user.is_superuser or user.is_staff):
+            barbeiro = Barbeiro.objects.first()
+        return barbeiro
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
-        if not barbeiro and (self.request.user.is_superuser or self.request.user.is_staff):
-            barbeiro = Barbeiro.objects.first()
+        barbeiro = self.get_barbeiro()
         context['barbeiro'] = barbeiro
-        context['meta_info'] = ComissaoService.get_progresso_meta(barbeiro) if barbeiro else None
+
+        hoje = timezone.localtime().date()
+        try:
+            mes = int(self.request.GET.get('mes', hoje.month))
+            ano = int(self.request.GET.get('ano', hoje.year))
+        except (ValueError, TypeError):
+            mes = hoje.month
+            ano = hoje.year
+
+        if barbeiro:
+            context['meta_info'] = ComissaoService.get_progresso_meta(barbeiro, mes=mes, ano=ano)
+            meta_obj = MetaBarbeiro.objects.filter(barbeiro=barbeiro, mes=mes, ano=ano).first()
+            initial_data = {
+                'meta_faturamento': meta_obj.meta_faturamento if meta_obj else Decimal('5000.00'),
+                'meta_atendimentos': meta_obj.meta_atendimentos if meta_obj else 100,
+                'meta_produtos': meta_obj.meta_produtos if meta_obj else 20,
+            }
+            context['meta_form'] = MetaBarbeiroEditForm(initial=initial_data)
+        else:
+            context['meta_info'] = None
+            context['meta_form'] = None
+
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            context['todos_barbeiros'] = Barbeiro.objects.filter(ativo=True).order_by('nome')
+        else:
+            context['todos_barbeiros'] = []
+
+        context['mes_selecionado'] = mes
+        context['ano_selecionado'] = ano
         return context
+
+    def post(self, request, *args, **kwargs):
+        barbeiro = self.get_barbeiro()
+        if not barbeiro:
+            messages.error(request, 'Barbeiro não encontrado para associar a meta.')
+            return redirect('barbeiro_metas')
+
+        hoje = timezone.localtime().date()
+        try:
+            mes = int(request.POST.get('mes', hoje.month))
+            ano = int(request.POST.get('ano', hoje.year))
+        except (ValueError, TypeError):
+            mes = hoje.month
+            ano = hoje.year
+
+        meta_obj, _ = MetaBarbeiro.objects.get_or_create(
+            barbeiro=barbeiro,
+            mes=mes,
+            ano=ano
+        )
+
+        form = MetaBarbeiroEditForm(request.POST, instance=meta_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request,
+                f"Meta de {barbeiro.nome} para {mes:02d}/{ano} atualizada com sucesso! "
+                f"Novo faturamento alvo: R$ {meta_obj.meta_faturamento:.2f}."
+            )
+        else:
+            messages.error(request, 'Valores inválidos para a meta. Verifique os campos informados.')
+
+        next_url = request.POST.get('next')
+        if next_url:
+            return redirect(next_url)
+        return redirect(f"{reverse('barbeiro_metas')}?barbeiro_id={barbeiro.pk}&mes={mes}&ano={ano}")
 
 
 class RelatoriosBarbeiroView(BarbeiroRequiredMixin, TemplateView):
@@ -1316,6 +1480,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         perfil = getattr(user, 'perfil', None)
         if perfil and perfil.tipo_usuario.lower() == 'administrador':
             return super().dispatch(request, *args, **kwargs)
+
+        if perfil and perfil.tipo_usuario.lower() == 'recepcionista':
+            return redirect('modo_recepcao')
             
         if (perfil and perfil.tipo_usuario.lower() == 'barbeiro') or Barbeiro.objects.filter(usuario=user).exists():
             return redirect('area_barbeiro')
@@ -1359,7 +1526,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['taxa_no_show'] = taxa_no_show
         context['assinantes_ativos'] = AssinaturaCliente.objects.filter(status=AssinaturaCliente.Status.ATIVA).count()
         context['produtos_baixo_estoque'] = Produto.objects.filter(ativo=True, estoque_atual__lte=F('estoque_minimo'))
-        context['ultimos_agendamentos'] = Agendamento.objects.all().order_by('-data', '-horario')[:8]
+        context['ultimos_agendamentos'] = Agendamento.objects.all().select_related('cliente', 'servico', 'barbeiro').order_by('-data', '-horario')[:8]
         context['total_clientes'] = Cliente.objects.count()
         context['mensagens_nao_lidas'] = MensagemContato.objects.filter(lida=False).count()
 
@@ -1397,7 +1564,7 @@ class FinanceiroAdminView(AdminStaffRequiredMixin, TemplateView):
         context['faturamento_liquido'] = faturamento_liquido
         context['total_comissoes'] = total_comissoes
         context['lucro_estimado'] = lucro_estimado
-        context['ultimas_comandas'] = comandas.order_by('-fechada_em')[:20]
+        context['ultimas_comandas'] = comandas.select_related('cliente', 'barbeiro').order_by('-fechada_em')[:20]
         context['repasses_pendentes'] = Comissao.objects.filter(status=Comissao.Status.PENDENTE).aggregate(total=Sum('valor_comissao'))['total'] or Decimal('0.00')
         return context
 
@@ -1419,7 +1586,7 @@ class ComissoesAdminView(AdminStaffRequiredMixin, TemplateView):
                 'saldo_a_receber': extrato['saldo_a_receber'],
             })
         context['barbeiros_resumo'] = resumo_barbeiros
-        context['ultimos_repasses'] = RepasseComissao.objects.all().order_by('-data_repasse')[:15]
+        context['ultimos_repasses'] = RepasseComissao.objects.all().select_related('barbeiro', 'usuario_responsavel').order_by('-data_repasse')[:15]
         return context
 
 
@@ -1561,11 +1728,11 @@ class ConfiguracaoEstabelecimentoView(SuccessMessageMixin, AdminStaffRequiredMix
         return f'Configurações de "{nome}" salvas com sucesso!'
 
 
-class WaitlistAdminView(AdminStaffRequiredMixin, ListView):
+class WaitlistAdminView(RecepcionistaStaffRequiredMixin, ListView):
     model = ListaEspera
     template_name = 'website/admin/waitlist.html'
     context_object_name = 'waitlist'
-    queryset = ListaEspera.objects.all().order_by('-data_desejada')
+    queryset = ListaEspera.objects.all().select_related('cliente', 'servico', 'barbeiro').order_by('-data_desejada')
 
 
 # --- CRUDS EXISTENTES (PRESERVADOS) ---
@@ -1591,12 +1758,20 @@ class ServicoUpdate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredM
     extra_context = {'titulo': 'Editar Serviço', 'botao': 'Salvar alterações'}
     success_message = 'Serviço "%(nome)s" atualizado com sucesso!'
 
+    def get_object(self, queryset=None):
+        self.object = get_object_or_404(Servico, pk=self.kwargs['pk'], usuario=self.request.user)
+        return self.object
+
 
 class ServicoDelete(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
     model = Servico
     template_name = 'website/form.html'
     success_url = reverse_lazy('listar_servicos')
     extra_context = {'titulo': 'Excluir Serviço', 'botao': 'Excluir'}
+
+    def get_object(self, queryset=None):
+        self.object = get_object_or_404(Servico, pk=self.kwargs['pk'], usuario=self.request.user)
+        return self.object
 
     def get_success_message(self, cleaned_data):
         nome = getattr(self.object, 'nome', None) or 'Serviço'
@@ -1607,6 +1782,14 @@ class ServicoList(LoginRequiredMixin, AdminStaffRequiredMixin, ListView):
     model = Servico
     template_name = 'website/listas/servicos.html'
     context_object_name = 'servicos'
+
+    def get_queryset(self):
+        txt_nome = self.request.GET.get('nome')
+        if txt_nome:
+            self.object_list = Servico.objects.filter(nome__icontains=txt_nome, usuario=self.request.user)
+        else:
+            self.object_list = Servico.objects.filter(usuario=self.request.user)
+        return self.object_list
 
 
 class ServicoDetail(LoginRequiredMixin, AdminStaffRequiredMixin, DetailView):
@@ -1680,6 +1863,10 @@ class ClienteCreate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredM
     extra_context = {'titulo': 'Cadastrar Cliente', 'botao': 'Cadastrar'}
     success_message = 'Cliente "%(nome)s" cadastrado com sucesso!'
 
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        return super().form_valid(form)
+
 
 class ClienteUpdate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, UpdateView):
     model = Cliente
@@ -1689,6 +1876,10 @@ class ClienteUpdate(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredM
     extra_context = {'titulo': 'Editar Cliente', 'botao': 'Salvar alterações'}
     success_message = 'Dados do cliente "%(nome)s" atualizados com sucesso!'
 
+    def get_object(self, queryset=None):
+        self.object = get_object_or_404(Cliente, pk=self.kwargs['pk'], usuario=self.request.user)
+        return self.object
+
 
 class ClienteDelete(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredMixin, DeleteView):
     model = Cliente
@@ -1696,15 +1887,27 @@ class ClienteDelete(SuccessMessageMixin, LoginRequiredMixin, AdminStaffRequiredM
     success_url = reverse_lazy('listar_clientes')
     extra_context = {'titulo': 'Excluir Cliente', 'botao': 'Excluir'}
 
+    def get_object(self, queryset=None):
+        self.object = get_object_or_404(Cliente, pk=self.kwargs['pk'], usuario=self.request.user)
+        return self.object
+
     def get_success_message(self, cleaned_data):
         nome = getattr(self.object, 'nome', None) or 'Cliente'
         return f'Cliente "{nome}" excluído com sucesso!'
 
 
-class ClienteList(LoginRequiredMixin, AdminStaffRequiredMixin, ListView):
+class ClienteList(LoginRequiredMixin, RecepcionistaStaffRequiredMixin, ListView):
     model = Cliente
     template_name = 'website/listas/clientes.html'
     context_object_name = 'clientes'
+
+    def get_queryset(self):
+        txt_nome = self.request.GET.get('nome')
+        if txt_nome:
+            self.object_list = Cliente.objects.filter(nome__icontains=txt_nome, usuario=self.request.user)
+        else:
+            self.object_list = Cliente.objects.filter(usuario=self.request.user)
+        return self.object_list
 
 
 class ClienteDetail(LoginRequiredMixin, AdminStaffRequiredMixin, DetailView):
@@ -1720,6 +1923,10 @@ class HorarioDisponivelCreate(SuccessMessageMixin, LoginRequiredMixin, AdminStaf
     success_url = reverse_lazy('listar_horarios')
     extra_context = {'titulo': 'Cadastrar Horário', 'botao': 'Cadastrar'}
 
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        return super().form_valid(form)
+
     def get_success_message(self, cleaned_data):
         barbeiro_nome = self.object.barbeiro.nome if self.object.barbeiro else 'Barbeiro'
         horario_str = self.object.horario.strftime('%H:%M') if getattr(self.object, 'horario', None) else ''
@@ -1733,6 +1940,10 @@ class HorarioDisponivelUpdate(SuccessMessageMixin, LoginRequiredMixin, AdminStaf
     success_url = reverse_lazy('listar_horarios')
     extra_context = {'titulo': 'Editar Horário', 'botao': 'Salvar alterações'}
 
+    def get_object(self, queryset=None):
+        self.object = get_object_or_404(HorarioDisponivel, pk=self.kwargs['pk'], usuario=self.request.user)
+        return self.object
+
     def get_success_message(self, cleaned_data):
         barbeiro_nome = self.object.barbeiro.nome if self.object.barbeiro else 'Barbeiro'
         horario_str = self.object.horario.strftime('%H:%M') if getattr(self.object, 'horario', None) else ''
@@ -1745,6 +1956,10 @@ class HorarioDisponivelDelete(SuccessMessageMixin, LoginRequiredMixin, AdminStaf
     success_url = reverse_lazy('listar_horarios')
     extra_context = {'titulo': 'Excluir Horário', 'botao': 'Excluir'}
 
+    def get_object(self, queryset=None):
+        self.object = get_object_or_404(HorarioDisponivel, pk=self.kwargs['pk'], usuario=self.request.user)
+        return self.object
+
     def get_success_message(self, cleaned_data):
         barbeiro_nome = self.object.barbeiro.nome if getattr(self.object, 'barbeiro', None) else 'Barbeiro'
         horario_str = self.object.horario.strftime('%H:%M') if getattr(self.object, 'horario', None) else ''
@@ -1755,6 +1970,10 @@ class HorarioDisponivelList(LoginRequiredMixin, AdminStaffRequiredMixin, ListVie
     model = HorarioDisponivel
     template_name = 'website/listas/horarios.html'
     context_object_name = 'horarios'
+
+    def get_queryset(self):
+        self.object_list = HorarioDisponivel.objects.filter(usuario=self.request.user)
+        return self.object_list
 
 
 class HorarioDisponivelDetail(LoginRequiredMixin, AdminStaffRequiredMixin, DetailView):
@@ -1821,6 +2040,9 @@ class AgendamentoList(LoginRequiredMixin, AdminStaffRequiredMixin, ListView):
     model = Agendamento
     template_name = 'website/listas/agendamentos.html'
     context_object_name = 'agendamentos'
+
+    def get_queryset(self):
+        return Agendamento.objects.select_related('cliente', 'servico', 'barbeiro').all()
 
 
 class AgendamentoDetail(LoginRequiredMixin, AdminStaffRequiredMixin, DetailView):
@@ -2046,7 +2268,7 @@ class RepetirUltimoCorteView(LoginRequiredMixin, View):
 # 10. MODO RECEPÇÃO, MODO TV & CARDÁPIO DIGITAL
 # ==============================================================================
 
-class ModoRecepcaoView(LoginRequiredMixin, TemplateView):
+class ModoRecepcaoView(RecepcionistaStaffRequiredMixin, TemplateView):
     """
     Interface simplificada e ultrarrápida para a recepção da barbearia:
     Agenda do dia, Fila em tempo real, Check-in com 1 clique, Clientes Walk-in, Comandas e Caixa.
@@ -2120,7 +2342,7 @@ class RealizarCheckinView(View):
         return redirect('area_cliente')
 
 
-class WalkinCreateView(AdminStaffRequiredMixin, View):
+class WalkinCreateView(RecepcionistaStaffRequiredMixin, View):
     """
     Registra cliente que chegou sem agendamento (Walk-in) e insere direto na fila operacional.
     """
@@ -2155,6 +2377,44 @@ class WalkinCreateView(AdminStaffRequiredMixin, View):
 
         messages.success(request, f"Cliente Walk-in {nome} inserido na fila com sucesso com {barbeiro.nome}!")
         return redirect('modo_recepcao')
+
+
+class RecepcionistasListView(AdminStaffRequiredMixin, ListView):
+    """Listagem e gestão da equipe de recepção (acesso do Heitor / Administradores)."""
+    model = PerfilUsuario
+    template_name = 'website/admin/recepcionistas.html'
+    context_object_name = 'recepcionistas'
+
+    def get_queryset(self):
+        return PerfilUsuario.objects.filter(tipo_usuario='recepcionista').select_related('usuario').order_by('usuario__first_name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = RecepcionistaCadastroForm()
+        return context
+
+
+class RecepcionistaCreateView(AdminStaffRequiredMixin, FormView):
+    """Cadastro de novo(a) recepcionista com credenciais e perfil dedicados."""
+    form_class = RecepcionistaCadastroForm
+    template_name = 'website/admin/cadastrar_recepcionista.html'
+    success_url = reverse_lazy('listar_recepcionistas')
+
+    def form_valid(self, form):
+        user = form.save()
+        messages.success(self.request, f'Recepcionista "{user.get_full_name() or user.username}" cadastrado(a) com sucesso!')
+        return redirect('listar_recepcionistas')
+
+
+class RecepcionistaToggleStatusView(AdminStaffRequiredMixin, View):
+    """Ativa ou desativa o acesso de um recepcionista."""
+    def post(self, request, pk):
+        perfil = get_object_or_404(PerfilUsuario, pk=pk, tipo_usuario='recepcionista')
+        perfil.usuario.is_active = not perfil.usuario.is_active
+        perfil.usuario.save(update_fields=['is_active'])
+        status_str = 'ativado(a)' if perfil.usuario.is_active else 'desativado(a)'
+        messages.success(request, f'Recepcionista {perfil.usuario.get_full_name() or perfil.usuario.username} foi {status_str} com sucesso.')
+        return redirect('listar_recepcionistas')
 
 
 # ==============================================================================

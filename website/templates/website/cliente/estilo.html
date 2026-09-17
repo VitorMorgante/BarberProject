@@ -1,6 +1,6 @@
 {% extends "website/modelo.html" %}
 {% load crispy_forms_tags %}
-{% block titulo %}Consultor de Visagismo & Estilo IA | Barber Heitor{% endblock %}
+{% block titulo %}Consultor de Estilo & Harmonização IA | Barber Heitor{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -42,7 +42,7 @@
     
     <!-- Header -->
     <div class="text-center max-w-700 mx-auto mb-4">
-      <span class="badge bg-info bg-opacity-25 text-info text-uppercase fw-bold px-3 py-2 mb-2">Visagismo Computacional</span>
+      <span class="badge bg-info bg-opacity-25 text-info text-uppercase fw-bold px-3 py-2 mb-2">Harmonização de Estilo Facial</span>
       <h2 class="brand-font text-white fw-bold display-6">Descubra o Corte Ideal para <span class="text-brand">Seu Rosto</span></h2>
       <p class="text-muted small">Nossa Inteligência Artificial analisa suas proporções faciais e simetria para indicar os cortes e barbas que melhor valorizam seu visual.</p>
     </div>
@@ -75,7 +75,7 @@
             </button>
           </div>
 
-          <form method="post" enctype="multipart/form-data" id="formVisagismo">
+          <form method="post" enctype="multipart/form-data" id="formEstilo">
             {% csrf_token %}
             <div class="mb-3" id="inputArquivoContainer">
               <label class="form-label text-light small fw-bold">Arquivo de Imagem:</label>
@@ -90,7 +90,7 @@
             </div>
 
             <button type="submit" class="btn btn-brand w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2">
-              <i class="bi bi-magic"></i> Analisar Visagismo com IA
+              <i class="bi bi-magic"></i> Analisar Estilo com IA
             </button>
           </form>
         </div>
@@ -99,7 +99,7 @@
       <!-- Último Resultado de Análise -->
       <div class="col-lg-7">
         <div class="card surface-card p-4 h-100">
-          <h5 class="text-white fw-bold mb-3"><i class="bi bi-cpu text-info me-2"></i> Resultado do Visagismo</h5>
+          <h5 class="text-white fw-bold mb-3"><i class="bi bi-cpu text-info me-2"></i> Resultado da Análise de Estilo</h5>
           
           {% if analises %}
             {% with ult=analises.0 %}
@@ -226,7 +226,7 @@
             stream.getTracks().forEach(track => track.stop());
           }
           cameraContainer.classList.add('d-none');
-          alert('Foto capturada com sucesso! Clique em "Analisar Visagismo com IA" para continuar.');
+          alert('Foto capturada com sucesso! Clique em "Analisar Estilo com IA" para continuar.');
         }, 'image/jpeg', 0.9);
       });
     }

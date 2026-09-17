@@ -31,7 +31,7 @@ class TestPublicPages(TestCase):
         self.barbeiro = Barbeiro.objects.create(
             nome='Danilo Delacruz',
             cargo='Barbeiro',
-            especialidade='Cortes clássicos, degradê e acabamento preciso',
+            especialidade='Cortes clássicos, degradê e acabamento na régua',
             ativo=True,
         )
         self.servico = Servico.objects.create(

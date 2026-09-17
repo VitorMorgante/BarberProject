@@ -15,41 +15,139 @@
     <!-- Seção: Minha Assinatura Atual (se tiver) -->
     {% if club %}
     <div class="card surface-card p-4 p-md-5 mb-5 border-warning border-opacity-50">
-      <div class="row align-items-center g-4">
-        <div class="col-lg-7">
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <span class="badge bg-success px-3 py-2 fs-6">Assinatura Ativa</span>
-            <h3 class="text-white fw-bold mb-0">{{ club.plano.nome }}</h3>
+      <!-- Cabeçalho Unificado e Perfeitamente Alinhado -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          {% if club.is_ativa %}
+            <span class="badge bg-success px-3 py-2 fs-6"><i class="bi bi-check-circle-fill me-1"></i> Assinatura Ativa</span>
+          {% elif club.is_cancelada %}
+            <span class="badge bg-secondary px-3 py-2 fs-6"><i class="bi bi-dash-circle me-1"></i> Assinatura Cancelada</span>
+          {% else %}
+            <span class="badge bg-warning text-dark px-3 py-2 fs-6 fw-bold text-uppercase"><i class="bi bi-clock-history me-1"></i> {{ club.status }}</span>
+          {% endif %}
+          <div>
+            <h3 class="text-white fw-bold mb-1">{{ club.plano.nome }}</h3>
+            <p class="text-muted small mb-0">{{ club.plano.descricao }}</p>
           </div>
-          <p class="text-muted mb-4">{{ club.plano.descricao }}</p>
+        </div>
 
-          <div class="row g-3">
-            <div class="col-sm-6">
-              <div class="bg-dark p-3 rounded border border-secondary border-opacity-25">
-                <span class="small text-muted d-block">Créditos Restantes:</span>
-                <span class="fs-3 fw-bold text-brand">{{ club.disponiveis }}</span>
-                <span class="text-muted small"> de {{ club.total }} créditos/mês</span>
+        <!-- Botão de Cancelar Assinatura no Topo -->
+        <div class="d-flex align-items-center gap-2">
+          {% if not club.is_cancelada %}
+            <form method="post" action="{% url 'cancelar_assinatura_cliente' %}" class="d-inline" id="formCancelarAssinatura">
+              {% csrf_token %}
+              <input type="hidden" name="motivo" value="Cancelamento solicitado pelo cliente no portal Barber Club">
+              <button type="button" class="btn btn-outline-danger btn-sm px-3 py-2 btn-cancelar-assinatura" data-plano-nome="{{ club.plano.nome }}" title="Cancelar esta assinatura do Barber Club">
+                <i class="bi bi-x-circle me-1"></i> Cancelar Assinatura
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Grade Simétrica com 2 Colunas de Mesma Altura -->
+      <div class="row g-4 align-items-stretch">
+        <!-- Coluna 1: Métricas de Crédito e Status -->
+        <div class="col-lg-6 d-flex flex-column">
+          <div class="bg-dark p-4 rounded-3 border border-secondary border-opacity-25 h-100 d-flex flex-column justify-content-between">
+            <div>
+              <h6 class="text-brand fw-bold mb-3 d-flex align-items-center gap-2">
+                <i class="bi bi-speedometer2"></i> Situação da Assinatura & Créditos
+              </h6>
+              
+              <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                  <div class="p-3 rounded bg-surface border border-secondary border-opacity-20 h-100 d-flex flex-column justify-content-center">
+                    <span class="small text-muted d-block mb-1">Créditos Restantes:</span>
+                    <div class="d-flex align-items-baseline gap-1">
+                      <span class="fs-2 fw-bold text-brand">{{ club.disponiveis }}</span>
+                      <span class="text-muted small">/ {{ club.total }}</span>
+                    </div>
+                    <span class="text-muted small d-block mt-1">atendimentos no mês</span>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="p-3 rounded bg-surface border border-secondary border-opacity-20 h-100 d-flex flex-column justify-content-center">
+                    <span class="small text-muted d-block mb-1">Status do Ciclo:</span>
+                    {% if club.is_ativa %}
+                      <span class="fs-4 fw-bold text-success d-block"><i class="bi bi-check-circle me-1"></i> Em Dia</span>
+                      <span class="text-muted small d-block">Renovação: {{ club.renovacao|date:"d/m/Y" }}</span>
+                    {% elif club.is_cancelada %}
+                      <span class="fs-4 fw-bold text-danger d-block"><i class="bi bi-x-circle me-1"></i> Cancelada</span>
+                      <span class="text-muted small d-block">Sem cobranças ativas</span>
+                    {% else %}
+                      <span class="fs-4 fw-bold text-warning d-block"><i class="bi bi-hourglass-split me-1"></i> {{ club.status }}</span>
+                      <span class="text-muted small d-block">Aguardando confirmação PIX</span>
+                    {% endif %}
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="col-sm-6">
-              <div class="bg-dark p-3 rounded border border-secondary border-opacity-25">
-                <span class="small text-muted d-block">Próxima Renovação:</span>
-                <span class="fs-4 fw-bold text-white">{{ club.renovacao|date:"d/m/Y" }}</span>
-                <span class="text-success small d-block"><i class="bi bi-check-circle-fill me-1"></i> Em dia</span>
-              </div>
+
+            <!-- Rodapé de Ações do Bloco Esquerdo -->
+            <div class="pt-3 border-top border-secondary border-opacity-20 mt-auto">
+              {% if club.is_ativa %}
+                <div class="d-flex flex-wrap gap-2">
+                  <a href="{% url 'agendamento' %}" class="btn btn-brand btn-sm fw-bold px-3 py-2 flex-fill">
+                    <i class="bi bi-calendar-plus me-1"></i> Agendar com meus Créditos
+                  </a>
+                  <a href="{% url 'area_cliente' %}" class="btn btn-outline-light btn-sm px-3 py-2">
+                    <i class="bi bi-clock-history me-1"></i> Histórico
+                  </a>
+                </div>
+              {% elif club.is_cancelada %}
+                <p class="text-muted small mb-0">
+                  <i class="bi bi-info-circle text-warning me-1"></i> Assinatura inativa. Escolha um plano abaixo para reativar!
+                </p>
+              {% else %}
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                  <form method="post" class="d-inline flex-fill form-assinar-plano">
+                    {% csrf_token %}
+                    <input type="hidden" name="plano_id" value="{{ club.plano.id }}">
+                    <button type="button" class="btn btn-brand btn-sm fw-bold w-100 py-2 btn-confirmar-adesao" 
+                            data-plano-id="{{ club.plano.id }}" 
+                            data-plano-nome="{{ club.plano.nome }}" 
+                            data-plano-preco="{{ club.plano.preco_mensal }}">
+                      <i class="bi bi-qr-code me-1"></i> Pagar / Ativar via PIX
+                    </button>
+                  </form>
+                </div>
+              {% endif %}
             </div>
           </div>
         </div>
 
-        <div class="col-lg-5 text-center border-start-lg border-secondary border-opacity-25 ps-lg-4">
-          <div class="p-3 bg-dark rounded-3 border border-secondary border-opacity-25">
-            <h6 class="text-brand fw-bold mb-3">Benefícios Ativos da Sua Assinatura:</h6>
-            <ul class="list-unstyled text-start small text-muted d-flex flex-column gap-2 mb-0">
-              <li><i class="bi bi-check2-circle text-brand me-2"></i> <strong>{{ club.total }} cortes</strong> inclusos todo mês</li>
-              <li><i class="bi bi-check2-circle text-brand me-2"></i> <strong>{{ club.plano.desconto_produtos }}% de desconto</strong> em produtos de finalização</li>
-              <li><i class="bi bi-check2-circle text-brand me-2"></i> Atendimento prioritário e toalha quente cortesia</li>
-              <li><i class="bi bi-check2-circle text-brand me-2"></i> Café espresso e cerveja artesanal inclusos no lounge</li>
-            </ul>
+        <!-- Coluna 2: Benefícios Ativos da Assinatura -->
+        <div class="col-lg-6 d-flex flex-column">
+          <div class="bg-dark p-4 rounded-3 border border-secondary border-opacity-25 h-100 d-flex flex-column justify-content-between">
+            <div>
+              <h6 class="text-brand fw-bold mb-3 d-flex align-items-center gap-2">
+                <i class="bi bi-shield-check"></i> Benefícios Ativos da Sua Assinatura
+              </h6>
+              <ul class="list-unstyled small text-muted d-flex flex-column gap-3 mb-0">
+                <li class="d-flex align-items-center gap-2 text-light">
+                  <i class="bi bi-check2-circle text-brand fs-5 flex-shrink-0"></i>
+                  <span><strong>{{ club.total }} atendimentos</strong> inclusos todo mês</span>
+                </li>
+                <li class="d-flex align-items-center gap-2 text-light">
+                  <i class="bi bi-check2-circle text-brand fs-5 flex-shrink-0"></i>
+                  <span><strong>{{ club.plano.desconto_produtos }}% de desconto</strong> em produtos de finalização</span>
+                </li>
+                <li class="d-flex align-items-center gap-2 text-light">
+                  <i class="bi bi-check2-circle text-brand fs-5 flex-shrink-0"></i>
+                  <span>Atendimento prioritário e toalha quente cortesia</span>
+                </li>
+                <li class="d-flex align-items-center gap-2 text-light">
+                  <i class="bi bi-check2-circle text-brand fs-5 flex-shrink-0"></i>
+                  <span>Café espresso e cerveja artesanal inclusos no lounge</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="pt-3 border-top border-secondary border-opacity-20 mt-3 d-flex align-items-center justify-content-between text-muted small">
+              <span><i class="bi bi-gem text-brand me-1"></i> Membro Barber Club</span>
+              <span class="badge bg-secondary bg-opacity-25 text-light px-3 py-1">Vantagens Exclusivas</span>
+            </div>
           </div>
         </div>
       </div>
@@ -89,14 +187,17 @@
             </li>
           </ul>
 
-          <form method="post" class="mt-auto">
+          <form method="post" class="mt-auto form-assinar-plano" id="form-plano-{{ plano.id }}">
             {% csrf_token %}
             <input type="hidden" name="plano_id" value="{{ plano.id }}">
-            <button type="submit" class="btn {% if plano.destaque %}btn-brand{% else %}btn-outline-brand{% endif %} w-100 py-2 fw-bold" onclick="return confirm('Deseja assinar o plano {{ plano.nome }} por R$ {{ plano.preco_mensal }}/mês?');">
+            <button type="button" class="btn {% if plano.destaque %}btn-brand{% else %}btn-outline-brand{% endif %} w-100 py-2 fw-bold btn-confirmar-adesao"
+                    data-plano-id="{{ plano.id }}"
+                    data-plano-nome="{{ plano.nome }}"
+                    data-plano-preco="{{ plano.preco_mensal }}">
               {% if club and club.plano.id == plano.id %}
-                Plano Atual (Renovar)
+                <i class="bi bi-arrow-repeat me-1"></i> Renovar via PIX
               {% else %}
-                Assinar Este Plano
+                <i class="bi bi-qr-code me-1"></i> Assinar via PIX
               {% endif %}
             </button>
           </form>
@@ -148,4 +249,81 @@
 
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  $(document).ready(function () {
+    // Confirmação com Bootbox.js para Assinatura / Renovação de Planos
+    $(document).on('click', '.btn-confirmar-adesao', function (e) {
+      e.preventDefault();
+      var btn = $(this);
+      var form = btn.closest('form');
+      var planoNome = btn.data('plano-nome') || 'Plano Barber Club';
+      var planoPreco = btn.data('plano-preco') || '';
+
+      if (typeof bootbox !== 'undefined') {
+        bootbox.confirm({
+          title: '<i class="bi bi-gem text-brand me-2"></i> Confirmar Assinatura',
+          message: '<p class="mb-2">Você realmente deseja assinar o <strong>' + planoNome + '</strong>' + (planoPreco ? ' por <strong>R$ ' + planoPreco + '/mês</strong>' : '') + ' via PIX?</p><p class="text-muted small mb-0"><i class="bi bi-qr-code text-brand me-1"></i> Será gerado um código PIX exclusivo e seus créditos serão ativados assim que confirmado o pagamento.</p>',
+          buttons: {
+            cancel: {
+              label: '<i class="bi bi-x me-1"></i> Voltar',
+              className: 'btn btn-outline-secondary px-3 bootbox-cancel'
+            },
+            confirm: {
+              label: '<i class="bi bi-check2-circle me-1"></i> Sim, Desejo Assinar',
+              className: 'btn btn-brand fw-bold px-4 bootbox-accept'
+            }
+          },
+          centerVertical: true,
+          callback: function (result) {
+            if (result) {
+              form.submit();
+            }
+          }
+        });
+      } else {
+        if (confirm('Você realmente deseja assinar o plano ' + planoNome + ' por R$ ' + planoPreco + '/mês via PIX?')) {
+          form.submit();
+        }
+      }
+    });
+
+    // Confirmação com Bootbox.js para Cancelamento de Assinatura
+    $(document).on('click', '.btn-cancelar-assinatura', function (e) {
+      e.preventDefault();
+      var btn = $(this);
+      var form = btn.closest('form');
+      var planoNome = btn.data('plano-nome') || 'Barber Club';
+
+      if (typeof bootbox !== 'undefined') {
+        bootbox.confirm({
+          title: '<i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Cancelar Assinatura',
+          message: '<p class="mb-2">Você realmente deseja cancelar sua assinatura do <strong>' + planoNome + '</strong>?</p><p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i> Novas renovações mensais serão interrompidas. Se você ainda possuir créditos ativos deste ciclo, poderá utilizá-los normalmente até a data de expiração.</p>',
+          buttons: {
+            cancel: {
+              label: 'Não, Manter Assinatura',
+              className: 'btn btn-outline-secondary px-3 bootbox-cancel'
+            },
+            confirm: {
+              label: '<i class="bi bi-x-circle me-1"></i> Sim, Cancelar Assinatura',
+              className: 'btn btn-danger fw-bold px-4 bootbox-accept'
+            }
+          },
+          centerVertical: true,
+          callback: function (result) {
+            if (result) {
+              form.submit();
+            }
+          }
+        });
+      } else {
+        if (confirm('Você realmente deseja cancelar sua assinatura do ' + planoNome + '? Novas renovações automáticas serão interrompidas.')) {
+          form.submit();
+        }
+      }
+    });
+  });
+</script>
 {% endblock %}

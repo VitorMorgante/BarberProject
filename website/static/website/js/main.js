@@ -77,6 +77,104 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 2.1. Controle Inteligente de Vídeos do Portfólio (Hover no Desktop / Botão Play no Celular)
+  const portfolioMediaWrappers = document.querySelectorAll('.portfolio-media-wrapper');
+
+  portfolioMediaWrappers.forEach(wrapper => {
+    const video = wrapper.querySelector('video.portfolio-video');
+    const playBadge = wrapper.querySelector('.video-play-badge');
+    const hoverIndicator = wrapper.querySelector('.video-hover-indicator');
+
+    if (!video) return;
+
+    // Assegura que o vídeo seja mudo para permitir autoplay em hover sem restrição dos navegadores
+    video.muted = true;
+
+    const playVideo = (withSound = false) => {
+      video.muted = !withSound;
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          if (playBadge) {
+            playBadge.style.opacity = '0';
+            playBadge.style.pointerEvents = 'none';
+          }
+          if (hoverIndicator) {
+            hoverIndicator.style.opacity = '0';
+          }
+        }).catch(() => {
+          // Fallback seguro caso falhe com áudio: toca silenciado
+          video.muted = true;
+          video.play().catch(() => {});
+        });
+      }
+    };
+
+    const pauseVideo = () => {
+      video.pause();
+      if (playBadge) {
+        playBadge.style.opacity = '1';
+        playBadge.style.pointerEvents = 'auto';
+      }
+      if (hoverIndicator) {
+        hoverIndicator.style.opacity = '1';
+      }
+    };
+
+    // A. Desktop: Ao passar o mouse por cima (hover), roda automaticamente
+    // Ao retirar o mouse, pausa o vídeo
+    const isTouchDevice = () => window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+    wrapper.addEventListener('mouseenter', () => {
+      if (!isTouchDevice()) {
+        playVideo(false);
+      }
+    });
+
+    wrapper.addEventListener('mouseleave', () => {
+      if (!isTouchDevice()) {
+        pauseVideo();
+      }
+    });
+
+    // B. Celular / Dispositivos de Toque: Botão de Play centralizado e clique no vídeo
+    if (playBadge) {
+      playBadge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (video.paused) {
+          playVideo(true);
+        } else {
+          pauseVideo();
+        }
+      });
+    }
+
+    // Sincronização com os controles nativos do próprio elemento de vídeo
+    video.addEventListener('play', () => {
+      if (playBadge) {
+        playBadge.style.opacity = '0';
+        playBadge.style.pointerEvents = 'none';
+      }
+      if (hoverIndicator) hoverIndicator.style.opacity = '0';
+    });
+
+    video.addEventListener('pause', () => {
+      if (playBadge) {
+        playBadge.style.opacity = '1';
+        playBadge.style.pointerEvents = 'auto';
+      }
+      if (hoverIndicator) hoverIndicator.style.opacity = '1';
+    });
+
+    video.addEventListener('ended', () => {
+      if (playBadge) {
+        playBadge.style.opacity = '1';
+        playBadge.style.pointerEvents = 'auto';
+      }
+      if (hoverIndicator) hoverIndicator.style.opacity = '1';
+    });
+  });
+
   // 3. BOOKING WIZARD (agendamento.html)
   const idServicoInput = document.getElementById('id_servico');
   const idBarbeiroInput = document.getElementById('id_barbeiro');

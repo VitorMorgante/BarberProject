@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
     # Auth
     path('login/', auth_views.LoginView.as_view(
-        template_name='website/form.html',
+        template_name='website/login.html',
         extra_context={'titulo': 'Login', 'botao': 'Entrar'},
     ), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
@@ -107,6 +107,7 @@ urlpatterns = [
     path('cliente/repetir-ultimo-corte/', views.RepetirUltimoCorteView.as_view(), name='repetir_ultimo_corte'),
     path('cliente/historico/', views.HistoricoClienteView.as_view(), name='historico_cliente'),
     path('cliente/club/', views.ClienteClubView.as_view(), name='cliente_club'),
+    path('cliente/club/cancelar/', views.CancelarAssinaturaClienteView.as_view(), name='cancelar_assinatura_cliente'),
     path('cliente/fidelidade/', views.ClienteFidelidadeView.as_view(), name='cliente_fidelidade'),
     path('cliente/estilo/', views.ClienteEstiloView.as_view(), name='cliente_estilo'),
     path('cliente/evolucao/', views.ClienteEvolucaoView.as_view(), name='cliente_evolucao'),
@@ -139,6 +140,11 @@ urlpatterns = [
     path('cardapio/', views.CardapioDigitalView.as_view(), name='cardapio_digital'),
     path('checkin/<str:token>/', views.RealizarCheckinView.as_view(), name='checkin_token'),
     path('checkin/id/<int:pk>/', views.RealizarCheckinView.as_view(), name='checkin_pk'),
+
+    # Gestão de Recepcionistas (Equipe de Recepção - Heitor/Admin)
+    path('dashboard/recepcionistas/', views.RecepcionistasListView.as_view(), name='listar_recepcionistas'),
+    path('dashboard/recepcionistas/cadastrar/', views.RecepcionistaCreateView.as_view(), name='cadastrar_recepcionista'),
+    path('dashboard/recepcionistas/<int:pk>/status/', views.RecepcionistaToggleStatusView.as_view(), name='toggle_status_recepcionista'),
 
     # Central LGPD & Privacidade
     path('cliente/privacidade/', views.CentralLGPDView.as_view(), name='central_lgpd'),

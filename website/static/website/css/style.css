@@ -643,48 +643,213 @@ button:disabled {
 }
 
 /* ==============================================================================
-   7. STATUS CHIPS & BADGES
+   7. STATUS CHIPS & BADGES (SISTEMA ADAPTATIVO: CLARO NO ESCURO / ESCURO NO CLARO)
    ============================================================================== */
-.badge-status {
+
+/* --- VARIÁVEIS DE COR PARA BADGES --- */
+:root {
+  /* No Background Escuro (padrão luxury da barbearia): BADGES CLARAS */
+  --badge-bg-neutral: #f8fafc;
+  --badge-text-neutral: #090d16;
+  --badge-border-neutral: #cbd5e1;
+
+  --badge-bg-brand: linear-gradient(135deg, #ffffff 0%, #fef3c7 45%, #d4af37 100%);
+  --badge-text-brand: #090d16;
+  --badge-border-brand: #f5e2ad;
+
+  --badge-bg-success: #dcfce7;
+  --badge-text-success: #14532d;
+  --badge-border-success: #86efac;
+
+  --badge-bg-warning: #fef3c7;
+  --badge-text-warning: #78350f;
+  --badge-border-warning: #fcd34d;
+
+  --badge-bg-danger: #fee2e2;
+  --badge-text-danger: #7f1d1d;
+  --badge-border-danger: #fca5a5;
+
+  --badge-bg-info: #e0f2fe;
+  --badge-text-info: #0369a1;
+  --badge-border-info: #7dd3fc;
+
+  --badge-bg-secondary: #f1f5f9;
+  --badge-text-secondary: #1e293b;
+  --badge-border-secondary: #cbd5e1;
+}
+
+/* No Background Claro (.bg-white, .bg-light, containers claros): BADGES ESCURAS */
+.bg-white,
+.bg-light,
+.surface-light,
+.card-light,
+.table-light,
+.light-theme,
+[data-theme="light"],
+.badge-context-light {
+  --badge-bg-neutral: #090d16;
+  --badge-text-neutral: #f8fafc;
+  --badge-border-neutral: #1e293b;
+
+  --badge-bg-brand: #1a1505;
+  --badge-text-brand: #f5e2ad;
+  --badge-border-brand: #d4af37;
+
+  --badge-bg-success: #052e16;
+  --badge-text-success: #86efac;
+  --badge-border-success: #15803d;
+
+  --badge-bg-warning: #451a03;
+  --badge-text-warning: #fde68a;
+  --badge-border-warning: #b45309;
+
+  --badge-bg-danger: #450a0a;
+  --badge-text-danger: #fca5a5;
+  --badge-border-danger: #b91c1c;
+
+  --badge-bg-info: #082f49;
+  --badge-text-info: #7dd3fc;
+  --badge-border-info: #0369a1;
+
+  --badge-bg-secondary: #0f172a;
+  --badge-text-secondary: #e2e8f0;
+  --badge-border-secondary: #334155;
+}
+
+/* Base Universal para todas as Badges */
+.badge,
+.badge-count,
+.badge-status,
+[class*="badge-status-"],
+.badge-brand,
+.badge-neutral {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
+  gap: 0.35rem;
   padding: 0.35rem 0.75rem;
-  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  vertical-align: middle;
+  transition: all var(--duration-fast) ease-in-out;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
 }
 
-.status-pendente {
-  background-color: var(--color-warning-dim);
-  color: var(--color-warning);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+/* 1. Badge Contadora (ex: Horários 5, Clientes 12) */
+.badge-count {
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0.2rem 0.65rem;
+  margin-left: 0.5rem;
+  background: var(--badge-bg-neutral) !important;
+  color: var(--badge-text-neutral) !important;
+  border: 1px solid var(--badge-border-neutral) !important;
 }
 
-.status-confirmado {
-  background-color: var(--color-info-dim);
-  color: var(--color-info);
-  border: 1px solid rgba(14, 165, 233, 0.3);
+/* 2. Badge Brand / Dourada Oficial */
+.badge.bg-brand,
+.bg-brand,
+.badge-brand {
+  background: var(--badge-bg-brand) !important;
+  color: var(--badge-text-brand) !important;
+  border: 1px solid var(--badge-border-brand) !important;
+  font-weight: 800 !important;
 }
 
-.status-atendimento {
-  background-color: var(--color-brand-dim);
-  color: var(--color-brand-primary);
-  border: 1px solid var(--color-border-brand);
+/* 3. Badges Neutras (que antes usavam bg-dark / bg-black em fundo escuro) */
+.badge.bg-dark,
+.badge.bg-black,
+.badge-neutral {
+  background: var(--badge-bg-neutral) !important;
+  color: var(--badge-text-neutral) !important;
+  border: 1px solid var(--badge-border-neutral) !important;
+}
+.badge.bg-dark *,
+.badge.bg-black * {
+  color: var(--badge-text-neutral) !important;
 }
 
-.status-concluido, .status-pago {
-  background-color: var(--color-success-dim);
-  color: var(--color-success);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+/* 4. Secondary / Neutro Suave */
+.badge.bg-secondary,
+.badge-secondary {
+  background: var(--badge-bg-secondary) !important;
+  color: var(--badge-text-secondary) !important;
+  border: 1px solid var(--badge-border-secondary) !important;
 }
 
-.status-cancelado, .status-expirado {
-  background-color: var(--color-danger-dim);
-  color: var(--color-danger);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+/* 5. Sucesso / Concluído / Pago / Ativo */
+.badge.bg-success,
+.badge-success,
+.status-concluido,
+.status-pago,
+.badge-status-Concluído,
+.badge-status-Concluido,
+[class*="badge-status-Conclu"],
+.badge-status-Ativo {
+  background: var(--badge-bg-success) !important;
+  color: var(--badge-text-success) !important;
+  border: 1px solid var(--badge-border-success) !important;
+}
+
+/* 6. Aviso / Pendente / Aguardando */
+.badge.bg-warning,
+.badge-warning,
+.status-pendente,
+.badge-status-Pendente,
+.badge-status-Aguardando {
+  background: var(--badge-bg-warning) !important;
+  color: var(--badge-text-warning) !important;
+  border: 1px solid var(--badge-border-warning) !important;
+}
+
+/* 7. Perigo / Cancelado / Inativo / Não Compareceu */
+.badge.bg-danger,
+.badge-danger,
+.status-cancelado,
+.status-expirado,
+.badge-status-Cancelado,
+.badge-status-Inativo,
+.badge-status-Não,
+[class*="badge-status-Não"],
+[class*="badge-status-Nao"] {
+  background: var(--badge-bg-danger) !important;
+  color: var(--badge-text-danger) !important;
+  border: 1px solid var(--badge-border-danger) !important;
+}
+
+/* 8. Info / Confirmado / Em Atendimento */
+.badge.bg-info,
+.badge.bg-primary,
+.badge-info,
+.status-confirmado,
+.status-atendimento,
+.badge-status-Confirmado,
+.badge-status-Em,
+[class*="badge-status-Em"] {
+  background: var(--badge-bg-info) !important;
+  color: var(--badge-text-info) !important;
+  border: 1px solid var(--badge-border-info) !important;
+}
+
+/* Utilitários explícitos para forçar */
+.badge-claro,
+.badge-light-mode {
+  background: #ffffff !important;
+  color: #090d16 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.badge-escuro,
+.badge-dark-mode {
+  background: #090d16 !important;
+  color: #f8fafc !important;
+  border: 1px solid #1e293b !important;
 }
 
 /* ==============================================================================
@@ -1138,4 +1303,427 @@ button:disabled {
     padding: 0.75rem 0.9rem;
   }
 }
+
+/* ==============================================================================
+   14. DATATABLES LUXURY DARK THEME STYLING (PLUGIN JQUERY VÍDEO #34)
+   ============================================================================== */
+.dataTables_wrapper {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  padding-top: 0.5rem;
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 1rem;
+}
+
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted);
+}
+
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+  background-color: var(--color-surface-sunken) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.88rem;
+  outline: none;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus,
+.dataTables_wrapper .dataTables_length select:focus {
+  border-color: var(--color-brand) !important;
+  box-shadow: 0 0 0 2px var(--color-brand-glow);
+}
+
+.dataTables_wrapper .dataTables_info {
+  color: var(--color-text-muted) !important;
+  padding-top: 1rem;
+  font-size: 0.85rem;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+  padding-top: 0.75rem;
+}
+
+.dataTables_wrapper .page-item .page-link {
+  background-color: var(--color-surface-sunken);
+  border-color: var(--color-border-subtle);
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+.dataTables_wrapper .page-item.active .page-link {
+  background-color: var(--color-brand) !important;
+  border-color: var(--color-brand) !important;
+  color: #06080d !important;
+  font-weight: 700;
+}
+
+.dataTables_wrapper .page-item.disabled .page-link {
+  background-color: var(--color-surface);
+  border-color: var(--color-border-subtle);
+  color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+table.dataTable thead th {
+  border-bottom: 1px solid var(--color-border-brand) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+table.dataTable tbody tr {
+  background-color: var(--color-surface) !important;
+}
+
+table.dataTable tbody tr:hover {
+  background-color: var(--color-surface-elevated) !important;
+}
+
+/* ==============================================================================
+   15. PORTFOLIO VIDEOS: HOVER-TO-PLAY & MOBILE PLAY BUTTON
+   ============================================================================== */
+.portfolio-media-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.video-play-badge {
+  background: var(--color-brand, #d4af37) !important;
+  color: #06080d !important;
+  border: 2px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.65), 0 0 16px rgba(212, 175, 55, 0.45) !important;
+  transform: translate(-50%, -50%) scale(1);
+  transition: transform var(--duration-fast, 0.2s) ease, opacity var(--duration-normal, 0.3s) ease, box-shadow var(--duration-fast, 0.2s) ease !important;
+}
+
+.portfolio-media-wrapper:hover .video-play-badge {
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.8), 0 0 24px rgba(212, 175, 55, 0.6) !important;
+}
+
+.video-hover-indicator {
+  transition: opacity var(--duration-normal, 0.3s) ease;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Em dispositivos móveis / telas de toque: oculta o aviso textual mas preserva o botão de play bem visível */
+@media (hover: none), (pointer: coarse), (max-width: 768px) {
+  .video-hover-indicator {
+    display: none !important;
+  }
+  .video-play-badge {
+    width: 60px !important;
+    height: 60px !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* ==============================================================================
+   BOOTBOX.JS - DIÁLOGOS MODAIS DARK LUXURY
+   ============================================================================== */
+.bootbox.modal .modal-dialog {
+  max-width: 520px;
+}
+
+.bootbox .modal-content {
+  background-color: var(--color-surface, #0d121f) !important;
+  background-image: linear-gradient(145deg, rgba(20, 27, 45, 0.95), rgba(9, 13, 23, 0.98)) !important;
+  border: 1px solid rgba(212, 175, 55, 0.45) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(212, 175, 55, 0.18) !important;
+  color: #f1f5f9 !important;
+  overflow: hidden;
+}
+
+.bootbox .modal-header {
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
+  background: rgba(6, 8, 13, 0.5) !important;
+  padding: 1.25rem 1.75rem !important;
+}
+
+.bootbox .modal-title {
+  font-family: var(--font-brand, 'Playfair Display', Georgia, serif) !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  letter-spacing: -0.01em;
+}
+
+.bootbox .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%) !important;
+  opacity: 0.65;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.bootbox .btn-close:hover {
+  opacity: 1;
+  transform: rotate(90deg);
+}
+
+.bootbox .modal-body {
+  padding: 1.75rem !important;
+  font-size: 1rem !important;
+  line-height: 1.65 !important;
+  color: #cbd5e1 !important;
+}
+
+.bootbox .modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(6, 8, 13, 0.3) !important;
+  padding: 1rem 1.75rem !important;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.bootbox .bootbox-cancel {
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #cbd5e1 !important;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease;
+}
+
+.bootbox .bootbox-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.bootbox .bootbox-accept {
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1.5rem !important;
+}
+
+/* ==============================================================================
+   BOTÃO DE CADASTRO LUXURY (ESMERALDA JADE COM CONTRASTE DOURADO)
+   ============================================================================== */
+.btn-cadastro-luxury {
+  background: linear-gradient(135deg, #0d5f57 0%, #063d37 100%) !important;
+  border: 1px solid rgba(52, 211, 153, 0.45) !important;
+  color: #f0fdf4 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-md, 10px) !important;
+  box-shadow: 0 6px 20px rgba(6, 61, 55, 0.45), 0 0 16px rgba(52, 211, 153, 0.18) !important;
+  transition: all var(--duration-fast, 0.2s) ease !important;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cadastro-luxury:hover {
+  background: linear-gradient(135deg, #10756b 0%, #084c44 100%) !important;
+  border-color: rgba(52, 211, 153, 0.75) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(6, 61, 55, 0.65), 0 0 22px rgba(52, 211, 153, 0.35) !important;
+}
+
+.btn-cadastro-luxury:active {
+  transform: translateY(0);
+}
+
+/* ==============================================================================
+   CUSTOM LUXURY FILE INPUT (FOTO DE PERFIL / UPLOAD DE IMAGEM)
+   ============================================================================== */
+.file-upload-input-group {
+  display: flex !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  height: 48px !important;
+  background-color: var(--color-surface-sunken, #06080d) !important;
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.file-upload-input-group:hover,
+.file-upload-input-group:focus-within {
+  border-color: var(--color-brand, #d4af37) !important;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2) !important;
+}
+
+.file-upload-input-group .btn-upload {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(212, 175, 55, 0.06)) !important;
+  border: none !important;
+  border-right: 1px solid rgba(212, 175, 55, 0.35) !important;
+  color: var(--color-brand, #d4af37) !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  padding: 0 1.15rem !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 0.2s ease !important;
+}
+
+.file-upload-input-group .btn-upload:hover {
+  background: linear-gradient(135deg, #d4af37 0%, #b89628 100%) !important;
+  color: #06080d !important;
+}
+
+.file-upload-input-group .btn-upload:hover i {
+  color: #06080d !important;
+}
+
+.file-upload-input-group .file-upload-display {
+  flex: 1 1 auto !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 0.95rem !important;
+  color: #94a3b8 !important;
+  font-size: 0.85rem !important;
+  background-color: transparent !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+/* Fallback para inputs nativos type="file" */
+input[type="file"].form-control,
+.form-control[type="file"] {
+  display: flex !important;
+  align-items: center !important;
+  height: 48px !important;
+  padding: 0 !important;
+  background-color: var(--color-surface-sunken, #06080d) !important;
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  color: #cbd5e1 !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  cursor: pointer !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+input[type="file"].form-control:hover,
+.form-control[type="file"]:hover {
+  border-color: var(--color-brand, #d4af37) !important;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2) !important;
+}
+
+input[type="file"]::file-selector-button,
+input[type="file"]::-webkit-file-upload-button {
+  height: 100% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(212, 175, 55, 0.06)) !important;
+  color: var(--color-brand, #d4af37) !important;
+  border: none !important;
+  border-right: 1px solid rgba(212, 175, 55, 0.35) !important;
+  border-radius: 0 !important;
+  padding: 0 1.15rem !important;
+  margin: 0 !important;
+  margin-right: 0.85rem !important;
+  font-weight: 600 !important;
+  font-size: 0.84rem !important;
+  letter-spacing: 0.02em !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+input[type="file"]::file-selector-button:hover,
+input[type="file"]::-webkit-file-upload-button:hover {
+  background: linear-gradient(135deg, #d4af37 0%, #b89628 100%) !important;
+  color: #06080d !important;
+  border-color: #d4af37 !important;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+/* ==============================================================================
+   AUTH CARDS & PASSWORDS (LOGIN & CADASTRO LUXURY)
+   ============================================================================== */
+.auth-luxury-card {
+  background: var(--color-surface, #0d121f);
+  background-image: linear-gradient(155deg, rgba(17, 24, 39, 0.95), rgba(8, 12, 20, 0.98));
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(212, 175, 55, 0.12);
+}
+
+.auth-badge-icon {
+  width: 58px;
+  height: 58px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.05));
+  border: 1.5px solid rgba(212, 175, 55, 0.5);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand, #d4af37);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+}
+
+.input-luxury-group {
+  position: relative;
+}
+
+.input-luxury-group .input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-brand, #d4af37);
+  font-size: 1.1rem;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.input-luxury-group .form-control {
+  padding-left: 42px !important;
+  background-color: var(--color-surface-sunken, #06080d) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  height: 48px;
+  transition: all 0.2s ease;
+}
+
+.input-luxury-group .form-control:focus {
+  border-color: var(--color-brand, #d4af37) !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25) !important;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  z-index: 5;
+  padding: 4px 8px;
+  transition: color 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+  color: var(--color-brand, #d4af37);
+}
+
 

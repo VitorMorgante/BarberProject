@@ -66,7 +66,7 @@ class StyleAIService:
         formato = perfil_detectado['formato']
         confianca = perfil_detectado['confianca']
         texto_explicativo = (
-            f"A análise de visagismo sugere traços predominantes do formato *{formato}* "
+            f"A análise de formato facial sugere traços predominantes do formato *{formato}* "
             f"com nível de correspondência estimado em {int(confianca * 100)}%.\n\n"
             f"{perfil_detectado['descricao']}\n\n"
             f"Para valorizar a sua simetria, nossa equipe recomenda cortes com bom acabamento nas têmporas "

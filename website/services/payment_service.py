@@ -284,6 +284,42 @@ class PaymentService:
 
     @staticmethod
     @transaction.atomic
+    def criar_pagamento_assinatura(assinatura: AssinaturaCliente) -> Pagamento:
+        """Gera cobrança PIX para assinatura do Barber Club."""
+        config = ConfiguracaoEstabelecimento.get_solo()
+        valor_plano = assinatura.plano.preco_mensal
+
+        expiracao_minutos = config.minutos_expiracao_pix or 30
+        expiracao_em = timezone.now() + timedelta(minutes=expiracao_minutos)
+        identificador = str(uuid.uuid4())
+
+        provider = get_payment_provider()
+        nome_cliente = getattr(assinatura.cliente, 'nome', 'Cliente')
+        res = provider.generate_pix(
+            valor=valor_plano,
+            descricao=f"Assinatura {assinatura.plano.nome} - {nome_cliente}",
+            identificador_interno=identificador,
+            expiracao_minutos=expiracao_minutos,
+        )
+
+        pagamento = Pagamento.objects.create(
+            identificador_interno=identificador,
+            identificador_externo=res.get('identificador_externo'),
+            assinatura=assinatura,
+            valor=valor_plano,
+            tipo=Pagamento.Tipo.ASSINATURA,
+            metodo=Pagamento.Metodo.PIX,
+            status=Pagamento.Status.AGUARDANDO,
+            pix_copia_cola=res.get('pix_copia_cola', ''),
+            qr_code_base64=res.get('qr_code_base64', ''),
+            gateway=getattr(settings, 'PAYMENT_GATEWAY', 'mock'),
+            payload_resposta=res.get('raw_response', ''),
+            expiracao_em=expiracao_em,
+        )
+        return pagamento
+
+    @staticmethod
+    @transaction.atomic
     def confirmar_pagamento(pagamento_ou_id, payload: str = '') -> Pagamento:
         """
         Confirma o pagamento atomicamente, atualizando o agendamento/comanda/assinatura correspondente.

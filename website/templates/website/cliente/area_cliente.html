@@ -126,13 +126,19 @@
       <div class="col-lg-4">
         <div class="surface-card p-4">
           <div class="text-center mb-4">
-            {% if request.user.perfil.foto_perfil %}
-              <img src="{{ request.user.perfil.foto_perfil.url }}" alt="Foto de Perfil" class="rounded-circle border border-warning border-opacity-50 mx-auto mb-3" style="width: 100px; height: 100px; object-fit: cover;">
-            {% else %}
-              <div class="rounded-circle border border-warning border-opacity-50 d-flex align-items-center justify-content-center mx-auto mb-3 bg-dark" style="width: 100px; height: 100px;">
-                <i class="bi bi-person fs-1 text-brand"></i>
-              </div>
-            {% endif %}
+            <div class="position-relative d-inline-block mx-auto mb-3">
+              {% if request.user.perfil.foto_perfil %}
+                <img id="client-avatar-preview" src="{{ request.user.perfil.foto_perfil.url }}" alt="Foto de Perfil" class="rounded-circle border border-warning border-opacity-50" style="width: 105px; height: 105px; object-fit: cover; box-shadow: 0 0 20px rgba(212, 175, 55, 0.25);">
+              {% else %}
+                <div id="client-avatar-placeholder" class="rounded-circle border border-warning border-opacity-50 d-flex align-items-center justify-content-center bg-dark" style="width: 105px; height: 105px; box-shadow: 0 0 20px rgba(212, 175, 55, 0.25);">
+                  <i class="bi bi-person fs-1 text-brand"></i>
+                </div>
+                <img id="client-avatar-preview" src="" alt="Foto de Perfil" class="rounded-circle border border-warning border-opacity-50 d-none" style="width: 105px; height: 105px; object-fit: cover; box-shadow: 0 0 20px rgba(212, 175, 55, 0.25);">
+              {% endif %}
+              <label for="id_foto_perfil" class="position-absolute bottom-0 end-0 bg-brand text-dark rounded-circle p-2 shadow d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; transform: translate(10%, 10%); cursor: pointer;" title="Alterar Foto de Perfil">
+                <i class="bi bi-camera-fill small"></i>
+              </label>
+            </div>
             <h5 class="fw-bold mb-1 text-white">{{ request.user.first_name }} {{ request.user.last_name }}</h5>
             <span class="badge bg-dark border border-secondary border-opacity-50 text-brand text-uppercase small">{{ request.user.perfil.tipo_usuario|default:"Cliente VIP" }}</span>
           </div>
@@ -142,8 +148,30 @@
           <h6 class="fw-bold mb-3 text-brand"><i class="bi bi-person-gear me-2"></i>Meus Dados</h6>
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ profile_form|crispy }}
-            <button type="submit" class="btn btn-brand w-100 mt-3">
+            {{ profile_form.nome|as_crispy_field }}
+            {{ profile_form.sobrenome|as_crispy_field }}
+            {{ profile_form.email|as_crispy_field }}
+            {{ profile_form.telefone|as_crispy_field }}
+
+            <!-- Campo Foto de Perfil 100% Simétrico e Alinhado -->
+            <div class="mb-3">
+              <label for="id_foto_perfil" class="form-label text-light small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Foto de Perfil</label>
+              <div class="file-upload-input-group">
+                <label for="id_foto_perfil" class="btn-upload d-inline-flex align-items-center justify-content-center gap-2">
+                  <i class="bi bi-camera-fill text-brand"></i> Escolher arquivo
+                </label>
+                <div id="foto-filename-display" class="file-upload-display" onclick="document.getElementById('id_foto_perfil').click();">
+                  Nenhum arquivo selecionado
+                </div>
+                <input type="file" name="foto_perfil" id="id_foto_perfil" class="d-none" accept="image/*">
+              </div>
+              <small class="text-muted-custom d-block mt-1" style="font-size: 0.78rem;">Formatos recomendados: JPG, PNG ou WEBP (máx. 5MB)</small>
+              {% if profile_form.foto_perfil.errors %}
+                <small class="text-danger d-block mt-1">{{ profile_form.foto_perfil.errors.0 }}</small>
+              {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-brand w-100 mt-3 py-3 fw-bold">
               Atualizar Dados
             </button>
           </form>
@@ -310,4 +338,39 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const fileInput = document.getElementById('id_foto_perfil');
+  const previewImg = document.getElementById('client-avatar-preview');
+  const placeholder = document.getElementById('client-avatar-placeholder');
+  const filenameDisplay = document.getElementById('foto-filename-display');
+
+  if (fileInput) {
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        if (filenameDisplay) {
+          filenameDisplay.innerHTML = '<i class="bi bi-check-circle-fill text-success me-2"></i><span class="text-white fw-semibold">' + file.name + '</span>';
+        }
+        if (previewImg) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            previewImg.src = event.target.result;
+            previewImg.classList.remove('d-none');
+            if (placeholder) placeholder.classList.add('d-none');
+          };
+          reader.readAsDataURL(file);
+        }
+      } else {
+        if (filenameDisplay) {
+          filenameDisplay.textContent = 'Nenhum arquivo selecionado';
+        }
+      }
+    });
+  }
+});
+</script>
 {% endblock %}

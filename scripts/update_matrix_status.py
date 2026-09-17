@@ -97,6 +97,9 @@ IMPLEMENTED_REQS = {
 
 def update_requirements():
     doc_path = Path(__file__).resolve().parent.parent / 'docs' / 'DELACRUZ_REQUIREMENTS_402.md'
+    if not doc_path.exists():
+        print(f"INFO: {doc_path} não encontrado no repositório. Nenhuma matriz para atualizar.")
+        return
     lines = doc_path.read_text(encoding='utf-8').splitlines()
     new_lines = []
 
